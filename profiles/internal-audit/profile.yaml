@@ -1,0 +1,61 @@
+label: Internal Audit
+
+target_titles:
+  - internal audit
+  - internal audit manager
+  - audit director
+  - audit manager
+  - senior internal auditor
+  - it audit
+  - audit vice president
+  - head of internal audit
+  - compliance audit
+
+skills:
+  - internal audit
+  - global compliance audit
+  - risk-based audit
+  - risk assessment
+  - continuous monitoring
+  - control testing
+  - sox
+  - coso
+  - pcaob
+  - internal controls
+  - regulatory reporting
+  - model risk
+  - enterprise risk
+  - remediation
+  - stakeholder management
+  - data analytics
+  - tableau
+  - genai
+  - agentic ai
+  - financial services
+  - cpa
+  - broker-dealer
+
+must_have: []
+nice_to_have:
+  - director
+  - vp
+  - manager
+  - senior
+  - financial services
+  - banking
+
+exclude_keywords:
+  - intern
+  - internship
+  - unpaid
+  - staff accountant
+  - bookkeeper
+  - software engineer
+
+min_score: 30
+
+jsearch:
+  queries:
+    - Internal Audit Manager
+    - IT Audit Director
+    - Audit Vice President financial services

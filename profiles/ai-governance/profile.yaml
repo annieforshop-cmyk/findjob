@@ -1,0 +1,62 @@
+label: AI Governance
+
+target_titles:
+  - ai governance
+  - responsible ai
+  - ai governance lead
+  - ai governance manager
+  - director ai governance
+  - ai policy
+  - ai compliance
+  - ai risk and governance
+  - head of ai governance
+
+# 你真实拥有的技能/关键词（来自简历，用于内容匹配）
+skills:
+  - ai governance
+  - responsible ai
+  - nist ai rmf
+  - eu ai act
+  - iso 42001
+  - iso/iec 42001
+  - ai risk assessment
+  - ai risk management
+  - ai policy
+  - model risk
+  - governance framework
+  - regulatory compliance
+  - enterprise risk
+  - internal controls
+  - audit
+  - data governance
+  - continuous monitoring
+  - stakeholder management
+  - genai
+  - agentic ai
+  - financial services
+  - cpa
+
+must_have: []
+nice_to_have:
+  - director
+  - vp
+  - senior
+  - lead
+  - financial services
+
+# 排除明显不符的（初级/无关方向）
+exclude_keywords:
+  - intern
+  - internship
+  - unpaid
+  - machine learning engineer
+  - software engineer
+  - data engineer
+
+min_score: 30
+
+jsearch:
+  queries:
+    - AI Governance
+    - Responsible AI
+    - AI Risk and Compliance

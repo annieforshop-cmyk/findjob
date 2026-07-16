@@ -72,7 +72,7 @@ like a person, not a template."""
 def _pick_job(args) -> dict:
     if args.desc:
         return {"title": args.title or "(untitled)", "company": args.company or "", "description": args.desc}
-    runs = store.load_last_run()
+    runs = store.load_last_run(args.profile or "default")
     if not runs:
         sys.exit("没有 data/last_run.json；先跑 `python -m src.main` 或用 --desc 手动传入 JD。")
     sel = args.selector
@@ -116,13 +116,18 @@ def generate(resume: str, job: dict) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("selector", nargs="?", help="last-run 序号 或 URL 子串")
+    ap.add_argument("--profile", help="用哪个 profile 的简历和当日结果（profiles/ 下的目录名）")
     ap.add_argument("--title")
     ap.add_argument("--company")
     ap.add_argument("--desc", help="直接粘贴 JD 文本")
     ap.add_argument("-o", "--out", help="写入文件（默认打印到屏幕）")
     args = ap.parse_args()
 
-    resume = (ROOT / "profile" / "resume.md").read_text()
+    if args.profile and (ROOT / "profiles" / args.profile / "resume.md").exists():
+        resume = (ROOT / "profiles" / args.profile / "resume.md").read_text()
+    else:
+        legacy = ROOT / "profile" / "resume.md"
+        resume = legacy.read_text() if legacy.exists() else ""
     job = _pick_job(args)
     print(f"→ 生成中：{job.get('title')} @ {job.get('company')}", file=sys.stderr)
     out = generate(resume, job)

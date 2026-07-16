@@ -26,10 +26,17 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 
 ## 三步启用
 
-### 1. 放入你的简历 + 配置方向
-- 简历二选一：**放 PDF** 到 `profile/resume.pdf`（自动抽取文本，更省事），或编辑 `profile/resume.md` **整段替换**成你真实简历。PDF 优先。这是匹配和写求职信的事实来源，越全越好。
-- 编辑 `config.yaml`：`target_titles`（想要的岗位叫法）、`skills`（你真实的技能）、
-  `exclude_keywords`（不想要的）、`remote_only`、`min_score`（匹配阈值）等。
+### 1. 简历与方向（多 profile）
+每个求职方向是 `profiles/<方向>/` 下的一个目录，各自独立跑、独立发邮件。已内置三套：
+`ai-governance`、`internal-audit`、`ai-risk`。
+
+每个目录里：
+- `resume.md`：该方向的简历（已按你三份简历填好；也可放 `resume.pdf` 自动抽取，PDF 优先）。
+- `profile.yaml`：该方向的 `target_titles` / `skills` / `exclude_keywords` / `jsearch.queries` /
+  `min_score`——**会覆盖根目录 `config.yaml` 的同名项**。
+
+根目录 `config.yaml` 是**共享设置**：数据源开关、`ai_scoring`、邮件行为、`top_n` 等，所有方向继承。
+想加/删方向：复制一个 `profiles/xxx/` 目录改内容即可。
 
 ### 2. 在 GitHub 加 Secrets
 仓库 → Settings → Secrets and variables → Actions → New repository secret，加以下几个：
@@ -43,6 +50,8 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 | `SMTP_PASS` | 邮箱**应用专用密码**（不是登录密码，见下） |
 | `EMAIL_TO` | 收件邮箱（你自己） |
 | `EMAIL_FROM` | 可选，默认同 `SMTP_USER` |
+| `RAPIDAPI_KEY` | **JSearch 用**（LinkedIn/Indeed/Glassdoor/ZipRecruiter 聚合）。rapidapi.com 免费订阅 JSearch |
+| `OPENAI_MODEL` | 可选，默认 `gpt-4o-mini` |
 | `ADZUNA_APP_ID` / `ADZUNA_APP_KEY` | 可选，启用 Adzuna 时才需要 |
 
 > **Gmail 应用专用密码**：需先开两步验证，然后到 Google 账号 → 安全 → 应用专用密码，
@@ -68,10 +77,11 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 pip install -r requirements.txt
 export OPENAI_API_KEY=sk-...
 
-python -m src.main                 # 先跑一次，生成 data/last_run.json
-python -m src.tailor 3             # 对今天第 3 个岗位生成对齐建议 + cover letter
-python -m src.tailor "https://..." # 或按链接
-python -m src.tailor --title "Data Scientist" --company "Acme" --desc "粘贴JD" -o out.md
+python -m src.main                                   # 跑全部 profile
+python -m src.main --profile ai-governance           # 只跑一个方向
+python -m src.tailor --profile ai-governance 3       # 对该方向今天第 3 个岗位生成对齐+cover letter
+python -m src.tailor --profile ai-risk "https://..." # 或按链接
+python -m src.tailor --title "Director, AI Governance" --company "Acme" --desc "粘贴JD" -o out.md
 ```
 
 生成内容遵守两条硬规则：**只用简历里真实存在的信息**、**自然人话不 AI 味**。
@@ -97,16 +107,18 @@ python -m src.main             # 真正发邮件（需设好 SMTP 环境变量�
 ## 结构
 
 ```
-config.yaml              # 你的方向/技能/过滤/阈值
-profile/resume.md        # 你的真实简历（事实来源）
-src/sources/*.py         # 各平台适配器（都有公开免费 API）
-src/fetch.py             # 汇总抓取 + 去重（单个源失败不影响整体）
-src/score.py             # 第一段：关键词匹配打分（初筛）
-src/ai_score.py          # 第二段：LLM 语义打分（结构化：总分/契合/理由）
-src/digest.py            # 邮件正文（文本 + HTML）
-src/notify_email.py      # SMTP 发送
-src/tailor.py            # OpenAI：ATS 对齐 + cover letter
-src/main.py              # 每日流水线
-.github/workflows/       # 每日定时
-data/                    # 跨天去重状态（自动回写）
+config.yaml                    # 共享设置：数据源/AI打分/邮件/阈值
+profiles/<方向>/profile.yaml    # 各方向的岗位名/技能/过滤/搜索词（覆盖 config.yaml）
+profiles/<方向>/resume.md       # 各方向的简历（事实来源）
+docs/job-search-plan.md        # 针对你三个方向的详细找工作方案
+src/sources/*.py               # 各平台适配器（含 jsearch = LinkedIn/Indeed 聚合）
+src/fetch.py                   # 汇总抓取 + 去重（单个源失败不影响整体）
+src/score.py                   # 第一段：关键词匹配打分（初筛）
+src/ai_score.py                # 第二段：LLM 语义打分（结构化：总分/契合/理由）
+src/digest.py                  # 邮件正文（文本 + HTML）
+src/notify_email.py            # SMTP 发送
+src/tailor.py                  # OpenAI：ATS 对齐 + cover letter
+src/main.py                    # 每日流水线（多 profile）
+.github/workflows/             # 每日定时
+data/<方向>/                    # 各方向跨天去重状态（自动回写）
 ```

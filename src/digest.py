@@ -18,7 +18,7 @@ def _score_label(meta: dict) -> str:
 def build_text(jobs: list[Job], meta: dict, tailored: dict[str, str] | None = None) -> str:
     tailored = tailored or {}
     lines = [
-        f"findjob — 每日岗位精选  {date.today().isoformat()}",
+        f"findjob · {meta.get('label','')} — 每日岗位精选  {date.today().isoformat()}",
         f"扫描 {meta.get('scanned', '?')} 个岗位，匹配 {len(jobs)} 个（{_score_label(meta)}，阈值 {meta.get('min_score')}）",
         "=" * 60,
         "",
@@ -93,7 +93,7 @@ def build_html(jobs: list[Job], meta: dict, tailored: dict[str, str] | None = No
     )
     return f"""<!doctype html><html><body style="margin:0;background:#f6f7f9;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
     <div style="max-width:680px;margin:0 auto;padding:24px 16px">
-      <h1 style="font-size:20px;margin:0 0 4px">findjob · 每日岗位精选</h1>
+      <h1 style="font-size:20px;margin:0 0 4px">findjob · {esc(meta.get('label',''))} · 每日岗位精选</h1>
       <div style="color:#666;font-size:13px;margin-bottom:16px">{date.today().isoformat()} ·
         扫描 {meta.get('scanned','?')} 个 → 匹配 {len(jobs)} 个 · {_score_label(meta)}（阈值 {meta.get('min_score')}）</div>
       <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden">
