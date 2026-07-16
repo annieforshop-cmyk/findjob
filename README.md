@@ -66,10 +66,23 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 
 ## 每天你会收到什么
 
-一封邮件，Top N 个岗位，每个带：**AI 匹配分**、公司/地点/来源、**一句话匹配理由 + 技能/经历分项分**、
-命中技能、「可如实补充的缺口关键词」，和岗位链接。
+**三封邮件**（每个方向一封），Top N 个岗位。每个岗位带一份多维度分析：
+- **AI 匹配分** + 投递建议徽标（建议投 / 可考虑 / 可跳过）
+- **技能 / 职级 / 年限** 三个分项分（职级和年限按你的真实画像判断，不被 title 误导）
+- **一句话匹配理由**、**薪资区间**（JD 有则取，无则市场估算）、**幽灵岗风险**、**公司简评**
+- 命中技能、「可如实补充的缺口关键词」、地点（remote/hybrid/onsite，仅限美国）、链接
+
+打分对你的画像是**多角度**的：内容契合 > title；判断真实职级（senior manager–director 带）；
+匹配 ~10 年经验；只保留美国岗（JD 列多地点、含美国即可）；识别幽灵岗；估算薪资。
+画像写在 `config.yaml` 的 `candidate:`，可随时调。
 
 把 `config.yaml` 的 `auto_tailor_top` 设成 >0（如 3），邮件会为最强的前几个岗位**直接附上 cover letter 草稿**（点开可见），做到"投递就绪"。默认 0（省钱）。
+
+### 数据源覆盖 & 配额
+- **JSearch**（走 Google for Jobs）一个源就覆盖 **LinkedIn / Indeed / Glassdoor / ZipRecruiter / Ladders / Built In / Dice / Wellfound** 等主流板——不用逐站爬。
+- **Adzuna** 作第二聚合源补充。
+- 注意配额：JSearch 免费档约 200 次/月，每个 `queries` 词 = 1 次调用。三方向共 ~24 词 × 每天 ≈ 超免费档；
+  可（a）减少 `queries`，或（b）升 JSearch 便宜付费档，或（c）主要靠 Adzuna（免费档 ~250 次/天，更宽松）。
 
 ## 对某个岗位深度加工
 
@@ -85,6 +98,28 @@ python -m src.tailor --title "Director, AI Governance" --company "Acme" --desc "
 ```
 
 生成内容遵守两条硬规则：**只用简历里真实存在的信息**、**自然人话不 AI 味**。
+
+---
+
+## 用法速查：我之后要怎么调用这些 agent？
+
+平时你**什么都不用做**——GitHub Actions 每天自动跑、自动发三封邮件。只有想深度加工某个岗位时才动手：
+
+**1) 每日找 job + 多维匹配（自动，也可手动触发）**
+- 自动：每天定时跑；或到 GitHub 仓库 Actions 页点 **Run workflow** 立即跑一次。
+- 本地手动：`python -m src.main`（全部方向）或 `python -m src.main --profile ai-governance`（单方向）。
+
+**2) 改简历 + 写 cover letter（投某个岗位前用）**
+```bash
+python -m src.tailor --profile ai-governance 3        # 对该方向今天邮件里第 3 个岗位
+python -m src.tailor --profile internal-audit "https://…链接的一部分"
+python -m src.tailor --title "IT Audit Director" --company "Acme" --desc "整段粘贴JD" -o out.md
+```
+输出：① ATS 关键词对齐（哪些词你有、用 JD 的措辞对齐；哪些是缺口）② 一封 cover letter 草稿。
+你人肉微调几句 → 用 **Simplify** 浏览器插件自动填表、**你自己点提交**（不做自动投递）。
+
+**3) 调方向/技能/搜索词**：编辑 `profiles/<方向>/profile.yaml`，commit 即生效。
+**4) 调你的画像（职级/年限/地点偏好）**：编辑 `config.yaml` 的 `candidate:`。
 
 ## 本地手动跑
 

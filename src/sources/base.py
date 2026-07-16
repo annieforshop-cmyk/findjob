@@ -48,11 +48,18 @@ class Job:
     matched: list[str] = field(default_factory=list)
     missing: list[str] = field(default_factory=list)
 
-    # filled in by the LLM semantic scorer (ai_score.py); -1 = not AI-scored
-    ai_score: float = -1.0
-    ai_skills: float = -1.0
-    ai_experience: float = -1.0
-    ai_reason: str = ""
+    # filled in by the LLM semantic analyst (ai_score.py); -1 = not AI-scored
+    ai_score: float = -1.0          # overall fit 0-100
+    ai_skills: float = -1.0         # skill/content fit
+    ai_seniority: float = -1.0      # level fit (vs candidate's real seniority band)
+    ai_years_fit: float = -1.0      # years-of-experience fit
+    ai_reason: str = ""             # one-line why
+    ai_recommendation: str = ""     # apply / maybe / skip
+    ai_location_ok: bool = True     # US-based & commute/remote acceptable
+    ai_location_note: str = ""
+    ai_salary: str = ""             # extracted or estimated range
+    ai_ghost_risk: str = ""         # low / medium / high
+    ai_company_note: str = ""       # brief reputation/context
 
     @property
     def id(self) -> str:
@@ -76,6 +83,16 @@ class Job:
         d = asdict(self)
         d["id"] = self.id
         return d
+
+
+def get_queries(cfg: dict) -> list[str]:
+    """Search terms used by all aggregator sources (jsearch / adzuna).
+    Prefer the profile's top-level `queries`, then jsearch.queries, then titles."""
+    return (
+        cfg.get("queries")
+        or (cfg.get("jsearch", {}) or {}).get("queries")
+        or cfg.get("target_titles", [])[:3]
+    )
 
 
 def get_json(url: str, params: dict | None = None, headers: dict | None = None) -> Any:

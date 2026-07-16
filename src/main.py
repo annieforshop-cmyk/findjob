@@ -100,7 +100,11 @@ def run_profile(profile: str | None, dry_run: bool) -> int:
         used_ai = False
 
     min_score = cfg.get("min_score", 25)
-    ranked = sorted([j for j in candidates if j.rank_score >= min_score], key=lambda j: j.rank_score, reverse=True)
+    ranked = sorted(
+        [j for j in candidates if j.rank_score >= min_score and j.ai_location_ok],
+        key=lambda j: j.rank_score,
+        reverse=True,
+    )
     top = ranked[: cfg.get("top_n", 25)]
     for j in top:
         seen[j.id] = now

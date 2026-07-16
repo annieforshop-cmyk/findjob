@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import os
 
-from .base import Job, clean_html, get_json
+from .base import Job, clean_html, get_json, get_queries
 
 HOST = "jsearch.p.rapidapi.com"
 
@@ -22,9 +22,10 @@ def fetch(cfg: dict) -> list[Job]:
         raise RuntimeError("jsearch enabled but RAPIDAPI_KEY not set")
 
     jcfg = cfg.get("jsearch", {}) or {}
-    queries = jcfg.get("queries") or cfg.get("target_titles", [])[:2]
+    queries = get_queries(cfg)
     num_pages = int(jcfg.get("num_pages", 1))
     remote_only = bool(cfg.get("remote_only", False))
+    country = jcfg.get("country", "us")
     headers = {"X-RapidAPI-Key": key, "X-RapidAPI-Host": HOST}
 
     jobs: list[Job] = []
@@ -32,9 +33,10 @@ def fetch(cfg: dict) -> list[Job]:
         data = get_json(
             f"https://{HOST}/search",
             params={
-                "query": q,
+                "query": f"{q} in USA" if "in " not in q.lower() else q,
                 "page": 1,
                 "num_pages": num_pages,
+                "country": country,
                 "date_posted": jcfg.get("date_posted", "week"),
                 "remote_jobs_only": "true" if remote_only else "false",
             },

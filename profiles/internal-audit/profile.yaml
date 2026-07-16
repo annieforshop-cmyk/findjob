@@ -3,59 +3,92 @@ label: Internal Audit
 target_titles:
   - internal audit
   - internal audit manager
+  - internal audit senior manager
+  - internal audit director
   - audit director
   - audit manager
+  - audit senior manager
   - senior internal auditor
   - it audit
+  - it audit manager
+  - technology audit
   - audit vice president
+  - vp internal audit
   - head of internal audit
   - compliance audit
+  - operational audit
+
+queries:
+  - Internal Audit Manager
+  - Internal Audit Senior Manager
+  - Internal Audit Director
+  - IT Audit Manager
+  - Audit Vice President financial services
+  - Technology Audit Manager
+  - Compliance Audit Manager
+  - Head of Internal Audit
 
 skills:
   - internal audit
   - global compliance audit
   - risk-based audit
+  - audit plan
   - risk assessment
   - continuous monitoring
   - control testing
+  - control design
+  - walkthrough
   - sox
+  - sarbanes-oxley
   - coso
   - pcaob
+  - icfr
   - internal controls
   - regulatory reporting
+  - regulatory compliance
   - model risk
   - enterprise risk
+  - operational risk
+  - issue remediation
   - remediation
+  - audit report
+  - workpaper
   - stakeholder management
+  - executive reporting
   - data analytics
   - tableau
   - genai
   - agentic ai
-  - financial services
-  - cpa
+  - ai governance
   - broker-dealer
+  - trading
+  - treasury
+  - financial services
+  - banking
+  - cpa
 
 must_have: []
 nice_to_have:
   - director
+  - senior manager
   - vp
   - manager
-  - senior
+  - head of
   - financial services
   - banking
+  - investment
+  - insurance
 
 exclude_keywords:
   - intern
   - internship
   - unpaid
+  - entry level
   - staff accountant
   - bookkeeper
+  - tax preparer
   - software engineer
+  - security clearance required
+  - ts/sci
 
 min_score: 30
-
-jsearch:
-  queries:
-    - Internal Audit Manager
-    - IT Audit Director
-    - Audit Vice President financial services

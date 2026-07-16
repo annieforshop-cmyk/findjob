@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 
-from .base import Job, clean_html, get_json
+from .base import Job, clean_html, get_json, get_queries
 
 
 def fetch(cfg: dict) -> list[Job]:
@@ -18,30 +18,32 @@ def fetch(cfg: dict) -> list[Job]:
 
     acfg = cfg.get("adzuna", {}) or {}
     country = acfg.get("country", "us")
-    data = get_json(
-        f"https://api.adzuna.com/v1/api/jobs/{country}/search/1",
-        params={
-            "app_id": app_id,
-            "app_key": app_key,
-            "what": acfg.get("what", " ".join(cfg.get("target_titles", [])[:1])),
-            "results_per_page": acfg.get("results_per_page", 50),
-            "content-type": "application/json",
-        },
-    )
+    per_page = acfg.get("results_per_page", 50)
     jobs: list[Job] = []
-    for item in data.get("results", []):
-        loc = ((item.get("location") or {}).get("display_name")) or ""
-        jobs.append(
-            Job(
-                source="Adzuna",
-                title=item.get("title", ""),
-                company=((item.get("company") or {}).get("display_name")) or "",
-                url=item.get("redirect_url", ""),
-                description=clean_html(item.get("description", "")),
-                location=loc,
-                remote="remote" in (loc + item.get("title", "")).lower(),
-                tags=[((item.get("category") or {}).get("label")) or ""],
-                posted=(item.get("created", "") or "")[:10],
-            )
+    for q in get_queries(cfg):
+        data = get_json(
+            f"https://api.adzuna.com/v1/api/jobs/{country}/search/1",
+            params={
+                "app_id": app_id,
+                "app_key": app_key,
+                "what": q,
+                "results_per_page": per_page,
+                "content-type": "application/json",
+            },
         )
+        for item in data.get("results", []):
+            loc = ((item.get("location") or {}).get("display_name")) or ""
+            jobs.append(
+                Job(
+                    source="Adzuna",
+                    title=item.get("title", ""),
+                    company=((item.get("company") or {}).get("display_name")) or "",
+                    url=item.get("redirect_url", ""),
+                    description=clean_html(item.get("description", "")),
+                    location=loc,
+                    remote="remote" in (loc + item.get("title", "")).lower(),
+                    tags=[((item.get("category") or {}).get("label")) or ""],
+                    posted=(item.get("created", "") or "")[:10],
+                )
+            )
     return jobs

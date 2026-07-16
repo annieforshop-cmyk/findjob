@@ -4,6 +4,29 @@
 #  放在 profiles/<方向>/profile.yaml 里，会覆盖这里的同名项。
 # ============================================================
 
+# ---- 候选人画像（所有 profile 共享，喂给 LLM 做多维分析）------
+# 让打分系统全面、多角度地判断"是否适合"，而不是只看 title 或关键词。
+candidate:
+  summary: >-
+    Candidate has ~10 years total professional experience and ~8 years in
+    banking / financial-services INTERNAL AUDIT, plus enterprise risk, compliance
+    and (recent) AI governance / AI risk. CPA; MSA (Master of Accounting);
+    studying for AIGP (candidate, in progress). Current TITLE is 'Director' at a
+    major investment bank, but the REAL seniority band is roughly audit
+    SENIOR MANAGER to Director — so judge roles by the described scope of work,
+    not by the title word. Best fit: senior manager / director / VP-level roles
+    in internal audit, AI governance, AI risk, model risk, and enterprise/tech
+    risk, ideally at banks, asset managers, insurers, Big-4/consulting, or large
+    regulated tech companies. Authorized to work in the US and does NOT need
+    visa sponsorship. Open to REMOTE, HYBRID, or ONSITE anywhere in the United
+    States — location is fine as long as the role is US-based (if a posting lists
+    multiple locations and any are in the US, that is acceptable). Not open to
+    non-US-only roles. Hands-on with GenAI tools (Copilot, Claude Code, ChatGPT,
+    Gemini) and agentic AI workflows.
+  years_total: 10
+  years_bank_internal_audit: 8
+  work_authorization: US authorized, no sponsorship needed
+
 # 只保留最终排名分 >= 这个阈值的岗位（0-100）。可被 profile 覆盖。
 min_score: 30
 
@@ -37,8 +60,8 @@ sources:
   weworkremotely: false
   jobicy: false
   hackernews: false
-  adzuna: false             # 需 ADZUNA_APP_ID / ADZUNA_APP_KEY
-  jsearch: true             # ⭐ 主力：LinkedIn/Indeed/Glassdoor/ZipRecruiter 聚合，需 RAPIDAPI_KEY
+  adzuna: true              # 第二聚合源，需 ADZUNA_APP_ID / ADZUNA_APP_KEY（免费）
+  jsearch: true             # ⭐ 主力：Google-for-Jobs 聚合 LinkedIn/Indeed/Glassdoor/ZipRecruiter/Ladders/BuiltIn/Dice/Wellfound，需 RAPIDAPI_KEY
 
 # JSearch 默认参数（queries 在各 profile 里定义）
 jsearch:

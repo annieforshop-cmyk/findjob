@@ -3,13 +3,29 @@ label: AI Risk
 target_titles:
   - ai risk
   - ai risk manager
+  - ai risk senior manager
+  - ai risk director
+  - director ai risk
+  - vp ai risk
+  - head of ai risk
   - ai model risk
   - model risk
+  - model risk manager
   - ai risk and controls
   - ai risk management
-  - director ai risk
   - responsible ai risk
   - technology risk
+  - tech risk ai
+
+queries:
+  - AI Risk Management
+  - AI Risk Manager
+  - AI Risk Director
+  - Model Risk AI
+  - Model Risk Manager
+  - Technology Risk AI
+  - Responsible AI Risk
+  - AI Model Risk Management
 
 skills:
   - ai risk
@@ -19,42 +35,54 @@ skills:
   - iso 42001
   - eu ai act
   - model risk
+  - model risk management
+  - model validation
+  - model governance
   - risk assessment
   - risk guardrails
+  - risk framework
   - responsible ai
   - ai governance
+  - ai controls
   - continuous monitoring
   - regulatory compliance
   - internal controls
   - enterprise risk
+  - operational risk
+  - technology risk
   - remediation roadmap
+  - issue remediation
   - data analytics
   - agentic ai
   - genai
+  - generative ai
+  - llm
   - financial services
+  - banking
   - cpa
 
 must_have: []
 nice_to_have:
   - director
+  - senior manager
   - vp
-  - senior
   - lead
+  - head of
   - financial services
   - banking
+  - insurance
 
 exclude_keywords:
   - intern
   - internship
   - unpaid
+  - entry level
   - machine learning engineer
   - software engineer
   - data scientist
+  - data engineer
+  - research scientist
+  - security clearance required
+  - ts/sci
 
 min_score: 30
-
-jsearch:
-  queries:
-    - AI Risk Management
-    - Model Risk AI
-    - Technology Risk Responsible AI

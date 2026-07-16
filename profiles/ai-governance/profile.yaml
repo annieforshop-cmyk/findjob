@@ -1,20 +1,39 @@
 label: AI Governance
 
+# 现实职级带（不只 director）——匹配主要靠 JD 内容，title 只是轻信号
 target_titles:
   - ai governance
   - responsible ai
   - ai governance lead
   - ai governance manager
+  - ai governance senior manager
+  - ai governance director
   - director ai governance
+  - head of ai governance
+  - vp ai governance
   - ai policy
   - ai compliance
   - ai risk and governance
-  - head of ai governance
+  - ai assurance
+  - ai trust and safety governance
+  - ai ethics
 
-# 你真实拥有的技能/关键词（来自简历，用于内容匹配）
+# 搜索词：喂给 jsearch + adzuna 两个聚合源（覆盖 LinkedIn/Indeed/Glassdoor 等）
+queries:
+  - AI Governance
+  - Responsible AI
+  - AI Governance Manager
+  - AI Governance Director
+  - AI Risk and Compliance
+  - AI Policy
+  - AI Assurance
+  - Head of AI Governance
+
+# 你真实拥有的技能/关键词（内容匹配主力，尽量全）
 skills:
   - ai governance
   - responsible ai
+  - ai assurance
   - nist ai rmf
   - eu ai act
   - iso 42001
@@ -22,41 +41,57 @@ skills:
   - ai risk assessment
   - ai risk management
   - ai policy
+  - ai controls
+  - ai onboarding
   - model risk
+  - model governance
   - governance framework
   - regulatory compliance
+  - compliance
   - enterprise risk
+  - risk management
   - internal controls
+  - internal audit
   - audit
+  - control testing
   - data governance
   - continuous monitoring
+  - regulatory reporting
+  - third party risk
   - stakeholder management
+  - executive reporting
   - genai
+  - generative ai
   - agentic ai
+  - llm
   - financial services
+  - banking
   - cpa
+  - aigp
 
 must_have: []
 nice_to_have:
   - director
+  - senior manager
   - vp
-  - senior
   - lead
+  - head of
   - financial services
+  - banking
+  - insurance
+  - asset management
 
-# 排除明显不符的（初级/无关方向）
 exclude_keywords:
   - intern
   - internship
   - unpaid
+  - entry level
   - machine learning engineer
   - software engineer
   - data engineer
+  - prompt engineer
+  - research scientist
+  - security clearance required
+  - ts/sci
 
 min_score: 30
-
-jsearch:
-  queries:
-    - AI Governance
-    - Responsible AI
-    - AI Risk and Compliance
