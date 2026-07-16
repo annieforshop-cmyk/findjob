@@ -9,6 +9,10 @@
 
 ## 它能做 / 不能做（先说清楚）
 
+**打分是两段式**：先用关键词撒大网初筛（便宜），再用 **LLM 语义打分**只对候选深度评估——
+读懂 JD 描述的"实际工作内容"是否和你简历吻合，即使用词不同也能识别，这才是"看内容不看 title"。
+输出结构化的总分/技能契合/经历契合/一句话理由。没有 OpenAI key 时自动退回纯关键词打分，不影响运行。
+
 **能：** 从有公开免费 API 的平台稳定拉岗位并智能匹配：
 RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who is hiring"，
 以及可选的 **Adzuna**（聚合器，含部分 Indeed 来源，需免费 key）。
@@ -23,7 +27,7 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 ## 三步启用
 
 ### 1. 放入你的简历 + 配置方向
-- 编辑 `profile/resume.md`：**整段替换**成你真实的简历（越全越好，这是匹配和写求职信的事实来源）。
+- 简历二选一：**放 PDF** 到 `profile/resume.pdf`（自动抽取文本，更省事），或编辑 `profile/resume.md` **整段替换**成你真实简历。PDF 优先。这是匹配和写求职信的事实来源，越全越好。
 - 编辑 `config.yaml`：`target_titles`（想要的岗位叫法）、`skills`（你真实的技能）、
   `exclude_keywords`（不想要的）、`remote_only`、`min_score`（匹配阈值）等。
 
@@ -53,8 +57,10 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 
 ## 每天你会收到什么
 
-一封邮件，Top N 个岗位，每个带：分数、公司/地点/来源、**命中的技能**、
-以及「JD 提到但你简历还没体现、可如实补充的关键词」，和岗位链接。
+一封邮件，Top N 个岗位，每个带：**AI 匹配分**、公司/地点/来源、**一句话匹配理由 + 技能/经历分项分**、
+命中技能、「可如实补充的缺口关键词」，和岗位链接。
+
+把 `config.yaml` 的 `auto_tailor_top` 设成 >0（如 3），邮件会为最强的前几个岗位**直接附上 cover letter 草稿**（点开可见），做到"投递就绪"。默认 0（省钱）。
 
 ## 对某个岗位深度加工
 
@@ -95,7 +101,8 @@ config.yaml              # 你的方向/技能/过滤/阈值
 profile/resume.md        # 你的真实简历（事实来源）
 src/sources/*.py         # 各平台适配器（都有公开免费 API）
 src/fetch.py             # 汇总抓取 + 去重（单个源失败不影响整体）
-src/score.py             # 基于内容的匹配打分
+src/score.py             # 第一段：关键词匹配打分（初筛）
+src/ai_score.py          # 第二段：LLM 语义打分（结构化：总分/契合/理由）
 src/digest.py            # 邮件正文（文本 + HTML）
 src/notify_email.py      # SMTP 发送
 src/tailor.py            # OpenAI：ATS 对齐 + cover letter

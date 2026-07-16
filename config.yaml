@@ -53,8 +53,23 @@ locations:                  # 若 remote_only=false，命中这些地点加分�
   - united states
   - remote
 
-# 只保留分数 >= 这个阈值的岗位（0-100）
+# 只保留最终排名分 >= 这个阈值的岗位（0-100）
+# 开了 ai_scoring 时，这个阈值作用在 LLM 总分上；否则作用在关键词分上。
 min_score: 25
+
+# ---- LLM 语义打分（推荐开）----------------------------------
+# 关键词只能匹配"字面命中"；LLM 能读懂 JD 描述的"实际工作内容"是否和你简历吻合，
+# 即使用词不同也能识别——这正是"看内容不看 title"。需要 OPENAI_API_KEY。
+# 两段式控成本：先用关键词撒大网初筛，只把候选送 LLM 深度打分。
+ai_scoring:
+  enabled: true
+  model: gpt-4o-mini        # 打分用便宜模型足够；追求更准可换 gpt-4o
+  max_candidates: 40        # 关键词初筛后最多送多少个给 LLM（控成本）
+  prefilter_min_score: 8    # 关键词初筛阈值（放宽，尽量别漏）
+
+# 每天给最匹配的前 N 个岗位自动生成 cover letter 草稿并附在邮件里。
+# 0 = 关闭（默认，省钱）；设 3 就是给最强的 3 个自动写好草稿。
+auto_tailor_top: 0
 
 # 每天邮件里最多展示多少个岗位
 top_n: 25

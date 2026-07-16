@@ -43,16 +43,27 @@ class Job:
     tags: list[str] = field(default_factory=list)
     posted: str = ""  # ISO date string if known
 
-    # filled in by the scorer
+    # filled in by the keyword scorer
     score: float = 0.0
     matched: list[str] = field(default_factory=list)
     missing: list[str] = field(default_factory=list)
+
+    # filled in by the LLM semantic scorer (ai_score.py); -1 = not AI-scored
+    ai_score: float = -1.0
+    ai_skills: float = -1.0
+    ai_experience: float = -1.0
+    ai_reason: str = ""
 
     @property
     def id(self) -> str:
         """Stable id for cross-day dedupe. Prefer URL, fall back to title+company."""
         basis = (self.url or f"{self.title}|{self.company}").strip().lower()
         return hashlib.sha1(basis.encode("utf-8")).hexdigest()[:16]
+
+    @property
+    def rank_score(self) -> float:
+        """AI fit if it ran, otherwise the keyword score."""
+        return self.ai_score if self.ai_score >= 0 else self.score
 
     @property
     def blob(self) -> str:
