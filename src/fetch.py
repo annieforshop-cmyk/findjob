@@ -15,6 +15,7 @@ REGISTRY = {
     "jobicy": "jobicy",
     "hackernews": "hackernews",
     "adzuna": "adzuna",
+    "jsearch": "jsearch",
 }
 
 

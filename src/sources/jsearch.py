@@ -1,0 +1,62 @@
+"""JSearch (RapidAPI) — aggregates Google-for-Jobs results, which include
+LinkedIn, Indeed, Glassdoor and ZipRecruiter postings.
+
+This is the clean, ToS-respecting way to get "LinkedIn / Indeed" coverage
+without scraping. Requires a free RapidAPI key:
+  1. Sign up at rapidapi.com, subscribe to "JSearch" (has a free tier).
+  2. Set RAPIDAPI_KEY as an env var / GitHub Secret.
+  3. In config.yaml set sources.jsearch=true and list jsearch.queries.
+"""
+from __future__ import annotations
+
+import os
+
+from .base import Job, clean_html, get_json
+
+HOST = "jsearch.p.rapidapi.com"
+
+
+def fetch(cfg: dict) -> list[Job]:
+    key = os.environ.get("RAPIDAPI_KEY")
+    if not key:
+        raise RuntimeError("jsearch enabled but RAPIDAPI_KEY not set")
+
+    jcfg = cfg.get("jsearch", {}) or {}
+    queries = jcfg.get("queries") or cfg.get("target_titles", [])[:2]
+    num_pages = int(jcfg.get("num_pages", 1))
+    remote_only = bool(cfg.get("remote_only", False))
+    headers = {"X-RapidAPI-Key": key, "X-RapidAPI-Host": HOST}
+
+    jobs: list[Job] = []
+    for q in queries:
+        data = get_json(
+            f"https://{HOST}/search",
+            params={
+                "query": q,
+                "page": 1,
+                "num_pages": num_pages,
+                "date_posted": jcfg.get("date_posted", "week"),
+                "remote_jobs_only": "true" if remote_only else "false",
+            },
+            headers=headers,
+        )
+        for item in data.get("data", []):
+            city = item.get("job_city") or ""
+            state = item.get("job_state") or ""
+            country = item.get("job_country") or ""
+            loc = ", ".join(p for p in (city, state, country) if p)
+            publisher = item.get("job_publisher") or "JSearch"
+            jobs.append(
+                Job(
+                    source=f"{publisher} (via JSearch)",
+                    title=item.get("job_title", ""),
+                    company=item.get("employer_name", ""),
+                    url=item.get("job_apply_link", "") or item.get("job_google_link", ""),
+                    description=clean_html(item.get("job_description", "")),
+                    location=loc or ("Remote" if item.get("job_is_remote") else ""),
+                    remote=bool(item.get("job_is_remote")),
+                    tags=[item.get("job_employment_type", "") or ""],
+                    posted=(item.get("job_posted_at_datetime_utc", "") or "")[:10],
+                )
+            )
+    return jobs

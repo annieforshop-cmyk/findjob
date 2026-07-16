@@ -87,9 +87,18 @@ sources:
   jobicy: true
   hackernews: true        # HN "Who is hiring" 每月帖，命中较杂但信息量大
   adzuna: false           # 需要免费 ADZUNA_APP_ID / ADZUNA_APP_KEY（含部分 Indeed 来源）
+  jsearch: false          # ⭐ LinkedIn/Indeed/Glassdoor/ZipRecruiter 聚合，需 RAPIDAPI_KEY
 
 # Adzuna 专用（sources.adzuna=true 时生效）
 adzuna:
   country: us             # us / gb / ca 等
   what: data scientist    # 搜索词
   results_per_page: 50
+
+# JSearch 专用（sources.jsearch=true 时生效，需 RAPIDAPI_KEY）
+jsearch:
+  queries:                # 每个方向一条搜索词，直达 LinkedIn/Indeed 等来源
+    - AI governance
+    - internal audit
+  num_pages: 1            # 每条查询抓几页（免费额度有限，先 1）
+  date_posted: week       # all / today / 3days / week / month
