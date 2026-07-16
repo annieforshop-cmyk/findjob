@@ -1,0 +1,80 @@
+# ============================================================
+#  findjob — 每日岗位搜索配置
+#  所有匹配/过滤都基于这里的内容 + profile/resume.md
+#  改完直接 commit，GitHub Actions 第二天就用新配置。
+# ============================================================
+
+# 你想要的岗位方向（用于标题相关性）。写你能接受的所有叫法/同义词。
+target_titles:
+  - data scientist
+  - data analyst
+  - machine learning engineer
+  - analytics engineer
+  - business intelligence
+
+# 你的核心技能 / 关键词（匹配的主力）。
+# 建议从简历里真实拥有的技能抄过来，越全越好。大小写不敏感。
+skills:
+  - python
+  - sql
+  - pandas
+  - machine learning
+  - statistics
+  - a/b testing
+  - tableau
+  - power bi
+  - etl
+  - data visualization
+  - deep learning
+  - nlp
+  - spark
+  - aws
+  - dbt
+  - snowflake
+
+# 必须命中的关键词（任意一个不命中就直接淘汰）。留空表示不强制。
+must_have: []
+
+# 加分项（命中会提高分数，但不强制）。
+nice_to_have:
+  - remote
+  - senior
+
+# 出现这些词就直接排除（比如你不想要的方向）。
+exclude_keywords:
+  - unpaid
+  - internship
+  - clearance required
+  - sales representative
+
+# 地点 / remote 设置
+remote_only: true          # true = 只要 remote 岗位
+locations:                  # 若 remote_only=false，命中这些地点加分；留空不限
+  - united states
+  - remote
+
+# 只保留分数 >= 这个阈值的岗位（0-100）
+min_score: 25
+
+# 每天邮件里最多展示多少个岗位
+top_n: 25
+
+# 是否只推送"今天新出现"的岗位（跨天去重）。
+# true = 每天只看新岗位，不重复轰炸你。
+new_only: true
+
+# 启用哪些数据源（有公开免费 API 的）
+sources:
+  remoteok: true
+  remotive: true
+  arbeitnow: true
+  weworkremotely: true
+  jobicy: true
+  hackernews: true        # HN "Who is hiring" 每月帖，命中较杂但信息量大
+  adzuna: false           # 需要免费 ADZUNA_APP_ID / ADZUNA_APP_KEY（含部分 Indeed 来源）
+
+# Adzuna 专用（sources.adzuna=true 时生效）
+adzuna:
+  country: us             # us / gb / ca 等
+  what: data scientist    # 搜索词
+  results_per_page: 50

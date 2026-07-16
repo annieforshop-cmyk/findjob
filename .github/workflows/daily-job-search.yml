@@ -1,0 +1,51 @@
+name: daily-job-search
+
+on:
+  schedule:
+    # 每天 UTC 13:00 运行 ≈ 美东上午 8/9 点。改这里调整时间（cron 用 UTC）。
+    - cron: "0 13 * * *"
+  workflow_dispatch: {}   # 也可在 Actions 页面手动点一下运行
+
+permissions:
+  contents: write         # 允许把 data/seen.json 回写提交
+
+concurrency:
+  group: daily-job-search
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Run daily search + email
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+        run: python -m src.main
+
+      - name: Persist dedupe state
+        run: |
+          git config user.name "findjob-bot"
+          git config user.email "actions@github.com"
+          git add data/seen.json data/last_run.json 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update dedupe state [skip ci]"
+            git push
+          else
+            echo "no state change"
+          fi
