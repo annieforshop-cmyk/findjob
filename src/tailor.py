@@ -42,6 +42,12 @@ USER_TMPL = """CANDIDATE RESUME (the only source of truth about them):
 {resume}
 \"\"\"
 
+CANDIDATE'S STAR STORY LIBRARY (pre-written real material — reuse the most
+relevant details/framings instead of inventing; ignore [bracketed] placeholders):
+\"\"\"
+{stories}
+\"\"\"
+
 TARGET JOB
 Title: {title}
 Company: {company}
@@ -99,8 +105,15 @@ def generate(resume: str, job: dict) -> str:
 
     client = OpenAI()
     model = os.environ.get("OPENAI_MODEL", "gpt-4o")
+    try:
+        from . import stories as story_lib
+        story_block = story_lib.as_prompt_block(
+            story_lib.select(job.get("description", "") or job.get("title", ""), k=3))
+    except Exception:
+        story_block = ""
     prompt = USER_TMPL.format(
         resume=resume.strip() or "(resume is empty — fill profile/resume.md)",
+        stories=story_block or "(no story library yet)",
         title=job.get("title", ""),
         company=job.get("company", ""),
         desc=(job.get("description", "") or "")[:6000],

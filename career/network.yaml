@@ -1,0 +1,46 @@
+# ============================================================
+#  Networking — 校友 / 前同事 / 二度人脉 → Referral
+#  Networking Agent (src/network.py) 用这里的信息为每个高分岗位
+#  自动生成"该联系谁"的 LinkedIn 精准搜索链接 + 破冰消息草稿。
+#  Referral 的响应率是海投的 5-10 倍——每天 2 条精准触达 > 20 份海投。
+# ============================================================
+
+# 你的校友网络（生成 school alumni-at-company 搜索链接用）
+schools:
+  - name: Clark University
+    linkedin_school: clark-university
+  - name: Shanghai University
+    linkedin_school: shanghai-university
+
+# 你的前雇主（老同事现在遍布各大机构 = 最强内推网络）
+past_companies:
+  - name: Morgan Stanley
+    note: 现雇主——离职前谨慎使用
+  - name: BNY Mellon
+    note: 2018-2020 同事现在散布各大银行
+  - name: KPMG
+    note: 转包做过 COSO 测试，可提"worked on KPMG engagements"
+  - name: Wei, Wei & Co (BDO Alliance)
+    note: 早期公所同事
+
+# 在目标公司里优先找这些职位的人（决策者 + 未来同事）
+target_roles:
+  - Chief Audit Executive
+  - Head of Internal Audit
+  - AI Governance
+  - Responsible AI
+  - Model Risk
+  - Head of AI Risk
+  - Audit Director
+  - Technology Audit
+
+# 已建立的真实人脉（手动维护；Brief 会提醒长期未联系的）
+contacts: []
+#  - name: John Smith
+#    company: Citi
+#    role: Audit Director
+#    relationship: BNY 前同事
+#    linkedin: https://www.linkedin.com/in/xxxx
+#    last_contact: 2026-06-15
+#    can_refer: true
+#    notes: 说过内部有 AI audit 岗位在开

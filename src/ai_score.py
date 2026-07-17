@@ -22,7 +22,7 @@ import sys
 
 from .sources.base import Job
 
-BATCH = 4
+BATCH = 3  # more JSON per job in Fit Score v2 → smaller batches keep output reliable
 JD_CHARS = 1900
 
 SYSTEM = """You are a senior career analyst evaluating job fit for one specific
@@ -33,6 +33,9 @@ Return ONLY valid JSON."""
 
 USER_TMPL = """CANDIDATE PROFILE:
 {candidate}
+
+CANDIDATE'S 3-5 YEAR CAREER GOAL (judge career_path_fit against THIS):
+{career_goal}
 
 CANDIDATE RESUME (source of truth on skills/experience):
 \"\"\"
@@ -49,6 +52,23 @@ Analyze each job for THIS candidate and return JSON:
         really an IC, or a 'VP' needing 20 yrs, should score lower>,
     "years_fit": <0-100 fit vs the candidate's ~10 yrs total / ~8 yrs bank
         internal audit; roles wanting far more or far less score lower>,
+    "industry_fit": <0-100 how well the employer's industry leverages the
+        candidate's banking / financial-services / regulated-industry depth>,
+    "leadership_fit": <0-100 does the role's people/program-leadership scope match
+        someone who leads reviews, mentors staff, and presents to executives>,
+    "ai_governance_fit": <0-100 how central AI governance / responsible AI /
+        AI risk is to the described work (not just a buzzword mention)>,
+    "growth_fit": <0-100 learning & growth upside: new scope, visibility,
+        emerging-domain exposure vs a lateral repeat of what they already do>,
+    "comp_fit": <0-100 likely comp attractiveness vs a senior-manager/director
+        band in US financial services (~$180k+ base equivalent)>,
+    "career_path_fit": <0-100 how much THIS role advances the stated 3-5 year
+        goal — stepping-stone value, brand, scope trajectory — not just today's pay>,
+    "stability": "<low|medium|high RISK — high if the company/sector has known
+        layoffs, distress, or heavy role churn; low if stable/growing. If unknown, 'medium'>",
+    "recruiter_odds": <0-100 realistic odds this application gets a recruiter
+        response: penalize huge applicant pools, inflated requirements vs the
+        candidate, stale posts; boost niche fits where the candidate is rare>,
     "location_ok": <true if the role can be done from a US location the candidate
         accepts — remote, hybrid, or onsite ANYWHERE in the US. If the JD lists
         multiple locations and any is in the US, true. Non-US-only => false>,
@@ -62,6 +82,21 @@ Analyze each job for THIS candidate and return JSON:
 ]}}
 Include one entry per job id. JOBS:
 {jobs}"""
+
+# composite Fit Score weights — overridable via config `fit_weights:`
+DEFAULT_WEIGHTS = {
+    "overall": 0.20,
+    "skills": 0.16,
+    "seniority": 0.08,
+    "industry": 0.10,
+    "leadership": 0.06,
+    "ai_governance": 0.10,
+    "career_path": 0.12,
+    "growth": 0.05,
+    "comp": 0.05,
+    "recruiter_odds": 0.08,
+}
+STABILITY_ADJ = {"low": +3.0, "medium": 0.0, "high": -8.0}  # low RISK is a bonus
 
 
 def _client():
@@ -81,7 +116,16 @@ def _candidate_ctx(cfg: dict) -> str:
     return "Experienced professional; judge by resume."
 
 
-def _score_batch(client, model: str, candidate: str, resume: str, batch: list[Job]) -> dict[str, dict]:
+def _career_goal(cfg: dict) -> str:
+    goal = (cfg.get("career_goal") or "").strip()
+    if goal:
+        return goal
+    return ("Grow into a Head / Director of AI Governance role at a major "
+            "regulated institution within 3-5 years.")
+
+
+def _score_batch(client, model: str, candidate: str, career_goal: str,
+                 resume: str, batch: list[Job]) -> dict[str, dict]:
     payload = [
         {"id": j.id, "title": j.title, "company": j.company,
          "location": j.location, "description": (j.description or "")[:JD_CHARS]}
@@ -95,6 +139,7 @@ def _score_batch(client, model: str, candidate: str, resume: str, batch: list[Jo
             {"role": "system", "content": SYSTEM},
             {"role": "user", "content": USER_TMPL.format(
                 candidate=candidate,
+                career_goal=career_goal,
                 resume=resume.strip()[:6000] or "(empty resume)",
                 jobs=json.dumps(payload, ensure_ascii=False),
             )},
@@ -104,11 +149,53 @@ def _score_batch(client, model: str, candidate: str, resume: str, batch: list[Jo
     return {r["id"]: r for r in data.get("results", []) if "id" in r}
 
 
-def _apply(job: Job, r: dict) -> None:
+def compute_composite(job: Job, weights: dict | None = None) -> float:
+    """Weighted Fit Score from all scored dimensions + stability adjustment."""
+    w = {**DEFAULT_WEIGHTS, **(weights or {})}
+    parts = {
+        "overall": job.ai_score,
+        "skills": job.ai_skills,
+        "seniority": job.ai_seniority,
+        "industry": job.ai_industry,
+        "leadership": job.ai_leadership,
+        "ai_governance": job.ai_gov,
+        "career_path": job.ai_career,
+        "growth": job.ai_growth,
+        "comp": job.ai_comp,
+        "recruiter_odds": job.ai_recruiter_odds,
+    }
+    num = den = 0.0
+    for k, v in parts.items():
+        if v >= 0 and w.get(k, 0) > 0:
+            num += w[k] * v
+            den += w[k]
+    if den == 0:
+        return -1.0
+    score = num / den + STABILITY_ADJ.get(job.ai_stability, 0.0)
+    return max(0.0, min(100.0, score))
+
+
+def _num(r: dict, key: str) -> float:
+    try:
+        return float(r.get(key, -1))
+    except (TypeError, ValueError):
+        return -1.0
+
+
+def _apply(job: Job, r: dict, weights: dict | None = None) -> None:
     job.ai_score = float(r.get("overall", 0))
     job.ai_skills = float(r.get("skills_fit", 0))
     job.ai_seniority = float(r.get("seniority_fit", 0))
     job.ai_years_fit = float(r.get("years_fit", 0))
+    job.ai_industry = _num(r, "industry_fit")
+    job.ai_leadership = _num(r, "leadership_fit")
+    job.ai_gov = _num(r, "ai_governance_fit")
+    job.ai_growth = _num(r, "growth_fit")
+    job.ai_comp = _num(r, "comp_fit")
+    job.ai_career = _num(r, "career_path_fit")
+    job.ai_stability = str(r.get("stability", "")).lower()[:10]
+    job.ai_recruiter_odds = _num(r, "recruiter_odds")
+    job.ai_composite = compute_composite(job, weights)
     job.ai_reason = str(r.get("reason", ""))[:200]
     job.ai_recommendation = str(r.get("recommendation", "")).lower()[:10]
     job.ai_location_ok = bool(r.get("location_ok", True))
@@ -132,11 +219,13 @@ def rescore(jobs: list[Job], resume: str, cfg: dict) -> tuple[list[Job], bool]:
 
     model = acfg.get("model", "gpt-4o-mini")
     candidate = _candidate_ctx(cfg)
+    career_goal = _career_goal(cfg)
+    weights = cfg.get("fit_weights") or {}
     used = False
     for i in range(0, len(jobs), BATCH):
         batch = jobs[i:i + BATCH]
         try:
-            scored = _score_batch(client, model, candidate, resume, batch)
+            scored = _score_batch(client, model, candidate, career_goal, resume, batch)
         except Exception as e:
             print(f"  ai batch {i // BATCH} failed: {e}", file=sys.stderr)
             continue
@@ -144,6 +233,6 @@ def rescore(jobs: list[Job], resume: str, cfg: dict) -> tuple[list[Job], bool]:
             r = scored.get(j.id)
             if r:
                 used = True
-                _apply(j, r)
+                _apply(j, r, weights)
     print(f"  ai analyzed {sum(1 for j in jobs if j.ai_reason)} jobs", file=sys.stderr)
     return jobs, used

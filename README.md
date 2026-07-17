@@ -1,7 +1,21 @@
-# findjob — 每日自动找工作 + 简历/求职信助手
+# findjob — Career OS：每天一封 Career Brief，20-30 分钟搞定求职
 
-每天自动扫多个招聘平台，**按你简历的真实内容（不是 title）打分排序**，把当日精选岗位**发到你邮箱**；
-对你看中的岗位，一条命令生成 **ATS 关键词对齐建议 + 一封自然真诚的 cover letter 草稿**（基于你简历真实内容，不编造）。
+> **Job Search ≠ Apply More。** Job Search = 精准匹配 + Recruiter + Networking +
+> Personal Brand + ATS 优化 + Career Strategy。这个仓库把每一项都自动化。
+
+每天早上**一封 Career Brief 邮件**，包含：
+- ⭐ **Dream Company 官网新岗**（Target-50 名单，直连 Greenhouse/Lever/Ashby/Workday 等官方 API，不依赖 LinkedIn）
+- 🎯 **Top Jobs**：三个方向合并，按 12 维**综合 Fit Score** 排序（含职业路径分、recruiter 回复概率、裁员风险）
+- 🔎 **公司自动尽调**：近期新闻、AI 布局、裁员风险、cover letter 切入点、面试角度
+- 🤝 **内推人选**：每个 Top 岗位的校友/前同事/决策者 LinkedIn 精准搜索链接 + 破冰消息草稿
+- ⏰ **跟进提醒**：投递 7/14 天无回音自动提醒 follow-up
+- 📇 **Recruiter Pipeline**：每周新增 5-10 个猎头连接的执行计划 + 到期关系提醒
+- ✍️ **每周一 LinkedIn 帖子草稿**（AI Governance/NIST AI RMF 话题轮换，你的口吻）
+
+配套资产库（`career/`，全部可携带）：**STAR 故事库**（简历/CL/面试复用）、
+**Interview Knowledge Base**（每家公司历次面试题沉淀）、申请与人脉 CRM。
+
+**完整手册见 [docs/career-os.md](docs/career-os.md)。** 以下是基础引擎说明。
 
 全程跑在 **GitHub Actions**，不占用你电脑、不用你每天盯着 LinkedIn 刷。
 
@@ -66,7 +80,8 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 
 ## 每天你会收到什么
 
-**三封邮件**（每个方向一封），Top N 个岗位。每个岗位带一份多维度分析：
+**一封 Career Brief**（内容见文首；想恢复"每方向一封"的旧模式，改跑 `python -m src.main`）。
+其中每个岗位带一份多维度分析：
 - **AI 匹配分** + 投递建议徽标（建议投 / 可考虑 / 可跳过）
 - **技能 / 职级 / 年限** 三个分项分（职级和年限按你的真实画像判断，不被 title 误导）
 - **一句话匹配理由**、**薪资区间**（JD 有则取，无则市场估算）、**幽灵岗风险**、**公司简评**
@@ -142,18 +157,33 @@ python -m src.main             # 真正发邮件（需设好 SMTP 环境变量�
 ## 结构
 
 ```
-config.yaml                    # 共享设置：数据源/AI打分/邮件/阈值
+config.yaml                    # 共享设置 + career_goal + fit_weights + brief 配置
 profiles/<方向>/profile.yaml    # 各方向的岗位名/技能/过滤/搜索词（覆盖 config.yaml）
 profiles/<方向>/resume.md       # 各方向的简历（事实来源）
+career/dream_companies.yaml    # ⭐ Target-50 名单（ATS 直连配置）
+career/stories/                # STAR 故事库（简历/CL/面试复用）
+career/interviews/             # Interview Knowledge Base（每公司一个文件）
+career/recruiters.yaml         # Recruiter pipeline CRM
+career/network.yaml            # 校友/前同事/目标角色（内推网络）
+career/applications.yaml       # 申请跟踪（follow-up 提醒数据源）
+docs/career-os.md              # ⭐ 完整使用手册（十大模块）
 docs/job-search-plan.md        # 针对你三个方向的详细找工作方案
+src/brief.py                   # ⭐ 每日 Career Brief（一封邮件整合一切）
+src/dream.py                   # Dream 公司官网监控（Greenhouse/Lever/Ashby/Workday...）
+src/research.py                # 公司尽调 agent（新闻 + LLM，缓存14天）
+src/network.py                 # Networking agent（内推链接 + recruiter pipeline）
+src/track.py                   # 申请/recruiter 跟踪 CLI
+src/interview.py               # 面试记录 + 准备包生成
+src/branding.py                # 每周 LinkedIn 内容引擎
+src/stories.py                 # 故事库加载/按 JD 匹配
 src/sources/*.py               # 各平台适配器（含 jsearch = LinkedIn/Indeed 聚合）
 src/fetch.py                   # 汇总抓取 + 去重（单个源失败不影响整体）
 src/score.py                   # 第一段：关键词匹配打分（初筛）
-src/ai_score.py                # 第二段：LLM 语义打分（结构化：总分/契合/理由）
-src/digest.py                  # 邮件正文（文本 + HTML）
+src/ai_score.py                # 第二段：Fit Score v2 —— 12 维 LLM 评分 + 加权综合
+src/digest.py                  # 单方向邮件正文（legacy 模式）
 src/notify_email.py            # SMTP 发送
-src/tailor.py                  # OpenAI：ATS 对齐 + cover letter
-src/main.py                    # 每日流水线（多 profile）
-.github/workflows/             # 每日定时
-data/<方向>/                    # 各方向跨天去重状态（自动回写）
+src/tailor.py                  # ATS 对齐 + cover letter（自动注入故事库）
+src/main.py                    # 抓取+评分流水线（被 brief 复用；也可单独跑）
+.github/workflows/             # 每日定时（跑 src.brief）
+data/                          # 去重状态/研究缓存/发帖历史（CI 自动回写）
 ```

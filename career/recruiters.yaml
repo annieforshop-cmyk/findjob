@@ -1,0 +1,43 @@
+# ============================================================
+#  Recruiter Pipeline — 长期关系，不是一次性投递
+#  目标：每周新建 5-10 个 AI Governance / Internal Audit / 猎头连接
+#  每日 Career Brief 会自动提醒：本周该新加谁、谁到期该跟进。
+#
+#  用法：
+#   - 新认识一个 recruiter → 在 contacts: 里加一条（status: connected）
+#   - 聊过一次 → status: engaged，填 last_contact
+#   - Brief 会按 cadence_days 自动提示"该 touch 了"
+#  也可以用命令行：python -m src.track recruiter "名字" --firm "公司" --note "..."
+# ============================================================
+
+# 每周新增连接目标（Brief 周一会生成本周计划）
+weekly_new_target: 7
+# 已有关系多久没联系就提醒跟进（天）
+cadence_days: 30
+
+# 优先攻这些猎头公司/内部招聘（金融业风控/审计/AI 治理领域最活跃的）——
+# Brief 会轮流给出 LinkedIn 搜索链接，让"找谁加"零思考
+target_firms:
+  - {name: Selby Jennings, focus: 金融风控/审计/合规 专业猎头, type: agency}
+  - {name: Options Group, focus: 投行中后台高管猎头, type: agency}
+  - {name: Sheffield Haworth, focus: 金融服务高管搜寻, type: agency}
+  - {name: Korn Ferry, focus: 大型高管搜寻（风控/审计 practice）, type: retained}
+  - {name: Heidrick & Struggles, focus: 高管搜寻（CRO/CAE 线）, type: retained}
+  - {name: Russell Reynolds, focus: 高管搜寻（含 AI 治理新兴岗）, type: retained}
+  - {name: Spencer Stuart, focus: 高管搜寻（金融服务）, type: retained}
+  - {name: Egon Zehnder, focus: 高管搜寻, type: retained}
+  - {name: Michael Page, focus: 审计/内控中高端, type: agency}
+  - {name: Robert Half (Management Resources), focus: 审计/财务风控, type: agency}
+  - {name: The Jacobson Group, focus: 保险业风控/审计, type: agency}
+  - {name: Phaidon International / Glocomms, focus: 科技风控/网络, type: agency}
+
+# 你的真实 recruiter 关系（示例格式，替换成真实的人）
+contacts: []
+#  - name: Jane Doe
+#    firm: Selby Jennings
+#    focus: internal audit VP/Director, NYC
+#    linkedin: https://www.linkedin.com/in/xxxx
+#    email: ""
+#    status: engaged        # new / connected / engaged / active-search / dormant
+#    last_contact: 2026-07-01
+#    notes: 聊过 Citi 的 IA Director 岗；她也做 model risk
