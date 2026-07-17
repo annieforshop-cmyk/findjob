@@ -76,6 +76,10 @@ class Job:
     dream: bool = False
     dream_tier: int = 0
 
+    # set by network.flag_agencies: posted by a staffing/search firm —
+    # applying puts you in that recruiter's database (high-value channel)
+    agency: bool = False
+
     @property
     def id(self) -> str:
         """Stable id for cross-day dedupe. Prefer URL, fall back to title+company."""

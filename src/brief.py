@@ -76,7 +76,12 @@ def gather(dry_run: bool) -> dict:
     except Exception as e:
         print(f"  brief: dream channel failed: {e}", file=sys.stderr)
 
-    jobs = sorted(merged.values(), key=lambda j: (-int(j.dream), -j.rank_score))
+    jobs = list(merged.values())
+    n_agency = network.flag_agencies(jobs)
+    if n_agency:
+        print(f"  brief: {n_agency} postings are recruiter/agency jobs (🎯 direct line to a recruiter)",
+              file=sys.stderr)
+    jobs.sort(key=lambda j: (-int(j.dream), -j.rank_score))
     top_n = int(bcfg.get("top_jobs", 10))
     top = jobs[:top_n]
 
@@ -135,10 +140,12 @@ def _dims(j: Job) -> str:
 
 
 def _job_lines(i: int, j: Job) -> list[str]:
-    star = "⭐" if j.dream else ""
+    star = ("⭐" if j.dream else "") + ("🎯" if j.agency else "")
     label = getattr(j, "profile_label", "")
     lines = [f"{i}. {star}[{j.rank_score:.0f}] {j.title} — {j.company}"
              + (f"  〈{label}〉" if label else "")]
+    if j.agency:
+        lines.append("   🎯 猎头代招岗——投递即进入该猎头数据库；投完顺手在 LinkedIn 连接发帖 recruiter")
     lines.append(f"   {j.ai_location_note or j.location or 'Remote'}"
                  + (f" | {j.ai_salary}" if j.ai_salary else ""))
     if j.ai_reason:
@@ -218,9 +225,11 @@ def _chip(text: str, bg: str, fg: str = "#fff") -> str:
 
 
 def _job_html(j: Job, tailored: dict[str, str]) -> str:
-    star = "⭐ " if j.dream else ""
+    star = ("⭐ " if j.dream else "") + ("🎯 " if j.agency else "")
     label = getattr(j, "profile_label", "")
     chips = []
+    if j.agency:
+        chips.append(_chip("🎯 猎头代招 — 投递=进猎头库", "#fde68a", "#78350f"))
     if j.ai_composite >= 0:
         for name, v in (("AI治理", j.ai_gov), ("职业路径", j.ai_career),
                         ("行业", j.ai_industry), ("回复概率", j.ai_recruiter_odds)):

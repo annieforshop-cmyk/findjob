@@ -94,6 +94,53 @@ def outreach_drafts(company: str, title: str = "", relationship: str = "alumni")
     return {"connection_note": openers.get(relationship, openers["cold"]), "follow_up": follow_up}
 
 
+# ---------------- agency-posted job detection ----------------
+# A posting BY a staffing/search firm is a direct line to a recruiter who is
+# PAID to fill that seat — applying puts you in their candidate database.
+# The daily brief tags these 🎯 so they get priority over cold employer applies.
+
+KNOWN_AGENCIES = [
+    # finance / risk / audit specialists
+    "selby jennings", "options group", "sheffield haworth", "phaidon", "glocomms",
+    "michael page", "page executive", "pagegroup", "robert half", "robert walters",
+    "the jacobson group", "korn ferry", "heidrick", "russell reynolds",
+    "spencer stuart", "egon zehnder", "hays", "morgan mckinley", "barclay simpson",
+    # broad staffing firms that carry senior audit/risk reqs
+    "randstad", "adecco", "lhh", "insight global", "kforce", "beacon hill",
+    "vaco", "tandym", "atrium staffing", "green key", "mitchell martin",
+    "motion recruitment", "aerotek", "aston carter", "jefferson wells",
+    "mrinetwork", "lucas group", "smith hanley", "hire counsel", "solomon page",
+]
+_AGENCY_NAME_HINTS = ("staffing", "recruit", "search partners", "search group",
+                      "talent", "executive search", "personnel", "consultants group")
+_AGENCY_JD_HINTS = ("our client", "on behalf of our client", "our client is",
+                    "confidential client", "a leading client")
+
+
+def is_agency_posting(company: str, description: str = "") -> bool:
+    c = (company or "").lower().strip()
+    if not c:
+        return False
+    if any(a in c for a in KNOWN_AGENCIES):
+        return True
+    if any(h in c for h in _AGENCY_NAME_HINTS):
+        return True
+    d = (description or "").lower()[:1500]
+    return any(h in d for h in _AGENCY_JD_HINTS)
+
+
+def flag_agencies(jobs) -> int:
+    """Mark aggregator jobs posted by staffing/search firms. Returns count."""
+    n = 0
+    for j in jobs:
+        if getattr(j, "dream", False):
+            continue  # dream = direct employer, never an agency
+        if is_agency_posting(j.company, j.description):
+            j.agency = True
+            n += 1
+    return n
+
+
 # ---------------- recruiter pipeline ----------------
 
 def recruiter_pipeline(today: dt.date | None = None) -> dict:
