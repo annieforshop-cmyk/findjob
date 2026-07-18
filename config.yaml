@@ -98,6 +98,8 @@ sources:
   hackernews: false
   adzuna: true              # 第二聚合源，需 ADZUNA_APP_ID / ADZUNA_APP_KEY（免费）
   jsearch: true             # ⭐ 主力：Google-for-Jobs 聚合 LinkedIn/Indeed/Glassdoor/ZipRecruiter/Ladders/BuiltIn/Dice/Wellfound，需 RAPIDAPI_KEY
+  ats_boards: true          # ⭐⭐ 公司官网直连（Greenhouse/Lever/Ashby/SmartRecruiters/Workday 公开接口，无需任何 key）
+                            #    公司清单在 career/ats_companies.yaml；key 失效时管道靠它保底
 
 # JSearch 默认参数（queries 在各 profile 里定义）
 jsearch:
