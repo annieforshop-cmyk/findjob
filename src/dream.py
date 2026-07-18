@@ -145,8 +145,10 @@ def _save_seen(seen: dict[str, float]) -> None:
     SEEN_PATH.write_text(json.dumps({k: v for k, v in seen.items() if now - v < SEEN_TTL}))
 
 
-def fetch_new(mark_seen: bool = True, ignore_seen: bool = False) -> list[Job]:
-    """Poll all ATS-backed dream companies; return NEW keyword-matching postings."""
+def fetch_new(mark_seen: bool = True, ignore_seen: bool = False,
+              max_per_company: int = 5) -> list[Job]:
+    """Poll all ATS-backed dream companies; return NEW keyword-matching postings.
+    每家公司每天最多带回 max_per_company 个新岗，防止单一公司刷屏整封邮件。"""
     cfg = load_cfg()
     keywords = cfg.get("keywords", [])
     seen = _load_seen()
@@ -166,14 +168,18 @@ def fetch_new(mark_seen: bool = True, ignore_seen: bool = False) -> list[Job]:
             print(f"  dream: {c['name']} ({c.get('ats')}) failed: {e}", file=sys.stderr)
             continue
         tier = int(c.get("tier", 2))
+        kept = 0
         for j in jobs:
             if keywords and not _kw_match(j, keywords):
                 continue
             j.dream, j.dream_tier = True, tier
             if not ignore_seen and j.id in seen:
                 continue
+            if kept >= max_per_company:
+                break
             seen[j.id] = now
             fresh.append(j)
+            kept += 1
 
     print(f"  dream: polled {polled} ATS boards ({failed} failed), {len(fresh)} new matches", file=sys.stderr)
     if mark_seen and not ignore_seen:

@@ -34,6 +34,9 @@ def build_text(jobs: list[Job], meta: dict, tailored: dict[str, str] | None = No
             head += f"  〈{rec}〉"
         lines.append(head)
         lines.append(f"    来源 {j.source} | {j.ai_location_note or j.location or 'Remote'}")
+        if j.description:
+            d = j.description.strip()
+            lines.append(f"    内容: {d[:219] + '…' if len(d) > 220 else d}")
         if j.ai_reason:
             lines.append(f"    匹配理由: {j.ai_reason}")
             lines.append(f"    技能 {j.ai_skills:.0f} · 职级 {j.ai_seniority:.0f} · 年限 {j.ai_years_fit:.0f}")
@@ -115,6 +118,11 @@ def build_html(jobs: list[Job], meta: dict, tailored: dict[str, str] | None = No
                 f'padding:10px;font-size:12px;margin-top:6px">{esc(tailored[j.id])}</pre></details>'
             )
         loc = esc(j.ai_location_note or j.location or "Remote")
+        d = (j.description or "").strip()
+        snippet = (
+            f'<div style="color:#555;font-size:12.5px;margin-top:4px">{esc(d[:219] + "…" if len(d) > 220 else d)}</div>'
+            if d else ""
+        )
         rows.append(
             f"""
         <tr>
@@ -125,7 +133,7 @@ def build_html(jobs: list[Job], meta: dict, tailored: dict[str, str] | None = No
           <td style="padding:14px 12px;border-bottom:1px solid #eee">
             <div>{rec}<a href="{esc(j.url)}" style="font-size:15px;font-weight:600;color:#0a58ca;text-decoration:none">{esc(j.title)}</a></div>
             <div style="color:#444;font-size:13px;margin-top:2px">{esc(j.company)} · {loc} · <span style="color:#888">{esc(j.source)}</span></div>
-            {meters}{facts_html}{company}{matched}{missing}{draft}
+            {snippet}{meters}{facts_html}{company}{matched}{missing}{draft}
           </td>
         </tr>"""
         )

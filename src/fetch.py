@@ -16,6 +16,7 @@ REGISTRY = {
     "hackernews": "hackernews",
     "adzuna": "adzuna",
     "jsearch": "jsearch",
+    "ats_boards": "ats_boards",   # 公司官网直连（无需 key），见 career/ats_companies.yaml
 }
 
 

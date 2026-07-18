@@ -35,6 +35,20 @@ def esc(s: str) -> str:
 
 # ---------------- gather ----------------
 
+def _cap_per_company(jobs: list[Job], cap: int) -> list[Job]:
+    """同一家公司最多保留 cap 个岗位，避免任何一家刷屏。"""
+    if cap <= 0:
+        return jobs
+    counts: dict[str, int] = {}
+    out = []
+    for j in jobs:
+        key = (j.company or "?").strip().lower()
+        counts[key] = counts.get(key, 0) + 1
+        if counts[key] <= cap:
+            out.append(j)
+    return out
+
+
 def gather(dry_run: bool) -> dict:
     base_cfg = yaml.safe_load((ROOT / "config.yaml").read_text()) or {}
     bcfg = base_cfg.get("brief", {}) or {}
@@ -73,6 +87,7 @@ def gather(dry_run: bool) -> dict:
                 print(f"  brief: dream scoring skipped: {e}", file=sys.stderr)
             dream_jobs = sorted([j for j in fresh if j.ai_location_ok],
                                 key=lambda j: (j.dream_tier, -j.rank_score))
+            dream_jobs = _cap_per_company(dream_jobs, int(bcfg.get("dream_per_company", 3)))
     except Exception as e:
         print(f"  brief: dream channel failed: {e}", file=sys.stderr)
 
@@ -81,8 +96,10 @@ def gather(dry_run: bool) -> dict:
     if n_agency:
         print(f"  brief: {n_agency} postings are recruiter/agency jobs (🎯 direct line to a recruiter)",
               file=sys.stderr)
-    jobs.sort(key=lambda j: (-int(j.dream), -j.rank_score))
-    top_n = int(bcfg.get("top_jobs", 10))
+    # 按分数排序：dream 只加小额加分，不再无条件置顶（防止单一公司刷屏）
+    jobs.sort(key=lambda j: -(j.rank_score + (3 if j.dream else 0)))
+    jobs = _cap_per_company(jobs, int(bcfg.get("per_company_cap", 3)))
+    top_n = int(bcfg.get("top_jobs", 50))
     top = jobs[:top_n]
 
     # 3. research the strongest picks (cached 14d, so cheap)
@@ -139,6 +156,21 @@ def _dims(j: Job) -> str:
     return " · ".join(bits)
 
 
+def _snippet(j: Job, n: int = 220) -> str:
+    """JD 内容缩略：让邮件里能看出这岗位到底是干什么的。"""
+    d = (j.description or "").strip()
+    return (d[: n - 1] + "…") if len(d) > n else d
+
+
+def _why(j: Job) -> str:
+    """推荐理由：优先 LLM 理由；没有 LLM 时退回到命中的简历关键词，绝不留空。"""
+    if j.ai_reason:
+        return j.ai_reason
+    if j.matched:
+        return "命中你简历的关键词: " + ", ".join(j.matched[:8])
+    return ""
+
+
 def _job_lines(i: int, j: Job) -> list[str]:
     star = ("⭐" if j.dream else "") + ("🎯" if j.agency else "")
     label = getattr(j, "profile_label", "")
@@ -148,8 +180,12 @@ def _job_lines(i: int, j: Job) -> list[str]:
         lines.append("   🎯 猎头代招岗——投递即进入该猎头数据库；投完顺手在 LinkedIn 连接发帖 recruiter")
     lines.append(f"   {j.ai_location_note or j.location or 'Remote'}"
                  + (f" | {j.ai_salary}" if j.ai_salary else ""))
-    if j.ai_reason:
-        lines.append(f"   {j.ai_reason}")
+    snip = _snippet(j)
+    if snip:
+        lines.append(f"   内容: {snip}")
+    why = _why(j)
+    if why:
+        lines.append(f"   💡 {why}")
     d = _dims(j)
     if d:
         lines.append(f"   {d}")
@@ -241,8 +277,12 @@ def _job_html(j: Job, tailored: dict[str, str]) -> str:
         chips.append(_chip(f"裁员风险 {j.ai_stability}", sbg, sfg))
     if j.ai_salary:
         chips.append(_chip(f"💰 {j.ai_salary}", "#f3f0ff", "#5b21b6"))
-    reason = (f'<div style="color:#333;font-size:13px;margin-top:4px">💡 {esc(j.ai_reason)}</div>'
-              if j.ai_reason else "")
+    snip = _snippet(j)
+    desc = (f'<div style="color:#555;font-size:12.5px;margin-top:4px">{esc(snip)}</div>'
+            if snip else "")
+    why = _why(j)
+    reason = (f'<div style="color:#333;font-size:13px;margin-top:4px">💡 {esc(why)}</div>'
+              if why else "")
     draft = ""
     if j.id in tailored:
         draft = ('<details style="margin-top:6px"><summary style="cursor:pointer;color:#7b2ff7;'
@@ -259,7 +299,7 @@ def _job_html(j: Job, tailored: dict[str, str]) -> str:
              {(_chip(label, "#e8eef7", "#245") if label else "")}</div>
         <div style="color:#444;font-size:13px;margin-top:2px">{esc(j.company)} ·
              {esc(j.ai_location_note or j.location or 'Remote')}</div>
-        {reason}<div style="margin-top:5px">{''.join(chips)}</div>{draft}
+        {desc}{reason}<div style="margin-top:5px">{''.join(chips)}</div>{draft}
       </td></tr>"""
 
 

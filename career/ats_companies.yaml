@@ -1,0 +1,93 @@
+# ============================================================
+#  ATS 直连公司清单 — src/sources/ats_boards.py 每天自动抓取
+#  不需要任何 API key：这些都是各公司招聘系统的公开接口。
+#
+#  kind: greenhouse | lever | ashby | smartrecruiters | workday
+#    - greenhouse/lever/ashby/smartrecruiters: 需要 token
+#    - workday: 需要 host + site（用搜索词查询，见 ats_boards.py）
+#
+#  verified: 2026-07-18 = 当天真实抓到过岗位的接口
+#  接口失效会在每日日志里提示 "[ats:公司名] FAILED"，改这里即可。
+#  这份清单和 dream_companies.yaml 独立：dream 是"梦想公司精评"，
+#  这里是"广撒网"——两者岗位最终都会被 AI 按简历逐条打分。
+# ============================================================
+
+companies:
+  # ---------- 保险 / 资管 / 金融（Workday，2026-07-18 验证） ----------
+  - {name: Allstate,          kind: workday, host: allstate.wd5.myworkdayjobs.com,      site: allstate_careers,      verified: 2026-07-18}
+  - {name: AIG,               kind: workday, host: aig.wd1.myworkdayjobs.com,           site: aig,                   verified: 2026-07-18}
+  - {name: GEICO,             kind: workday, host: geico.wd1.myworkdayjobs.com,         site: External,              verified: 2026-07-18}
+  - {name: Invesco,           kind: workday, host: invesco.wd1.myworkdayjobs.com,       site: IVZ,                   verified: 2026-07-18}
+  - {name: Fannie Mae,        kind: workday, host: fanniemae.wd1.myworkdayjobs.com,     site: FannieMaeCareers,      verified: 2026-07-18}
+  - {name: PwC,               kind: workday, host: pwc.wd3.myworkdayjobs.com,           site: US_Experienced_Careers, verified: 2026-07-18}
+  - {name: RSM US,            kind: workday, host: rsm.wd1.myworkdayjobs.com,           site: RSMCareers,            verified: 2026-07-18}
+  - {name: UMB Bank,          kind: workday, host: umb.wd1.myworkdayjobs.com,           site: UMBExternal,           verified: 2026-07-18}
+  - {name: The Mutual Group,  kind: workday, host: themutualgroup.wd108.myworkdayjobs.com, site: TMG,                verified: 2026-07-18}
+  - {name: TransUnion,        kind: workday, host: transunion.wd5.myworkdayjobs.com,    site: TransUnion,            verified: 2026-07-18}
+  - {name: Vertex Pharmaceuticals, kind: workday, host: vrtx.wd5.myworkdayjobs.com,     site: Vertex_Careers,        verified: 2026-07-18}
+  - {name: Simpson Thacher,   kind: workday, host: stblaw.wd1.myworkdayjobs.com,        site: careers,               verified: 2026-07-18}
+  - {name: Busey Bank,        kind: workday, host: busey.wd503.myworkdayjobs.com,       site: busey,                 verified: 2026-07-18}
+  - {name: NVIDIA,            kind: workday, host: nvidia.wd5.myworkdayjobs.com,        site: NVIDIAExternalCareerSite}
+
+  # ---------- 银行 / 金融基础设施（Workday，主流租户，失效看日志） ----------
+  - {name: State Street,      kind: workday, host: statestreet.wd1.myworkdayjobs.com,   site: Global}
+  - {name: BlackRock,         kind: workday, host: blackrock.wd1.myworkdayjobs.com,     site: BlackRock_Professional}
+  - {name: PNC,               kind: workday, host: pnc.wd5.myworkdayjobs.com,           site: External}
+  - {name: Truist,            kind: workday, host: truist.wd1.myworkdayjobs.com,        site: Careers}
+  - {name: KeyBank,           kind: workday, host: keybank.wd5.myworkdayjobs.com,       site: External_Career_Site}
+  - {name: Synchrony,         kind: workday, host: synchrony.wd5.myworkdayjobs.com,     site: Synchrony_Careers}
+  - {name: Travelers,         kind: workday, host: travelers.wd5.myworkdayjobs.com,     site: External}
+  - {name: Guidehouse,        kind: workday, host: guidehouse.wd1.myworkdayjobs.com,    site: External}
+  - {name: DTCC,              kind: workday, host: dtcc.wd1.myworkdayjobs.com,          site: Careers}
+  - {name: S&P Global,        kind: workday, host: spgi.wd5.myworkdayjobs.com,          site: SPGI_Careers}
+  - {name: Northern Trust,    kind: workday, host: ntrs.wd1.myworkdayjobs.com,          site: ntrscareers}
+  - {name: Voya Financial,    kind: workday, host: voya.wd1.myworkdayjobs.com,          site: VoyaJobs}
+
+  # ---------- AI / 科技 / 金融科技（Greenhouse，公开 boards API） ----------
+  - {name: Anthropic,         kind: greenhouse, token: anthropic}
+  - {name: Coinbase,          kind: greenhouse, token: coinbase,  verified: 2026-07-18}
+  - {name: AlphaSense,        kind: greenhouse, token: alphasense, verified: 2026-07-18}
+  - {name: Veeam,             kind: greenhouse, token: veeamsoftware, verified: 2026-07-18}
+  - {name: Natera,            kind: greenhouse, token: natera,    verified: 2026-07-18}
+  - {name: Chainguard,        kind: greenhouse, token: chainguard, verified: 2026-07-18}
+  - {name: Commvault,         kind: greenhouse, token: commvault, verified: 2026-07-18}
+  - {name: Stripe,            kind: greenhouse, token: stripe}
+  - {name: Databricks,        kind: greenhouse, token: databricks}
+  - {name: Scale AI,          kind: greenhouse, token: scaleai}
+  - {name: Affirm,            kind: greenhouse, token: affirm}
+  - {name: Robinhood,         kind: greenhouse, token: robinhood}
+  - {name: Airbnb,            kind: greenhouse, token: airbnb}
+  - {name: Pinterest,         kind: greenhouse, token: pinterest}
+  - {name: Datadog,           kind: greenhouse, token: datadog}
+  - {name: Cloudflare,        kind: greenhouse, token: cloudflare}
+  - {name: GitLab,            kind: greenhouse, token: gitlab}
+  - {name: Brex,              kind: greenhouse, token: brex}
+  - {name: Chime,             kind: greenhouse, token: chime}
+  - {name: SoFi,              kind: greenhouse, token: sofi}
+  - {name: Circle,            kind: greenhouse, token: circle}
+  - {name: Gemini,            kind: greenhouse, token: gemini}
+  - {name: Two Sigma,         kind: greenhouse, token: twosigma}
+  - {name: Point72,           kind: greenhouse, token: point72}
+
+  # ---------- Lever ----------
+  - {name: CFGI,              kind: lever, token: cfgi,          verified: 2026-07-18}
+  - {name: Dun & Bradstreet,  kind: lever, token: dnb,           verified: 2026-07-18}
+  - {name: Palantir,          kind: lever, token: palantir}
+  - {name: Plaid,             kind: lever, token: plaid}
+  - {name: Kraken,            kind: lever, token: kraken}
+  - {name: Anduril,           kind: lever, token: anduril}
+
+  # ---------- Ashby ----------
+  - {name: OpenAI,            kind: ashby, token: openai,        verified: 2026-07-18}
+  - {name: Credo.AI,          kind: ashby, token: credo.ai,      verified: 2026-07-18}
+  - {name: Prompt,            kind: ashby, token: prompt,        verified: 2026-07-18}
+  - {name: Cohere,            kind: ashby, token: cohere}
+  - {name: Ramp,              kind: ashby, token: ramp}
+  - {name: Notion,            kind: ashby, token: notion}
+  - {name: Perplexity,        kind: ashby, token: perplexity-ai}
+  - {name: Deel,              kind: ashby, token: deel}
+
+  # ---------- SmartRecruiters ----------
+  - {name: ServiceNow,        kind: smartrecruiters, token: ServiceNow}
+  - {name: Visa,              kind: smartrecruiters, token: Visa}
+  - {name: Experian,          kind: smartrecruiters, token: Experian}
