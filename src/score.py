@@ -17,6 +17,22 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s.lower()).strip()
 
 
+# ---- 职级带（候选人 ~10 年经验 ≈ 行业 Senior Manager 段）--------------------
+# 甜蜜区: senior manager / lead / principal / VP(银行语境) / director / associate director
+# 直接丢弃: MD / C-level / Partner / Global Head —— 高 1-2 级，投递纯浪费
+TITLE_TOO_SENIOR = re.compile(
+    r"\b(managing director|chief\s+[a-z]+\s+officer|ceo|cfo|coo|cro|ciso|cio"
+    r"|partner|global head)\b", re.I)
+# 冲刺区（高半级~一级）: 保留但降分
+TITLE_STRETCH = re.compile(
+    r"\b(executive director|senior vice president|svp|evp|head of)\b", re.I)
+# 低于段位: 重降分（注意 associate director 属于甜蜜区，不算 junior）
+TITLE_TOO_JUNIOR = re.compile(
+    r"\b(junior|coordinator|analyst|associate(?!\s*director))\b", re.I)
+STRETCH_PENALTY = 12
+JUNIOR_PENALTY = 18
+
+
 def _present(term: str, text: str) -> bool:
     """Whole-word-ish containment so 'r' doesn't match 'react'."""
     t = _norm(term)
@@ -49,6 +65,10 @@ def score_job(job: Job, prof: dict) -> Job:
     blob = job.blob
 
     # hard filters -> score 0 means "drop"
+    title_norm = _norm(job.title)
+    if TITLE_TOO_SENIOR.search(title_norm):   # MD/C-level/Partner：不抓
+        job.score = 0.0
+        return job
     for bad in prof["exclude"]:
         if _present(bad, blob):
             job.score = 0.0
@@ -85,7 +105,14 @@ def score_job(job: Job, prof: dict) -> Job:
         if any(_present(l, blob) for l in prof["locations"]):
             bonus += 6
 
-    job.score = round(min(skill_score + title_score + bonus, 100), 1)
+    # 职级带调整：冲刺岗降分保留，低于段位重降分
+    band_penalty = 0
+    if TITLE_STRETCH.search(title_norm):
+        band_penalty = STRETCH_PENALTY
+    elif TITLE_TOO_JUNIOR.search(title_norm):
+        band_penalty = JUNIOR_PENALTY
+
+    job.score = round(min(max(skill_score + title_score + bonus - band_penalty, 0), 100), 1)
 
     # gap keywords: skills the JD clearly asks for that aren't yours yet
     missing = [s for s in prof["skills"] if s not in matched and _present(s, blob)]
