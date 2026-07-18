@@ -218,7 +218,9 @@ companies:
     careers: https://jobs.prudential.com/us-en/search-jobs/AI%20governance
   - name: AIG
     tier: 3
-    ats: manual
+    ats: workday
+    host: aig.wd1.myworkdayjobs.com
+    site: aig
     careers: https://careersataig.com/search-jobs
   - name: Chubb
     tier: 3
@@ -236,7 +238,9 @@ companies:
     careers: https://apply.deloitte.com/en_US/careers/SearchJobs/AI%20governance
   - name: PwC
     tier: 2
-    ats: manual
+    ats: workday
+    host: pwc.wd3.myworkdayjobs.com
+    site: US_Experienced_Careers
     careers: https://jobs.us.pwc.com/search-jobs/AI%20governance
   - name: EY
     tier: 2
@@ -270,5 +274,57 @@ companies:
     careers: https://www.newyorkfed.org/careers
   - name: Fannie Mae
     tier: 3
-    ats: manual
+    ats: workday
+    host: fanniemae.wd1.myworkdayjobs.com
+    site: FannieMaeCareers
     careers: https://careers.fanniemae.com/global/en/search-results?keywords=AI%20governance
+
+  # ---------- 2026-07-18 补充：已验证 Workday 直连 + 新目标公司 ----------
+  - name: Invesco
+    tier: 2
+    ats: workday
+    host: invesco.wd1.myworkdayjobs.com
+    site: IVZ
+    careers: https://careers.invesco.com
+  - name: Allstate
+    tier: 2
+    ats: workday
+    host: allstate.wd5.myworkdayjobs.com
+    site: allstate_careers
+    careers: https://www.allstate.jobs
+  - name: GEICO
+    tier: 2
+    ats: workday
+    host: geico.wd1.myworkdayjobs.com
+    site: External
+    careers: https://careers.geico.com
+  - name: RSM US
+    tier: 3
+    ats: workday
+    host: rsm.wd1.myworkdayjobs.com
+    site: RSMCareers
+    careers: https://rsmus.com/careers
+  - name: UMB Bank
+    tier: 3
+    ats: workday
+    host: umb.wd1.myworkdayjobs.com
+    site: UMBExternal
+    careers: https://www.umb.com/careers
+  - name: The Mutual Group
+    tier: 3
+    ats: workday
+    host: themutualgroup.wd108.myworkdayjobs.com
+    site: TMG
+    careers: https://www.themutualgroup.com
+  - name: LPL Financial
+    tier: 1
+    ats: manual
+    careers: https://careers.lpl.com/search-jobs/AI%20governance
+  - name: Moody's
+    tier: 2
+    ats: manual
+    careers: https://careers.moodys.com/search-jobs/?query=AI%20risk
+  - name: BMO
+    tier: 2
+    ats: manual
+    careers: https://jobs.bmo.com/us/en/search-results?keywords=responsible%20AI

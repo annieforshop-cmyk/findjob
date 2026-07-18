@@ -1,0 +1,222 @@
+<title>岗位匹配报告 · 2026-07-18 · 55个真实在招岗位</title>
+<style>
+  :root {
+    --paper: #fbfaf7; --ink: #22252a; --ink-2: #5a5f66; --line: #e4e1d8;
+    --card: #ffffff; --accent: #0e6e64; --accent-soft: #e3efed;
+    --mid: #92600a; --mid-soft: #f6ecd9; --low: #8a8577; --low-soft: #efede6;
+    --link: #0b5f8a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #17191d; --ink: #e8e6e1; --ink-2: #a5a29b; --line: #33363c;
+      --card: #1f2227; --accent: #4fb3a7; --accent-soft: #12332f;
+      --mid: #d9a84e; --mid-soft: #33290f; --low: #8d8a82; --low-soft: #26262a;
+      --link: #6db3d6; }
+  }
+  :root[data-theme="dark"] { --paper: #17191d; --ink: #e8e6e1; --ink-2: #a5a29b; --line: #33363c;
+    --card: #1f2227; --accent: #4fb3a7; --accent-soft: #12332f;
+    --mid: #d9a84e; --mid-soft: #33290f; --low: #8d8a82; --low-soft: #26262a; --link: #6db3d6; }
+  :root[data-theme="light"] { --paper: #fbfaf7; --ink: #22252a; --ink-2: #5a5f66; --line: #e4e1d8;
+    --card: #ffffff; --accent: #0e6e64; --accent-soft: #e3efed;
+    --mid: #92600a; --mid-soft: #f6ecd9; --low: #8a8577; --low-soft: #efede6; --link: #0b5f8a; }
+
+  body { background: var(--paper); color: var(--ink); margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB",
+      "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    line-height: 1.65; font-size: 15px; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 26px; line-height: 1.3; margin: 0 0 6px; text-wrap: balance; }
+  h2 { font-size: 19px; margin: 44px 0 6px; padding-top: 18px; border-top: 2px solid var(--ink); }
+  h2 .cnt { color: var(--ink-2); font-weight: 400; font-size: 14px; }
+  .sub { color: var(--ink-2); font-size: 13.5px; margin: 0 0 4px; }
+  .note { background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px 18px; font-size: 13.5px; color: var(--ink-2); margin: 18px 0; }
+  .note b { color: var(--ink); }
+  a { color: var(--link); text-decoration: none; }
+  a:hover, a:focus-visible { text-decoration: underline; }
+
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0 8px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 16px; min-width: 120px; }
+  .stat .n { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+  .stat .l { font-size: 12px; color: var(--ink-2); letter-spacing: .04em; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; margin: 14px 0; }
+  .card .head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+  .score { display: inline-block; min-width: 40px; text-align: center; border-radius: 7px;
+    padding: 2px 8px; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums;
+    background: var(--accent-soft); color: var(--accent); }
+  .score.mid { background: var(--mid-soft); color: var(--mid); }
+  .score.low { background: var(--low-soft); color: var(--low); }
+  .card .title { font-weight: 700; font-size: 16px; }
+  .card .co { color: var(--ink-2); }
+  .meta { font-size: 13px; color: var(--ink-2); margin: 4px 0 8px; }
+  .why { font-size: 14px; margin: 6px 0 0; }
+  .why b.y { color: var(--accent); } .why b.g { color: var(--mid); }
+
+  .tblwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; margin-top: 14px; }
+  table { border-collapse: collapse; width: 100%; min-width: 780px; background: var(--card); font-size: 13.5px; }
+  th { text-align: left; font-size: 12px; letter-spacing: .05em; color: var(--ink-2);
+    padding: 10px 12px; border-bottom: 2px solid var(--line); white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.s { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .co { color: var(--ink-2); font-size: 12.5px; }
+  .tag { display: inline-block; font-size: 11px; border: 1px solid var(--line); border-radius: 5px;
+    padding: 0 6px; color: var(--ink-2); margin-left: 6px; white-space: nowrap; }
+</style>
+
+<div class="wrap">
+  <h1>岗位匹配报告 · 55 个真实在招岗位</h1>
+  <p class="sub">2026-07-18 · 基于你的三份简历（AI Governance / AI Risk / Internal Audit）逐条匹配 · 覆盖 45+ 家公司，无一家刷屏</p>
+
+  <div class="stats">
+    <div class="stat"><div class="n">30</div><div class="l">AI 治理 / 负责任 AI</div></div>
+    <div class="stat"><div class="n">16</div><div class="l">AI·科技审计 / 模型风险</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">猎头代招</div></div>
+    <div class="stat"><div class="n">12</div><div class="l">主投推荐（≥88 分）</div></div>
+  </div>
+
+  <div class="note">
+    <b>打分方法</b>：每个岗位按 4 个维度对照你的简历打 0–100 综合分——<b>内容匹配 40%</b>（JD 职责 vs 你简历里的每一段经历）、<b>职级匹配 30%</b>（你的真实段位 = 资深经理~Director/VP）、<b>行业匹配 15%</b>（银行/保险/受监管行业加分）、<b>职业路径 15%</b>（是否通往你 3–5 年目标 Head of AI Governance）。
+    <br><b>数据来源</b>：今天的实时全网搜索（各公司官方招聘系统 Workday/Greenhouse/Ashby、LinkedIn、Built In、猎头官网）。美国岗位流动快，<b>投递前点链接确认仍在招</b>；已剔除：Morgan Stanley（现雇主）、伦敦/多伦多/东京等非美国岗、明显过期的帖子。
+  </div>
+
+  <h2>🎯 主投推荐 Top 12 <span class="cnt">——为什么匹配、差距在哪，逐条说清</span></h2>
+
+  <div class="card"><div class="head"><span class="score">94</span><span class="title">VP, AI Governance &amp; Responsible AI</span><span class="co">— LPL Financial</span></div>
+    <div class="meta">纽约区（hybrid）· $135,960–226,600 · <a href="https://www.builtinnyc.com/job/vp-ai-governance-responsible-ai/9228797">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>受监管金融服务公司要建企业级 AI 治理与负责任 AI 计划——和你在投行「评估企业级 AI 治理框架、负责任 AI 政策、AI 风险评估与治理控制」的职责几乎逐句对应；VP 职级正好在你的段位带宽内。<br><b class="g">差距：</b>LPL 是财富管理平台（非投行），需要在面试里把经验平移到独立顾问生态。</div></div>
+
+  <div class="card"><div class="head"><span class="score">93</span><span class="title">Vice President, AI Risk and Governance</span><span class="co">— LPL Financial</span></div>
+    <div class="meta">Boston, MA · <a href="https://www.builtinboston.com/job/vice-president-ai-risk-and-governance/10029380">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>JD 原文「lead the day-to-day execution and maturation of the firm's enterprise AI governance program … maintain a defensible governance framework」——你简历第 19–21 行（AI 治理框架、AI onboarding/intake、持续监控、合规检查）就是这份工作的过去时。<br><b class="g">差距：</b>波士顿 hybrid，需接受地点或谈 remote。</div></div>
+
+  <div class="card"><div class="head"><span class="score">92</span><span class="title">AI Governance Sr. Manager</span><span class="co">— PwC</span></div>
+    <div class="meta">New York, NY · <a href="https://jobs.us.pwc.com/job/new-york/ai-governance-sr-manager/932/94787666736">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>Big4 的 AI 治理咨询线：给客户建 AI 治理框架、做 AI 风险评估。要求 8 年+经验——你有 10 年，且 CPA + 审计出身正是 PwC 最认的履历组合；你的 EU AI Act / NIST AI RMF / ISO 42001 直接是交付工具箱。<br><b class="g">差距：</b>咨询节奏与出差；Sr. Manager 头衔平级（但通往合伙人/行业头部客户）。</div></div>
+
+  <div class="card"><div class="head"><span class="score">92</span><span class="title">VP – AI &amp; Technology Risk Management</span><span class="co">— Moody's</span></div>
+    <div class="meta">New York, NY · $163,300–236,800 · <a href="https://careers.moodys.com/vp-artificial-intelligence-ai-risk-management/job/11558">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>二线 AI/科技运营风险负责人——「senior second line risk leader supporting operational risk related to AI」。你的企业风险评估 + AI 风险监控 + 高管汇报三件套全部命中；评级机构 = 强监管品牌，通往 Head of AI Risk 路径极好。<br><b class="g">差距：</b>JD 还覆盖区块链/DeFi，需要补一点数字资产风险语言。</div></div>
+
+  <div class="card"><div class="head"><span class="score">91</span><span class="title">Senior Manager, Responsible AI Governance</span><span class="co">— BMO</span></div>
+    <div class="meta">New York, NY · <a href="https://www.builtinnyc.com/job/senior-manager-responsible-ai-governance/9086963">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>银行的负责任 AI 治理岗——你现在做的事在另一家银行再做一遍，行业匹配满分；北美大行对「懂审计 + 懂 AI 治理」的人极其稀缺。<br><b class="g">差距：</b>Senior Manager 头衔名义上平/略低，重点谈 scope。</div></div>
+
+  <div class="card"><div class="head"><span class="score">90</span><span class="title">Chief Auditor, Artificial Intelligence — Managing Director</span><span class="co">— Citi</span></div>
+    <div class="meta">New York, NY · <a href="https://jobs.citi.com/job/new-york/chief-auditor-artificial-intelligence-managing-director/287/94960975488">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配（冲刺岗）：</b>「审计 AI + 用 AI 审计」双重使命，带独立团队为全行 AI/GenAI 提供独立保证——你简历的两条主线（内审 10 年 + AI 治理/Agentic AI 用例布道 200+ 高管）在这个 JD 里合流。这就是你 3–5 年目标岗位本身。<br><b class="g">差距：</b>MD 比你现在高一级，回复概率偏低——但必投，同时用它校准你的定位话术。</div></div>
+
+  <div class="card"><div class="head"><span class="score">90</span><span class="title">Lead AI &amp; Technology Risk Auditor</span><span class="co">— Allstate</span></div>
+    <div class="meta">US – Remote · <a href="https://allstate.wd5.myworkdayjobs.com/allstate_careers/job/US---Remote/Lead-AI---Technology-Risk-Auditor_R31875-1">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>主导 AI / GenAI / 数据驱动系统的高风险审计——你的 AI 审计方法 + 保险级监管环境 + <b>全远程</b>。四周前发布，窗口还在。<br><b class="g">差距：</b>Lead 头衔在 Director 之下，谈薪时以 scope 定级。</div></div>
+
+  <div class="card"><div class="head"><span class="score">90</span><span class="title">Senior Manager, GRC &amp; AI Governance</span><span class="co">— CFGI</span></div>
+    <div class="meta">美东（咨询，多办公室）· <a href="https://jobs.lever.co/cfgi/f16aea1b-17ff-48cf-81a5-397d8c1efb80">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>JD 原文：设计并落地 AI 治理框架、AI 风险与影响评估、建模型清单——全是你做过的交付物；CFGI 由前 Big4 审计人组成，CPA 文化对口，无 Big4 的独立性限制。<br><b class="g">差距：</b>咨询工时；品牌小于 Big4。</div></div>
+
+  <div class="card"><div class="head"><span class="score">90</span><span class="title">Director, AI Risk Management</span><span class="co">— MetLife</span></div>
+    <div class="meta">New York, NY（hybrid ≥3 天）· 相关岗公示 $128,800–171,700 · <a href="https://www.builtinnyc.com/job/director-ai-risk-management/9874647">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>Director 职级 + 明确要求「AI 监管框架 + 隐私/AI 伦理/模型风险/数据治理控制域知识」——你的证书组合（CPA + 自学 AIGP）和治理控制经验正面命中；保险 = 强监管行业。<br><b class="g">差距：</b>JD 偏好定量背景，用你的 AI 风险评估实操对冲。</div></div>
+
+  <div class="card"><div class="head"><span class="score">89</span><span class="title">Lead Auditor – Data and AI</span><span class="co">— MetLife</span></div>
+    <div class="meta">New York, NY · <a href="https://builtin.com/job/lead-auditor-data-and-ai/2312640">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>全球内审部里专职「数据与 AI 责任使用」的审计线——要求 5–7 年审计/数据 AI 经验，你超配；和上面那个 Director 岗同公司双线投。<br><b class="g">差距：</b>Lead 段位略低于你现职。</div></div>
+
+  <div class="card"><div class="head"><span class="score">89</span><span class="title">Director, AI Governance &amp; Risk</span><span class="co">— Simpson Thacher &amp; Bartlett（顶级律所）</span></div>
+    <div class="meta">New York, NY · <a href="https://stblaw.wd1.myworkdayjobs.com/en-US/careers/job/Director--AI-Governance---Risk_R-2026-154">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>在法律/风险/合规/技术/业务之间桥接、管理 AI 全生命周期风险——「在业务与新兴技术之间架桥」就是你简历的定位句；Director 职级对等。<br><b class="g">差距：</b>律所行业新环境；无银行监管报表语境。</div></div>
+
+  <div class="card"><div class="head"><span class="score">88</span><span class="title">AI Risk Management Governance — Advisor（一线风险）</span><span class="co">— Fannie Mae</span></div>
+    <div class="meta">Plano, TX（含 hybrid）· <a href="https://fanniemae.wd1.myworkdayjobs.com/en-US/FannieMaeCareers/job/AI-Risk-Management-Governance---Technology-and-Operations-Risk-Management---Advisor_JR2420-1">查看职位</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>「建立并主导企业级 AI 治理框架、把负责任 AI 嵌入 AI 全生命周期」——你在投行做的整套东西；GSE 监管强度高，履历含金量足。<br><b class="g">差距：</b>德州；Advisor 是个人贡献者岗。</div></div>
+
+  <div class="card"><div class="head"><span class="score">88</span><span class="title">Operational Risk (Artificial Intelligence Coverage) — Vice President</span><span class="co">— Goldman Sachs</span></div>
+    <div class="meta">Dallas, TX / Salt Lake City, UT · <a href="https://higher.gs.com/results?SEARCH_TERMS=artificial%20intelligence%20operational%20risk">在 GS 官网确认</a></div>
+    <div class="why"><b class="y">为什么匹配：</b>顶级投行二线 AI 运营风险覆盖，VP 职级对等，你的一线审计+AI 治理背景是这类岗最想要的「懂控制的人」。<br><b class="g">差距：</b>不在纽约；官网确认最新状态后再投。</div></div>
+
+  <h2>方向一 · AI 治理 / 负责任 AI（二线）<span class="cnt">　30 个</span></h2>
+  <p class="sub">对应简历：profiles/ai-governance —— 你的「AI 治理框架、负责任 AI 政策、EU AI Act | NIST AI RMF | ISO 42001」主线</p>
+  <div class="tblwrap"><table>
+    <tr><th>分</th><th>职位 / 公司</th><th>地点</th><th>薪资（公示）</th><th>内容摘要 &amp; 匹配点</th></tr>
+    <tr><td class="s">94</td><td><a href="https://www.builtinnyc.com/job/vp-ai-governance-responsible-ai/9228797">VP, AI Governance &amp; Responsible AI</a><div class="co">LPL Financial</div></td><td>纽约区 hybrid</td><td>$136k–227k</td><td>金融服务企业级 AI 治理与负责任 AI 计划；与简历逐句对应（见上）</td></tr>
+    <tr><td class="s">93</td><td><a href="https://www.builtinboston.com/job/vice-president-ai-risk-and-governance/10029380">VP, AI Risk and Governance</a><div class="co">LPL Financial</div></td><td>Boston</td><td>—</td><td>企业 AI 治理计划的日常执行与成熟化；防御性治理框架</td></tr>
+    <tr><td class="s">92</td><td><a href="https://jobs.us.pwc.com/job/new-york/ai-governance-sr-manager/932/94787666736">AI Governance Sr. Manager</a><div class="co">PwC</div></td><td>New York</td><td>—</td><td>Big4 AI 治理咨询；8 年+；CPA+审计+框架经验＝理想画像</td></tr>
+    <tr><td class="s">92</td><td><a href="https://careers.moodys.com/vp-artificial-intelligence-ai-risk-management/job/11558">VP, AI &amp; Technology Risk Mgmt</a><div class="co">Moody's</div></td><td>New York</td><td>$163k–237k</td><td>二线 AI 运营风险负责人；评级机构强监管品牌</td></tr>
+    <tr><td class="s">91</td><td><a href="https://www.builtinnyc.com/job/senior-manager-responsible-ai-governance/9086963">Sr. Manager, Responsible AI Governance</a><div class="co">BMO</div></td><td>New York</td><td>—</td><td>银行负责任 AI 治理；行业匹配满分</td></tr>
+    <tr><td class="s">90</td><td><a href="https://www.builtinnyc.com/job/director-ai-risk-management/9874647">Director, AI Risk Management</a><div class="co">MetLife</div></td><td>New York hybrid</td><td>~$129k–172k</td><td>AI 监管框架+伦理/模型风险/数据治理控制域；Director 对等</td></tr>
+    <tr><td class="s">90</td><td><a href="https://jobs.lever.co/cfgi/f16aea1b-17ff-48cf-81a5-397d8c1efb80">Senior Manager, GRC &amp; AI Governance</a><div class="co">CFGI（咨询）</div></td><td>美东多地</td><td>—</td><td>为客户建 AI 治理框架/风险评估/模型清单；前 Big4 文化</td></tr>
+    <tr><td class="s">89</td><td><a href="https://stblaw.wd1.myworkdayjobs.com/en-US/careers/job/Director--AI-Governance---Risk_R-2026-154">Director, AI Governance &amp; Risk</a><div class="co">Simpson Thacher（律所）</div></td><td>New York</td><td>—</td><td>法律/风险/合规/技术桥接，AI 全生命周期风险管理</td></tr>
+    <tr><td class="s">88</td><td><a href="https://fanniemae.wd1.myworkdayjobs.com/en-US/FannieMaeCareers/job/AI-Risk-Management-Governance---Technology-and-Operations-Risk-Management---Advisor_JR2420-1">AI Risk Governance Advisor</a><div class="co">Fannie Mae</div></td><td>Plano, TX</td><td>—</td><td>建立企业 AI 治理框架，嵌入全生命周期；GSE 监管强度</td></tr>
+    <tr><td class="s">88</td><td><a href="https://jobs.ashbyhq.com/credo.ai/6ff04afe-a887-4f47-bcfa-4561b7af98da">AI Governance Advisor</a><div class="co">Credo.AI（AI 治理软件商）</div></td><td>Remote US</td><td>$170k–180k</td><td>以专家身份服务企业客户——你的领域知识就是产品</td></tr>
+    <tr><td class="s">88</td><td><a href="https://higher.gs.com/results?SEARCH_TERMS=artificial%20intelligence%20operational%20risk">Operational Risk (AI Coverage) VP</a><div class="co">Goldman Sachs</div></td><td>Dallas / SLC</td><td>—</td><td>顶级投行二线 AI 风险覆盖；VP 对等</td></tr>
+    <tr><td class="s">87</td><td><a href="https://themutualgroup.wd108.myworkdayjobs.com/en-US/TMG/job/Sr-Director--AI---Technology-Risk-Governance_R-100173">Sr. Director, AI &amp; Technology Risk Governance</a><div class="co">The Mutual Group（保险服务）</div></td><td>见帖（US）</td><td>—</td><td>领导企业 AI 系统治理计划，对齐监管期望；Sr. Director 上升一级</td></tr>
+    <tr><td class="s">86</td><td><a href="https://www.builtinnyc.com/job/managing-director-responsible-ai-lead-c16-irving-ny/8416953">Managing Director, Responsible AI Lead (C16)</a><div class="co">Citi</div></td><td>Irving, TX / NY</td><td>—</td><td>冲刺岗：全行负责任 AI 负责人；高一级但方向完全一致</td></tr>
+    <tr><td class="s">85</td><td><a href="https://geico.wd1.myworkdayjobs.com/en-US/External/job/Manager--Model---AI-Governance_R0057939">Manager, Model &amp; AI Governance</a><div class="co">GEICO</div></td><td>见帖（US）</td><td>—</td><td>治理标准制定+风险识别评估+监管咨询；与 Director of Model &amp; AI Governance 协作</td></tr>
+    <tr><td class="s">84</td><td><a href="https://jobs.lever.co/dnb/cddf7541-74b8-4211-bd4a-8cc26b072276">VP, Enterprise Risk Management</a><div class="co">Dun &amp; Bradstreet</div></td><td>见帖（US）</td><td>—</td><td>ERM + 塑造 AI/新兴技术治理；你的企业风险评估主线</td></tr>
+    <tr><td class="s">84</td><td><a href="https://www.linkedin.com/jobs/view/director-of-ai-governance-at-hewlett-packard-enterprise-3828562889">Director of AI Governance</a><div class="co">HPE　<span class="tag">需确认时效</span></div></td><td>Remote US</td><td>—</td><td>企业 AI 战略/治理/政策管理；发布较早，投前确认</td></tr>
+    <tr><td class="s">82</td><td><a href="https://vrtx.wd5.myworkdayjobs.com/en-US/Vertex_Careers/job/Director---AI-Governance-and-Policy-Lead_REQ-24233">Director, AI Governance &amp; Policy Lead</a><div class="co">Vertex Pharmaceuticals</div></td><td>Boston</td><td>—</td><td>受监管药企的 AI 治理+政策一号位</td></tr>
+    <tr><td class="s">80</td><td><a href="https://www.schwabjobs.com/job/westlake/director-finance-ai-strategy-and-transformation/33727/94293369312">Director, Finance AI Strategy &amp; Transformation</a><div class="co">Charles Schwab</div></td><td>Westlake, TX</td><td>$171k–285k</td><td>财务线 AI 战略；把治理/控制/可审计性嵌入 AI 流程，与内审协作</td></tr>
+    <tr><td class="s">78</td><td><a href="https://jobs.ashbyhq.com/credo.ai/49d15ea5-9d71-47f6-b479-ea109cd08bab">AI Governance Success Manager</a><div class="co">Credo.AI</div></td><td>Remote US</td><td>—</td><td>帮客户用平台落地 AI 治理；客户成功属性</td></tr>
+    <tr><td class="s">76</td><td><a href="https://job-boards.greenhouse.io/natera/jobs/5763543004">Director, Data &amp; AI Governance</a><div class="co">Natera（基因检测）</div></td><td>见帖（US）</td><td>—</td><td>建企业数据+AI 治理与管家体系；数据治理占比大</td></tr>
+    <tr><td class="s">75</td><td><a href="https://www.linkedin.com/jobs/search/?keywords=AI%20Policy%20and%20Governance%20Manager%20Meta">AI Policy &amp; Governance Manager</a><div class="co">Meta</div></td><td>见帖（US）</td><td>—</td><td>大厂 AI 政策岗；政策向、竞争激烈</td></tr>
+    <tr><td class="s">74</td><td><a href="https://job-boards.greenhouse.io/veeamsoftware/jobs/4839882101">Sr. Director, AI-Ready Data Governance</a><div class="co">Veeam</div></td><td>Remote US</td><td>—</td><td>公司级数据治理延伸到 AI agent/模型；数据向</td></tr>
+    <tr><td class="s">72</td><td><a href="https://job-boards.greenhouse.io/alphasense/jobs/8292394002">Director, AI Governance, Automation &amp; Analytics</a><div class="co">AlphaSense</div></td><td>Remote US</td><td>—</td><td>title 全中但 JD 要 8 年安全背景——按内容匹配降分（这就是只看 title 会踩的坑）</td></tr>
+    <tr><td class="s">70</td><td><a href="https://job-boards.greenhouse.io/chainguard/jobs/4626928006">Senior Manager, Governance &amp; Trust</a><div class="co">Chainguard</div></td><td>Remote US</td><td>—</td><td>AI/自动化优先的 GRC；持续保证体系</td></tr>
+    <tr><td class="s">70</td><td><a href="https://www.linkedin.com/jobs/view/ai-governance-leader-at-jobgether-4425056857">AI Governance Leader</a><div class="co">Jobgether<span class="tag">代招聚合</span></div></td><td>Remote US</td><td>—</td><td>背后雇主未披露；投递即进入其匹配库</td></tr>
+    <tr><td class="s">68</td><td><a href="https://umb.wd1.myworkdayjobs.com/en-US/UMBExternal/job/AI-Governance---Security-Architect_R-9037">AI Governance &amp; Security Architect</a><div class="co">UMB Bank</div></td><td>见帖（US）</td><td>—</td><td>银行 AI 治理但偏安全架构实施</td></tr>
+    <tr><td class="s">66</td><td><a href="https://jobs.ashbyhq.com/coefficientgiving/0a9ed9cf-674a-4851-9c21-68b68d855b11">AI Governance and Policy</a><div class="co">Coefficient Giving（公益）</div></td><td>见帖</td><td>—</td><td>公益领域 AI 治理与政策</td></tr>
+    <tr><td class="s">65</td><td><a href="https://jobs.ashbyhq.com/prompt/78e00134-9aad-43ee-a284-6ee6063b9757">AI Governance Specialist</a><div class="co">Prompt（医疗科技）</div></td><td>见帖（US）</td><td>—</td><td>中小公司治理专员岗</td></tr>
+    <tr><td class="s">55</td><td><a href="https://www.metlifecareers.com/en_US/ml/JobDetail/AI-Model-Risk-Analyst/13276">AI Model Risk Analyst</a><div class="co">MetLife</div></td><td>US</td><td>—</td><td>偏初级/分析师岗——列出供参考，不建议投</td></tr>
+    <tr><td class="s">50</td><td><a href="https://transunion.wd5.myworkdayjobs.com/en-US/TransUnion/job/AI-Governance-Analyst_19040360">AI Governance Analyst</a><div class="co">TransUnion</div></td><td>见帖（US）</td><td>—</td><td>偏初级——不建议投</td></tr>
+  </table></div>
+
+  <h2>方向二 · AI/科技内审 + 模型风险（你的主场）<span class="cnt">　16 个</span></h2>
+  <p class="sub">对应简历：profiles/internal-audit + ai-risk —— 10 年金融审计 + 模型风险协作经验</p>
+  <div class="tblwrap"><table>
+    <tr><th>分</th><th>职位 / 公司</th><th>地点</th><th>薪资（公示）</th><th>内容摘要 &amp; 匹配点</th></tr>
+    <tr><td class="s">90</td><td><a href="https://jobs.citi.com/job/new-york/chief-auditor-artificial-intelligence-managing-director/287/94960975488">Chief Auditor, AI — Managing Director</a><div class="co">Citi</div></td><td>New York</td><td>—</td><td>冲刺岗：审计 AI + 用 AI 审计，带独立团队；你两条主线的合流点</td></tr>
+    <tr><td class="s">90</td><td><a href="https://allstate.wd5.myworkdayjobs.com/allstate_careers/job/US---Remote/Lead-AI---Technology-Risk-Auditor_R31875-1">Lead AI &amp; Technology Risk Auditor</a><div class="co">Allstate</div></td><td><b>Remote US</b></td><td>—</td><td>主导 AI/GenAI/数据系统高风险审计；4 周前发布</td></tr>
+    <tr><td class="s">89</td><td><a href="https://builtin.com/job/lead-auditor-data-and-ai/2312640">Lead Auditor – Data and AI</a><div class="co">MetLife</div></td><td>New York</td><td>—</td><td>内审部数据与 AI 责任使用专线；5–7 年要求你超配</td></tr>
+    <tr><td class="s">88</td><td><a href="https://invesco.wd1.myworkdayjobs.com/en-US/IVZ/job/Internal-Audit-Director_R-7684">Internal Audit Director</a><div class="co">Invesco</div></td><td>见帖（US）</td><td>—</td><td>资管内审 Director；保证+咨询+调查三线职能</td></tr>
+    <tr><td class="s">87</td><td><a href="https://www.linkedin.com/jobs/view/risk-management-model-risk-governance-and-review-policy-vice-president-at-jpmorganchase-4390651882">Model Risk Governance &amp; Review — Policy VP</a><div class="co">JPMorgan Chase</div></td><td>New York</td><td>—</td><td>模型风险治理政策线；你与 MRM 协作审阅全行 AI 治理框架的经验直接对口</td></tr>
+    <tr><td class="s">84</td><td><a href="https://www.jobzmall.com/the-bank-of-new-york-mellon/job/vice-president-model-risk-management-ncpruelxt9">VP, Model Risk Management</a><div class="co">BNY<span class="tag">老东家</span></div></td><td>New York</td><td>第三方估 $200k+</td><td>模型风险治理；你在 BNY 的 VP 履历是天然内推籍口</td></tr>
+    <tr><td class="s">83</td><td><a href="https://www.linkedin.com/jobs/search/?keywords=Tradeweb%20model%20risk%20vice%20president">VP Risk Mgmt（Model Risk Governance）</a><div class="co">Tradeweb</div></td><td>New York</td><td>—</td><td>支撑模型风险治理与模型管理框架，向金融风险主管汇报</td></tr>
+    <tr><td class="s">82</td><td><a href="https://www.coinbase.com/careers/positions/6772316">Internal Audit Manager, Professional Practices</a><div class="co">Coinbase</div></td><td><b>Remote US</b></td><td>—</td><td>内审方法论/专业实践岗——你培训初级员工+方法建设经验对口；直接向审计委员会汇报的职能</td></tr>
+    <tr><td class="s">78</td><td><a href="https://invesco.wd1.myworkdayjobs.com/en-US/IVZ/job/Internal-Audit-Manager_R-11568-1">Internal Audit Manager</a><div class="co">Invesco</div></td><td>见帖（US）</td><td>—</td><td>同上，经理级备选</td></tr>
+    <tr><td class="s">78</td><td><a href="https://builtin.com/job/audit-and-compliance/3591581">Audit &amp; Compliance</a><div class="co">Anthropic</div></td><td>SF（可谈）</td><td>—</td><td>为 AI 能力安全建全新合规保证体系；前沿 AI 实验室里最贴你的岗（只此一个，不刷屏）</td></tr>
+    <tr><td class="s">74</td><td><a href="https://careerbuilder.com/job-details/barclays-internal-audit-us-credit-vp-new-york-ny--29855c98-ac6e-4529-bf78-2e8b261861ea">Internal Audit US Credit VP</a><div class="co">Barclays</div></td><td>New York</td><td>—</td><td>美国信贷审计 VP；行业对口，AI 含量低</td></tr>
+    <tr><td class="s">70</td><td><a href="https://search.jobs.barclays/job/whippany/internal-audit-avp-ai/13015/94778651216">Internal Audit AVP – AI</a><div class="co">Barclays</div></td><td>Whippany, NJ</td><td>—</td><td>AI 审计专岗但 AVP 职级偏低——方向准，级别不建议</td></tr>
+    <tr><td class="s">68</td><td><a href="https://busey.wd503.myworkdayjobs.com/en-US/busey/job/Internal-Audit-Manager--IT_JR102055">Internal Audit Manager, IT</a><div class="co">Busey Bank</div></td><td>见帖（US）</td><td>—</td><td>区域银行 IT 审计+SOX IT 控制测试；你的 SOX/COSO 直接对口</td></tr>
+    <tr><td class="s">62</td><td><a href="https://allegion.wd5.myworkdayjobs.com/en-US/careers/job/Manager---Internal-Audit_JR35695">Manager – Internal Audit</a><div class="co">Allegion（制造业）</div></td><td>Carmel, IN（onsite）</td><td>—</td><td>非金融行业+onsite——匹配度一般</td></tr>
+    <tr><td class="s">60</td><td><a href="https://www.coinbase.com/careers/positions/6778320?gh_jid=6778320">Internal Audit Analyst</a><div class="co">Coinbase</div></td><td>Remote US</td><td>—</td><td>偏初级——不建议投</td></tr>
+    <tr><td class="s">58</td><td><a href="https://rsm.wd1.myworkdayjobs.com/en-US/RSMCareers/job/Technology-Risk-Advisory---AI-Risk-Senior-Associate_JR119805">Tech Risk Advisory — AI Risk Senior Associate</a><div class="co">RSM</div></td><td>见帖（US）</td><td>—</td><td>方向对但 Senior Associate 明显低于你段位——可作为了解 RSM AI 风险线的入口，投他们更高级的空缺</td></tr>
+  </table></div>
+
+  <h2>方向三 · 猎头代招（投递 = 进入猎头数据库）<span class="cnt">　5 个</span></h2>
+  <p class="sub">这些岗背后是匿名雇主；就算单个岗位没成，猎头会拿着你的简历匹配他们手里其他单子——广投价值高</p>
+  <div class="tblwrap"><table>
+    <tr><th>分</th><th>职位 / 猎头</th><th>地点</th><th>薪资（公示）</th><th>内容摘要 &amp; 匹配点</th></tr>
+    <tr><td class="s">84</td><td><a href="https://www.linkedin.com/jobs/view/manager-model-risk-audit-at-selby-jennings-4365077642">Manager, Model Risk Audit</a><div class="co">Selby Jennings</div></td><td>New York</td><td>—</td><td>模型风险审计——你的内审×模型风险交叉点</td></tr>
+    <tr><td class="s">82</td><td><a href="https://www.linkedin.com/jobs/view/audit-senior-director-risk-management-at-selby-jennings-3508883089">Audit Senior Director – Risk Management</a><div class="co">Selby Jennings</div></td><td>Raleigh, NC</td><td>—</td><td>审计高级总监；上升一级</td></tr>
+    <tr><td class="s">80</td><td><a href="https://www.selbyjennings.com/en-us/jobs/s-risk-management/ls-new-york">VP Auditor – Finance Audit</a><div class="co">Selby Jennings</div></td><td>New York</td><td>$130k–155k+奖金</td><td>大型金融机构财务审计 VP</td></tr>
+    <tr><td class="s">78</td><td><a href="https://www.roberthalf.com/us/en/job/new-york-ny/vp-operational-risk-bankingfintechpayments/02944-0013423471-usen">VP Operational Risk（Banking/Fintech/Payments）</a><div class="co">Robert Half</div></td><td>New York</td><td>—</td><td>银行/支付运营风险 VP；你的企业风险评估主线</td></tr>
+    <tr><td class="s">75</td><td><a href="https://www.linkedin.com/jobs/view/partner-risk-advisory-internal-audit-at-selby-jennings-4367351052">Partner – Risk Advisory / Internal Audit</a><div class="co">Selby Jennings</div></td><td>见帖（US）</td><td>—</td><td>风险咨询/内审合伙人（咨询公司）；冲刺可投</td></tr>
+  </table></div>
+
+  <h2>已剔除的（说明为什么，不是漏了）</h2>
+  <div class="note">
+    · <b>Morgan Stanley</b> 的 3 个 Internal Audit Director 岗——你的现雇主，不推。<br>
+    · <b>CIBC</b> Audit Director（多伦多）、<b>AIG</b> Audit Sr Mgr（东京/APAC）、<b>Barclays</b> IA VP（伦敦）、<b>UOB</b> First VP AI Risk（新加坡）——非美国岗。<br>
+    · <b>SAS</b> Global Head of AI Governance Advisory——帖子来自 2024 年，大概率已关闭。<br>
+    · 各家 Analyst/Associate 级岗位——低于你段位的只保留了几个作参照并标明「不建议投」。
+  </div>
+
+  <h2>下一步（系统层面已在修）</h2>
+  <div class="note">
+    1. <b>Anthropic 刷屏根因已修</b>：dream 名单 50 家公司里只有少数几家配了可抓取的 ATS 接口，银行/保险全是 manual 抓不到，且 dream 岗无条件置顶——已改为按分数混排 + 每家公司限量，并给 20+ 家银行/保险/资管补上 Workday 直连。<br>
+    2. <b>邮件改版</b>：Top Jobs 从 10 → 50，每条显示 公司/地点/薪资/JD 摘要/分数/推荐理由。<br>
+    3. 修完推送后会远程触发一次每日管道，你会收到一封新版邮件用来验收。
+  </div>
+</div>

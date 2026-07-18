@@ -55,8 +55,10 @@ fit_weights:
 # ---- 每日 Career Brief（一封邮件管所有事）---------------------
 brief:
   primary_profile: ai-governance  # dream 岗位用哪个 profile 的简历评分
-  top_jobs: 10          # Top Jobs 数量（跨三个方向合并去重后）
-  dream_max: 15         # dream 官网新岗每天最多精评几个
+  top_jobs: 50          # Top Jobs 数量（跨三个方向合并去重后，公司多样性优先）
+  per_company_cap: 3    # Top Jobs 里同一家公司最多出现几次（防刷屏）
+  dream_per_company: 3  # Dream 栏目里同一家公司最多出现几次
+  dream_max: 12         # dream 官网新岗每天最多精评几个
   research_top: 3       # 自动尽调几家公司（缓存14天，不重复花钱）
   networking_top: 4     # 为前几个岗位生成内推人选链接
   weekly_day: 0         # 周几做每周动作（0=周一：LinkedIn 内容 + recruiter 周计划）
@@ -65,7 +67,7 @@ brief:
 min_score: 30
 
 # 每个方向每天邮件里最多展示多少个岗位
-top_n: 20
+top_n: 40
 
 # 只推送"今天新出现"的岗位（跨天去重，每个 profile 独立）
 new_only: true
@@ -80,7 +82,7 @@ locations:
 ai_scoring:
   enabled: true
   model: gpt-4o-mini
-  max_candidates: 40
+  max_candidates: 60
   prefilter_min_score: 8
 
 # 每天给最匹配的前 N 个岗位自动生成 cover letter 草稿附在邮件里（0=关闭）
