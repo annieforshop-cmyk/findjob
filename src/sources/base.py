@@ -61,6 +61,25 @@ class Job:
     ai_ghost_risk: str = ""         # low / medium / high
     ai_company_note: str = ""       # brief reputation/context
 
+    # Fit Score v2 dimensions (ai_score.py); -1 = not scored
+    ai_industry: float = -1.0       # industry fit (banking/FS/regulated > other)
+    ai_leadership: float = -1.0     # people/program leadership scope fit
+    ai_gov: float = -1.0            # AI-governance / responsible-AI relevance
+    ai_growth: float = -1.0         # learning & growth upside
+    ai_comp: float = -1.0           # comp attractiveness vs candidate's level
+    ai_career: float = -1.0         # 3-5yr path toward Head/Director of AI Governance
+    ai_stability: str = ""          # company stability / layoff risk: low|medium|high
+    ai_recruiter_odds: float = -1.0 # realistic odds of recruiter response / interview
+    ai_composite: float = -1.0      # weighted composite of all dimensions
+
+    # set by the dream-company monitor: this employer is on the Target-50 list
+    dream: bool = False
+    dream_tier: int = 0
+
+    # set by network.flag_agencies: posted by a staffing/search firm —
+    # applying puts you in that recruiter's database (high-value channel)
+    agency: bool = False
+
     @property
     def id(self) -> str:
         """Stable id for cross-day dedupe. Prefer URL, fall back to title+company."""
@@ -69,7 +88,9 @@ class Job:
 
     @property
     def rank_score(self) -> float:
-        """AI fit if it ran, otherwise the keyword score."""
+        """Composite fit if computed, else AI fit, else the keyword score."""
+        if self.ai_composite >= 0:
+            return self.ai_composite
         return self.ai_score if self.ai_score >= 0 else self.score
 
     @property

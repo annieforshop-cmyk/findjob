@@ -27,6 +27,40 @@ candidate:
   years_bank_internal_audit: 8
   work_authorization: US authorized, no sponsorship needed
 
+# ---- 职业战略（Career Strategy）------------------------------
+# 每个岗位除了"现在匹配"，还会按这个 3-5 年目标打 career_path_fit 分：
+# 这份工作是不是通往目标的垫脚石（品牌、scope、轨迹），而不只是当前薪资。
+career_goal: >-
+  In 3-5 years, become Head / Director of AI Governance (or Chief AI Risk /
+  AI Assurance leader) at a major bank, asset manager, or AI-forward regulated
+  company. Roles that build toward this: owning AI governance frameworks,
+  leading responsible-AI programs, AI risk/model-risk leadership, and audit
+  leadership with a heavy AI mandate. Prefer brand-name regulated institutions
+  and roles with executive visibility over small lateral pay bumps.
+
+# ---- Fit Score v2 复合评分权重（总和不必等于1，会归一化）-------
+fit_weights:
+  overall: 0.20          # LLM 综合判断
+  skills: 0.16           # 技能/内容契合
+  seniority: 0.08        # 职级契合
+  industry: 0.10         # 行业契合（银行/金融/受监管行业加分）
+  leadership: 0.06       # 领导力 scope 契合
+  ai_governance: 0.10    # AI 治理相关度
+  career_path: 0.12      # ⭐ 是否通往 3-5 年目标（Head of AI Governance）
+  growth: 0.05           # 成长空间
+  comp: 0.05             # 薪资吸引力
+  recruiter_odds: 0.08   # 现实回复概率（避免全投神仙岗）
+# 另有稳定性调整：裁员风险 low +3 / high -8（见 src/ai_score.py）
+
+# ---- 每日 Career Brief（一封邮件管所有事）---------------------
+brief:
+  primary_profile: ai-governance  # dream 岗位用哪个 profile 的简历评分
+  top_jobs: 10          # Top Jobs 数量（跨三个方向合并去重后）
+  dream_max: 15         # dream 官网新岗每天最多精评几个
+  research_top: 3       # 自动尽调几家公司（缓存14天，不重复花钱）
+  networking_top: 4     # 为前几个岗位生成内推人选链接
+  weekly_day: 0         # 周几做每周动作（0=周一：LinkedIn 内容 + recruiter 周计划）
+
 # 只保留最终排名分 >= 这个阈值的岗位（0-100）。可被 profile 覆盖。
 min_score: 30
 

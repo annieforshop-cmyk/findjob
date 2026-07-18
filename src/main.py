@@ -76,7 +76,9 @@ def _read_resume(dir_: Path) -> str:
     return ""
 
 
-def run_profile(profile: str | None, dry_run: bool) -> int:
+def collect_profile(profile: str | None, dry_run: bool = False) -> dict:
+    """Fetch + score one profile. Writes dedupe/last-run state unless dry_run.
+    Returns {cfg, label, ns, top, meta, tailored} — no email sent here."""
     cfg, resume, ns, label = load_context(profile)
     prof = build_profile(cfg, resume)
     acfg = cfg.get("ai_scoring", {}) or {}
@@ -84,6 +86,14 @@ def run_profile(profile: str | None, dry_run: bool) -> int:
     print(f"\n=== profile: {label} ===", file=sys.stderr)
     jobs = fetch_all(cfg)
     scanned = len(jobs)
+
+    try:
+        from . import dream
+        flagged = dream.flag_dream(jobs)
+        if flagged:
+            print(f"  dream: flagged {flagged} aggregator jobs at Target-50 companies", file=sys.stderr)
+    except Exception as e:
+        print(f"  dream flagging skipped: {e}", file=sys.stderr)
 
     prefilter = acfg.get("prefilter_min_score", cfg.get("min_score", 25)) if acfg.get("enabled") else cfg.get("min_score", 25)
     candidates = score_all(jobs, prof, prefilter)
@@ -111,6 +121,18 @@ def run_profile(profile: str | None, dry_run: bool) -> int:
 
     tailored = _auto_tailor(top, resume, cfg)
     meta = {"scanned": scanned, "min_score": min_score, "used_ai": used_ai, "label": label}
+
+    if not dry_run:
+        store.save_seen(seen, ns)
+        store.save_last_run([j.to_dict() for j in top], ns)
+    return {"cfg": cfg, "resume": resume, "label": label, "ns": ns,
+            "top": top, "meta": meta, "tailored": tailored}
+
+
+def run_profile(profile: str | None, dry_run: bool) -> int:
+    """Legacy per-profile mode: collect then email this profile's own digest."""
+    res = collect_profile(profile, dry_run)
+    top, meta, tailored, label = res["top"], res["meta"], res["tailored"], res["label"]
     text_body = digest.build_text(top, meta, tailored)
     html_body = digest.build_html(top, meta, tailored)
     subject = f"[findjob · {label}] {date.today().isoformat()} · {len(top)} 个匹配岗位"
@@ -124,8 +146,6 @@ def run_profile(profile: str | None, dry_run: bool) -> int:
         notify_email.send(subject, text_body, html_body)
     else:
         print(f"  {label}: no jobs above threshold; skipping email", file=sys.stderr)
-    store.save_seen(seen, ns)
-    store.save_last_run([j.to_dict() for j in top], ns)
     return 0
 
 

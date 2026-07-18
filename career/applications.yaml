@@ -1,0 +1,19 @@
+# ============================================================
+#  Application Tracker — 投递后不失联
+#  每投一个岗位记一条（或用命令行 python -m src.track apply ...）。
+#  每日 Career Brief 自动提醒：
+#   - 投递 7 天无回音 → follow-up #1（找到 hiring manager/recruiter 发消息）
+#   - 14 天 → follow-up #2 / 转 networking
+#   - 面试安排后 → 自动提示做 interview prep
+#  status: applied / followed-up / interviewing / offer / rejected / withdrawn
+# ============================================================
+
+applications: []
+#  - company: Citi
+#    title: Director, AI Governance
+#    url: https://jobs.citi.com/...
+#    applied: 2026-07-10
+#    status: applied
+#    via: referral        # referral / recruiter / direct / linkedin
+#    contact: John Smith  # 内推人或 recruiter
+#    notes: 用了 ai-governance profile 简历 v3

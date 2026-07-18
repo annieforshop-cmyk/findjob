@@ -1,0 +1,274 @@
+# ============================================================
+#  Dream Companies — Target 50
+#  两条监控通道（都自动跑，互为备份）：
+#   1) ats: greenhouse/lever/ashby/smartrecruiters/workday
+#      → 每天直连该公司官方招聘 API，抓"官网 Career Page 新岗位"
+#      （不依赖 LinkedIn，不消耗 JSearch 配额）
+#   2) 所有公司（含 ats: manual）→ 聚合源(JSearch/Adzuna)结果里
+#      命中这些公司名的岗位自动打 ⭐Dream 标并加权置顶
+#  tier: 1=最想去  2=很好  3=值得看
+#  ats token 若失效，每日日志会提示，改这里即可。
+# ============================================================
+
+# 官网岗位先用这些关键词过滤（命中 title 或 JD 才进入 AI 精评）
+keywords:
+  - ai governance
+  - responsible ai
+  - ai risk
+  - ai policy
+  - ai assurance
+  - ai compliance
+  - model risk
+  - model governance
+  - internal audit
+  - audit director
+  - audit manager
+  - technology risk
+  - enterprise risk
+  - operational risk
+  - trust and safety
+  - risk management
+  - compliance
+
+companies:
+  # ---------- AI / 前沿科技（AI Governance 增长最快的地方） ----------
+  - name: Anthropic
+    tier: 1
+    ats: greenhouse
+    token: anthropic
+    careers: https://www.anthropic.com/careers
+  - name: OpenAI
+    tier: 1
+    ats: ashby
+    token: openai
+    careers: https://openai.com/careers
+  - name: Scale AI
+    tier: 2
+    ats: greenhouse
+    token: scaleai
+    careers: https://scale.com/careers
+  - name: Cohere
+    tier: 3
+    ats: ashby
+    token: cohere
+    careers: https://cohere.com/careers
+  - name: Databricks
+    tier: 2
+    ats: greenhouse
+    token: databricks
+    careers: https://www.databricks.com/company/careers
+  - name: Palantir
+    tier: 2
+    ats: lever
+    token: palantir
+    careers: https://www.palantir.com/careers
+  - name: NVIDIA
+    tier: 2
+    ats: workday
+    host: nvidia.wd5.myworkdayjobs.com
+    site: NVIDIAExternalCareerSite
+    careers: https://www.nvidia.com/en-us/about-nvidia/careers/
+  - name: Microsoft
+    tier: 1
+    ats: manual
+    careers: https://jobs.careers.microsoft.com/global/en/search?q=AI%20governance
+  - name: Google
+    tier: 1
+    ats: manual
+    careers: https://www.google.com/about/careers/applications/jobs/results/?q=%22AI%20governance%22
+  - name: IBM
+    tier: 3
+    ats: manual
+    careers: https://www.ibm.com/careers/search?q=AI%20governance
+  - name: Salesforce
+    tier: 3
+    ats: manual
+    careers: https://careers.salesforce.com/en/jobs/?search=AI+governance
+  - name: ServiceNow
+    tier: 3
+    ats: smartrecruiters
+    token: ServiceNow
+    careers: https://careers.servicenow.com
+
+  # ---------- Fintech（审计/风控 + AI 双重需求） ----------
+  - name: Stripe
+    tier: 2
+    ats: greenhouse
+    token: stripe
+    careers: https://stripe.com/jobs
+  - name: Coinbase
+    tier: 3
+    ats: greenhouse
+    token: coinbase
+    careers: https://www.coinbase.com/careers
+  - name: Affirm
+    tier: 3
+    ats: greenhouse
+    token: affirm
+    careers: https://www.affirm.com/careers
+  - name: Robinhood
+    tier: 3
+    ats: greenhouse
+    token: robinhood
+    careers: https://careers.robinhood.com
+  - name: Plaid
+    tier: 3
+    ats: lever
+    token: plaid
+    careers: https://plaid.com/careers
+
+  # ---------- 大银行 / 投行（你的主场：内审 → AI 治理） ----------
+  - name: JPMorgan Chase
+    tier: 1
+    ats: manual
+    careers: https://careers.jpmorgan.com/us/en/search-results?keywords=AI%20governance
+  - name: Goldman Sachs
+    tier: 1
+    ats: manual
+    careers: https://higher.gs.com/results?SEARCH_TERMS=AI%20governance
+  - name: Citi
+    tier: 1
+    ats: manual
+    careers: https://jobs.citi.com/search-jobs/AI%20governance
+  - name: Bank of America
+    tier: 1
+    ats: manual
+    careers: https://careers.bankofamerica.com/en-us/job-search?search-terms=AI%20governance
+  - name: Wells Fargo
+    tier: 2
+    ats: manual
+    careers: https://www.wellsfargojobs.com/en/jobs/?search=AI+governance
+  - name: Capital One
+    tier: 1
+    ats: manual
+    careers: https://www.capitalonecareers.com/search-jobs/AI%20governance
+  - name: American Express
+    tier: 2
+    ats: manual
+    careers: https://aexp.eightfold.ai/careers?query=AI%20governance
+  - name: HSBC
+    tier: 3
+    ats: manual
+    careers: https://mycareer.hsbc.com/en_GB/external/SearchJobs/?3_111_3=%22AI%20governance%22
+  - name: Barclays
+    tier: 3
+    ats: manual
+    careers: https://search.jobs.barclays/search-jobs/AI%20governance
+  - name: UBS
+    tier: 3
+    ats: manual
+    careers: https://jobs.ubs.com/TGnewUI/Search/Home/Home?partnerid=25008&siteid=5012
+  - name: TD Bank
+    tier: 3
+    ats: manual
+    careers: https://jobs.td.com/en/search-jobs/AI%20governance
+  - name: PNC
+    tier: 3
+    ats: manual
+    careers: https://careers.pnc.com/global/en/search-results?keywords=AI%20governance
+  - name: U.S. Bank
+    tier: 3
+    ats: manual
+    careers: https://careers.usbank.com/global/en/search-results?keywords=AI%20governance
+  - name: Truist
+    tier: 3
+    ats: manual
+    careers: https://careers.truist.com/us/en/search-results?keywords=AI%20governance
+  - name: Discover
+    tier: 3
+    ats: manual
+    careers: https://jobs.discover.com/us/en/search-results?keywords=AI%20governance
+  - name: Synchrony
+    tier: 3
+    ats: manual
+    careers: https://www.synchronycareers.com/search-jobs
+
+  # ---------- 资管 / 保险（监管重、AI 治理刚起步 = 机会窗口） ----------
+  - name: BlackRock
+    tier: 1
+    ats: manual
+    careers: https://careers.blackrock.com/search-jobs/AI%20governance
+  - name: Vanguard
+    tier: 2
+    ats: manual
+    careers: https://www.vanguardjobs.com/search-jobs/AI%20governance
+  - name: Fidelity
+    tier: 2
+    ats: manual
+    careers: https://jobs.fidelity.com/search-jobs/AI%20governance
+  - name: State Street
+    tier: 3
+    ats: manual
+    careers: https://careers.statestreet.com/global/en/search-results?keywords=AI%20governance
+  - name: Charles Schwab
+    tier: 3
+    ats: manual
+    careers: https://www.schwabjobs.com/search-jobs/AI%20governance
+  - name: TIAA
+    tier: 3
+    ats: manual
+    careers: https://careers.tiaa.org/global/en/search-results?keywords=AI%20governance
+  - name: MetLife
+    tier: 3
+    ats: manual
+    careers: https://jobs.metlife.com/search-jobs/AI%20governance
+  - name: Prudential
+    tier: 3
+    ats: manual
+    careers: https://jobs.prudential.com/us-en/search-jobs/AI%20governance
+  - name: AIG
+    tier: 3
+    ats: manual
+    careers: https://careersataig.com/search-jobs
+  - name: Chubb
+    tier: 3
+    ats: manual
+    careers: https://careers.chubb.com/global/en/search-results?keywords=AI%20governance
+  - name: New York Life
+    tier: 3
+    ats: manual
+    careers: https://jobs.newyorklife.com/search-jobs/AI%20governance
+
+  # ---------- 咨询 / Big-4（AI Governance 咨询需求爆发） ----------
+  - name: Deloitte
+    tier: 2
+    ats: manual
+    careers: https://apply.deloitte.com/en_US/careers/SearchJobs/AI%20governance
+  - name: PwC
+    tier: 2
+    ats: manual
+    careers: https://jobs.us.pwc.com/search-jobs/AI%20governance
+  - name: EY
+    tier: 2
+    ats: manual
+    careers: https://careers.ey.com/ey/search/?q=AI+governance
+  - name: KPMG
+    tier: 2
+    ats: manual
+    careers: https://www.kpmguscareers.com/job-search/?keyword=AI%20governance
+  - name: Accenture
+    tier: 3
+    ats: manual
+    careers: https://www.accenture.com/us-en/careers/jobsearch?jk=AI%20governance
+  - name: Protiviti
+    tier: 3
+    ats: manual
+    careers: https://www.protiviti.com/us-en/careers
+  - name: McKinsey & Company
+    tier: 2
+    ats: manual
+    careers: https://www.mckinsey.com/careers/search-jobs
+
+  # ---------- 监管 / 市政基础设施（稳定 + 使命感） ----------
+  - name: FINRA
+    tier: 2
+    ats: manual
+    careers: https://www.finra.org/careers
+  - name: Federal Reserve Bank of New York
+    tier: 2
+    ats: manual
+    careers: https://www.newyorkfed.org/careers
+  - name: Fannie Mae
+    tier: 3
+    ats: manual
+    careers: https://careers.fanniemae.com/global/en/search-results?keywords=AI%20governance
