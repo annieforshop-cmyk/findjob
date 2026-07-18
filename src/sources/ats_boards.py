@@ -8,8 +8,11 @@ API 和 Workday 的 CxS 搜索接口都是公开的。聚合器(JSearch/Adzuna)�
 """
 from __future__ import annotations
 
+import json
 import random
+import re
 import sys
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -21,9 +24,18 @@ from .base import Job, clean_html
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 CFG_PATH = ROOT / "career" / "ats_companies.yaml"
+DETAIL_CACHE_PATH = ROOT / "data" / "ats_details.json"
+DETAIL_CACHE_TTL = 21 * 86400   # 抓过的 JD 详情缓存 3 周——每天只补抓"新增"岗位
 TIMEOUT = 25
 WORKERS = 8                # 温和的并发度，避免触发限流
-DETAILS_PER_COMPANY = 25   # Workday/SmartRecruiters 列表无 JD，最多补抓多少个详情页
+DETAILS_PER_COMPANY = 30   # 每公司每天最多补抓多少个【相关】岗位的详情页
+
+# 详情补抓前的标题相关性过滤：只有标题命中这些方向的岗位才值得花请求抓 JD。
+# （防止"每公司前 N 个"盲抓——前 N 个可能全是销售/工程岗，与候选人完全无关）
+_RELEVANT_TITLE = re.compile(
+    r"audit|governance|risk|compliance|responsible ai|ai risk|ai policy|"
+    r"ai assurance|ai oversight|ai ethics|model risk|model governance|"
+    r"model validation|internal control|grc|regulatory|trust", re.I)
 
 # Workday 接口是搜索式的：用覆盖三个方向的核心词查询（profile 无关，可缓存）
 WORKDAY_QUERIES = (
@@ -41,6 +53,54 @@ _HDRS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 _cache: list[Job] | None = None
+
+# ---- 详情页持久缓存（data/ 会被 workflow 每天回写仓库，跨天生效） ----
+_detail_lock = threading.Lock()
+_detail_cache: dict | None = None
+_detail_dirty = False
+
+
+def _load_details() -> dict:
+    global _detail_cache
+    if _detail_cache is None:
+        try:
+            _detail_cache = json.loads(DETAIL_CACHE_PATH.read_text())
+        except Exception:
+            _detail_cache = {}
+    return _detail_cache
+
+
+def _detail_get(url: str) -> dict | None:
+    with _detail_lock:
+        return _load_details().get(url)
+
+
+def _detail_put(url: str, desc: str, loc: str) -> None:
+    global _detail_dirty
+    with _detail_lock:
+        _load_details()[url] = {"d": desc, "l": loc, "t": time.time()}
+        _detail_dirty = True
+
+
+def _save_details() -> None:
+    global _detail_dirty
+    with _detail_lock:
+        if not _detail_dirty or _detail_cache is None:
+            return
+        now = time.time()
+        DETAIL_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        DETAIL_CACHE_PATH.write_text(json.dumps(
+            {k: v for k, v in _detail_cache.items() if now - v.get("t", 0) < DETAIL_CACHE_TTL},
+            ensure_ascii=False))
+        _detail_dirty = False
+
+
+def _detail_targets(jobs: list[Job]) -> list[Job]:
+    """选出值得补抓详情的岗位：标题相关 + 未缓存的排前面，总数受限。"""
+    relevant = [j for j in jobs if _RELEVANT_TITLE.search(j.title or "")]
+    fresh = [j for j in relevant if _detail_get(j.url) is None]
+    cached = [j for j in relevant if _detail_get(j.url) is not None]
+    return (fresh[:DETAILS_PER_COMPANY], cached)
 
 
 def _pause() -> None:
@@ -102,8 +162,14 @@ def _smart(c: dict) -> list[Job]:
                                                         (loc.get("country") or "").upper()])),
                        posted=(j.get("releasedDate") or "")[:10],
                        tags=[str(j.get("id", ""))]))
-    # 列表接口没有 JD 正文——为前 N 个补抓详情（内容匹配和"从 JD 判断地点"都需要）
-    for j in out[:DETAILS_PER_COMPANY]:
+    # 列表接口没有 JD 正文——只为【标题相关】且【未缓存】的岗位补抓详情，
+    # 已缓存的直接复用（= 每天只处理新增岗位）
+    fresh, cached = _detail_targets(out)
+    for j in cached:
+        hit = _detail_get(j.url) or {}
+        j.description = hit.get("d", "")
+        j.location = hit.get("l") or j.location
+    for j in fresh:
         try:
             rid = j.tags[0]
             d = _req("GET", f"https://api.smartrecruiters.com/v1/companies/{c['token']}/postings/{rid}",
@@ -111,6 +177,7 @@ def _smart(c: dict) -> list[Job]:
             parts = ((d.get("jobAd") or {}).get("sections") or {})
             j.description = clean_html(" ".join(
                 str(v.get("text", "")) for v in parts.values() if isinstance(v, dict)))[:5000]
+            _detail_put(j.url, j.description, j.location)
         except Exception:
             continue
     return out
@@ -137,9 +204,15 @@ def _workday(c: dict) -> list[Job]:
                            tags=[path]))
     if not out:
         raise RuntimeError("0 postings — host/site 可能失效")
-    # 搜索接口没有 JD 正文——补抓详情：没有正文，内容匹配层会误杀这些岗位，
-    # 而且"从 JD 全文判断可用地点"也需要正文
-    for j in out[:DETAILS_PER_COMPANY]:
+    # 搜索接口没有 JD 正文——没有正文，内容匹配层会误杀这些岗位，
+    # 而且"从 JD 全文判断可用地点"也需要正文。
+    # 只为【标题相关】且【未缓存】的岗位补抓；已缓存的直接复用（每天只处理新增）。
+    fresh, cached = _detail_targets(out)
+    for j in cached:
+        hit = _detail_get(j.url) or {}
+        j.description = hit.get("d", "")
+        j.location = hit.get("l") or j.location
+    for j in fresh:
         try:
             d = _req("GET", f"https://{host}/wday/cxs/{tenant}/{site}{j.tags[0]}",
                      headers=_HDRS).json()
@@ -148,6 +221,7 @@ def _workday(c: dict) -> list[Job]:
             extra_loc = info.get("additionalLocations") or []
             if extra_loc:
                 j.location = ", ".join([j.location] + [str(x) for x in extra_loc])[:300]
+            _detail_put(j.url, j.description, j.location)
         except Exception:
             continue
     return out
@@ -180,5 +254,6 @@ def fetch(cfg: dict) -> list[Job]:
               file=sys.stderr)
     print(f"  ats_boards: {len(companies) - len(failed)} boards ok, {len(jobs)} raw jobs",
           file=sys.stderr)
+    _save_details()
     _cache = jobs
     return list(jobs)
