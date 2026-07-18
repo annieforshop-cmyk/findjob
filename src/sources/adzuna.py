@@ -19,19 +19,26 @@ def fetch(cfg: dict) -> list[Job]:
     acfg = cfg.get("adzuna", {}) or {}
     country = acfg.get("country", "us")
     per_page = acfg.get("results_per_page", 50)
+    pages = int(acfg.get("pages", 1))
     jobs: list[Job] = []
     for q in get_queries(cfg):
-        data = get_json(
-            f"https://api.adzuna.com/v1/api/jobs/{country}/search/1",
-            params={
-                "app_id": app_id,
-                "app_key": app_key,
-                "what": q,
-                "results_per_page": per_page,
-                "content-type": "application/json",
-            },
-        )
-        for item in data.get("results", []):
+        results = []
+        for page in range(1, pages + 1):
+            data = get_json(
+                f"https://api.adzuna.com/v1/api/jobs/{country}/search/{page}",
+                params={
+                    "app_id": app_id,
+                    "app_key": app_key,
+                    "what": q,
+                    "results_per_page": per_page,
+                    "content-type": "application/json",
+                },
+            )
+            batch = data.get("results", [])
+            results.extend(batch)
+            if len(batch) < per_page:  # 没有下一页了
+                break
+        for item in results:
             loc = ((item.get("location") or {}).get("display_name")) or ""
             jobs.append(
                 Job(

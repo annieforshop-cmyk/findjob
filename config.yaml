@@ -16,12 +16,17 @@ candidate:
     SENIOR MANAGER to Director — so judge roles by the described scope of work,
     not by the title word. Best fit: senior manager / director / VP-level roles
     in internal audit, AI governance, AI risk, model risk, and enterprise/tech
-    risk, ideally at banks, asset managers, insurers, Big-4/consulting, or large
-    regulated tech companies. Authorized to work in the US and does NOT need
-    visa sponsorship. Open to REMOTE, HYBRID, or ONSITE anywhere in the United
-    States — location is fine as long as the role is US-based (if a posting lists
-    multiple locations and any are in the US, that is acceptable). Not open to
-    non-US-only roles. Hands-on with GenAI tools (Copilot, Claude Code, ChatGPT,
+    risk. Target employers are BROAD: banks, asset managers, insurers,
+    Big-4/consulting, regulated tech, AND high-growth startups/scale-ups
+    (especially AI companies and GRC/audit/compliance software vendors, where
+    this candidate's domain knowledge IS the product), staffing/search-firm
+    postings, and European companies when the role can be performed from the
+    US (remote-US or via a US entity). Authorized to work in the US and does
+    NOT need US visa sponsorship; roles that can ONLY be worked outside the
+    US (no US entity, no remote-US option) are not acceptable. WORK-MODE
+    PREFERENCE: fully REMOTE is strongly preferred, HYBRID is acceptable but
+    less attractive, ONSITE-only is least attractive — reflect this in fit
+    judgments. Hands-on with GenAI tools (Copilot, Claude Code, ChatGPT,
     Gemini) and agentic AI workflows.
   years_total: 10
   years_bank_internal_audit: 8
@@ -82,8 +87,23 @@ locations:
 ai_scoring:
   enabled: true
   model: gpt-4o-mini
-  max_candidates: 60
-  prefilter_min_score: 8
+  max_candidates: 80        # 语义预筛后进入 GPT 深评的数量
+  prefilter_min_score: 5    # 关键词粗筛放宽——语义层会补漏
+
+# ---- 语义预筛（意思相近就算，不是死关键词）---------------------
+# 把整份简历和每个 JD 用 embedding 向量化，按余弦相似度与关键词分混排。
+# 每天几千个 JD 成本约几美分；没有 OPENAI_API_KEY 时自动退回关键词排序。
+embed_rank:
+  enabled: true
+  model: text-embedding-3-small
+  semantic_weight: 0.6      # 语义占 60%，关键词占 40%
+  max_jobs: 600             # 每个方向最多语义评估多少个粗筛幸存者
+
+# ---- 工作模式偏好：remote 加分，hybrid 降分，onsite 降更多 ------
+work_mode_adj:
+  remote: 2
+  hybrid: -2
+  onsite: -4
 
 # 每天给最匹配的前 N 个岗位自动生成 cover letter 草稿附在邮件里（0=关闭）
 auto_tailor_top: 0
@@ -102,10 +122,15 @@ sources:
                             #    公司清单在 career/ats_companies.yaml；key 失效时管道靠它保底
 
 # JSearch 默认参数（queries 在各 profile 里定义）
+# 覆盖 LinkedIn/Indeed/Glassdoor/ZipRecruiter 等。每页约 10 条：
+# 3 页 × 8 词 × 3 方向 ≈ 每天 700+ 条聚合平台岗位（配合 ats_boards 官网直连
+# 每天总扫描量 2000+）。注意 RapidAPI 配额按"页"计费，免费档不够就升一档
+# 或把 num_pages 调回 1。
 jsearch:
-  num_pages: 1
+  num_pages: 3
   date_posted: week
 
 adzuna:
   country: us
   results_per_page: 50
+  pages: 2                  # 每个搜索词翻 2 页 = 最多 100 条/词

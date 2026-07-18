@@ -91,3 +91,111 @@ companies:
   - {name: ServiceNow,        kind: smartrecruiters, token: ServiceNow}
   - {name: Visa,              kind: smartrecruiters, token: Visa}
   - {name: Experian,          kind: smartrecruiters, token: Experian}
+
+  # ============================================================
+  # 2026-07-18 扩池：GRC/审计软件商、AI startup、remote-first、
+  # 欧洲公司（有美国实体/remote-US）、更多金融机构。
+  # 候选人领域知识对 GRC 软件商来说就是产品本身——重点池。
+  # 接口失效会在日志提示，删掉或修 token 即可。
+  # ============================================================
+
+  # ---------- GRC / 审计 / 合规软件商（domain knowledge = product） ----------
+  - {name: AuditBoard,        kind: greenhouse, token: auditboard}
+  - {name: Workiva,           kind: greenhouse, token: workiva}
+  - {name: OneTrust,          kind: greenhouse, token: onetrust}
+  - {name: Diligent,          kind: greenhouse, token: diligent}
+  - {name: LogicGate,         kind: greenhouse, token: logicgate}
+  - {name: Drata,             kind: greenhouse, token: drata}
+  - {name: Vanta,             kind: ashby,      token: vanta}
+  - {name: Secureframe,       kind: greenhouse, token: secureframe}
+  - {name: Hyperproof,        kind: greenhouse, token: hyperproof}
+  - {name: Anecdotes,         kind: greenhouse, token: anecdotes}
+  - {name: Smartsheet,        kind: greenhouse, token: smartsheet}
+
+  # ---------- AI 治理 / ML 监控 startup（AI governance 的原生市场） ----------
+  - {name: Holistic AI,       kind: greenhouse, token: holisticai}
+  - {name: Arthur AI,         kind: greenhouse, token: arthur}
+  - {name: Fiddler AI,        kind: greenhouse, token: fiddlerlabs}
+  - {name: Arize AI,          kind: greenhouse, token: arizeai}
+  - {name: Weights & Biases,  kind: lever,      token: wandb}
+  - {name: Patronus AI,       kind: ashby,      token: PatronusAI}
+  - {name: Galileo,           kind: ashby,      token: galileo}
+  - {name: Trustible,         kind: ashby,      token: trustible}
+
+  # ---------- AI 实验室 / scale-up ----------
+  - {name: xAI,               kind: greenhouse, token: xai}
+  - {name: Mistral AI,        kind: lever,      token: mistral}
+  - {name: Glean,             kind: greenhouse, token: gleanwork}
+  - {name: Sierra AI,         kind: ashby,      token: Sierra}
+  - {name: Harvey,            kind: ashby,      token: harvey}
+  - {name: Writer,            kind: ashby,      token: writer}
+  - {name: Runway,            kind: greenhouse, token: runwayml}
+  - {name: Together AI,       kind: greenhouse, token: togetherai}
+  - {name: Waymo,             kind: greenhouse, token: waymo}
+
+  # ---------- Remote-first / 大型科技（治理与合规职能成熟） ----------
+  - {name: Zapier,            kind: greenhouse, token: zapier}
+  - {name: Remote.com,        kind: greenhouse, token: remotecom}
+  - {name: HashiCorp,         kind: greenhouse, token: hashicorp}
+  - {name: Grafana Labs,      kind: greenhouse, token: grafanalabs}
+  - {name: Elastic,           kind: greenhouse, token: elastic}
+  - {name: Twilio,            kind: greenhouse, token: twilio}
+  - {name: Okta,              kind: greenhouse, token: okta}
+  - {name: MongoDB,           kind: greenhouse, token: mongodb}
+  - {name: Reddit,            kind: greenhouse, token: reddit}
+  - {name: Figma,             kind: greenhouse, token: figma}
+  - {name: Discord,           kind: greenhouse, token: discord}
+  - {name: Samsara,           kind: greenhouse, token: samsara}
+  - {name: Atlassian,         kind: lever,      token: atlassian}
+  - {name: Spotify,           kind: lever,      token: spotify}
+
+  # ---------- 欧洲公司（美国实体 / remote-US 岗为目标） ----------
+  - {name: Revolut,           kind: greenhouse, token: revolut}
+  - {name: Wise,              kind: greenhouse, token: transferwise}
+  - {name: Adyen,             kind: greenhouse, token: adyen}
+  - {name: Klarna,            kind: lever,      token: klarna}
+  - {name: N26,               kind: greenhouse, token: n26}
+  - {name: Monzo,             kind: greenhouse, token: monzo}
+  - {name: Checkout.com,      kind: greenhouse, token: checkout}
+  - {name: Booking.com,       kind: workday, host: booking.wd3.myworkdayjobs.com, site: Booking}
+
+  # ---------- 更多美国金融 / 金融科技 ----------
+  - {name: Block (Square),    kind: smartrecruiters, token: Block}
+  - {name: Marqeta,           kind: greenhouse, token: marqeta}
+  - {name: Wealthfront,       kind: greenhouse, token: wealthfront}
+  - {name: Betterment,        kind: greenhouse, token: betterment}
+  - {name: Carta,             kind: greenhouse, token: carta}
+  - {name: Mercury,           kind: greenhouse, token: mercury}
+  - {name: Upgrade,           kind: greenhouse, token: upgrade}
+  - {name: Mastercard,        kind: workday, host: mastercard.wd1.myworkdayjobs.com, site: CorporateCareers}
+  - {name: PayPal,            kind: workday, host: paypal.wd1.myworkdayjobs.com,     site: jobs}
+  - {name: Discover,          kind: workday, host: discover.wd5.myworkdayjobs.com,   site: Discover}
+  - {name: Fifth Third Bank,  kind: workday, host: fitb.wd5.myworkdayjobs.com,       site: 53careers}
+  - {name: M&T Bank,          kind: workday, host: mtb.wd5.myworkdayjobs.com,        site: MTB}
+  - {name: Regions Bank,      kind: workday, host: regions.wd5.myworkdayjobs.com,    site: Regions_Careers}
+  - {name: Ally Financial,    kind: workday, host: ally.wd5.myworkdayjobs.com,       site: Ally}
+  - {name: Santander US,      kind: workday, host: santander.wd3.myworkdayjobs.com,  site: SantanderCareers}
+  - {name: First Citizens,    kind: workday, host: firstcitizens.wd1.myworkdayjobs.com, site: FCB}
+  - {name: Raymond James,     kind: workday, host: raymondjames.wd1.myworkdayjobs.com, site: External}
+  - {name: LPL Financial,     kind: workday, host: lpl.wd1.myworkdayjobs.com,        site: External}
+  - {name: Broadridge,        kind: workday, host: broadridge.wd5.myworkdayjobs.com, site: Careers}
+  - {name: FIS,               kind: workday, host: fisglobal.wd5.myworkdayjobs.com,  site: SearchJobs}
+  - {name: Fiserv,            kind: workday, host: fiserv.wd5.myworkdayjobs.com,     site: EXT}
+  - {name: Nasdaq,            kind: workday, host: nasdaq.wd1.myworkdayjobs.com,     site: Global_External_Site}
+  - {name: CME Group,         kind: workday, host: cmegroup.wd5.myworkdayjobs.com,   site: External}
+  - {name: Moody's,           kind: workday, host: moodys.wd1.myworkdayjobs.com,     site: External}
+  - {name: FINRA,             kind: workday, host: finra.wd1.myworkdayjobs.com,      site: careers}
+  - {name: Freddie Mac,       kind: workday, host: fmac.wd1.myworkdayjobs.com,       site: External}
+  - {name: MetLife,           kind: workday, host: metlife.wd5.myworkdayjobs.com,    site: MetLife}
+  - {name: Prudential,        kind: workday, host: pru.wd5.myworkdayjobs.com,        site: Careers}
+  - {name: The Hartford,      kind: workday, host: thehartford.wd5.myworkdayjobs.com, site: Careers_External}
+  - {name: MassMutual,        kind: workday, host: massmutual.wd5.myworkdayjobs.com, site: MassMutual_External}
+  - {name: Lincoln Financial, kind: workday, host: lfg.wd5.myworkdayjobs.com,        site: LFG}
+  - {name: Equitable,         kind: workday, host: equitable.wd5.myworkdayjobs.com,  site: Equitable_Careers}
+  - {name: T. Rowe Price,     kind: workday, host: troweprice.wd5.myworkdayjobs.com, site: TRowePrice}
+  - {name: Franklin Templeton, kind: workday, host: franklintempleton.wd5.myworkdayjobs.com, site: External}
+  - {name: Blackstone,        kind: workday, host: blackstone.wd1.myworkdayjobs.com, site: Blackstone_Careers}
+  - {name: KKR,               kind: workday, host: kkr.wd1.myworkdayjobs.com,        site: KKR_External}
+  - {name: FTI Consulting,    kind: workday, host: fticonsulting.wd1.myworkdayjobs.com, site: FTI_Global}
+  - {name: Crowe,             kind: workday, host: crowe.wd12.myworkdayjobs.com,     site: External}
+  - {name: Grant Thornton,    kind: workday, host: gt.wd1.myworkdayjobs.com,         site: External}

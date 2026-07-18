@@ -73,6 +73,7 @@ Analyze each job for THIS candidate and return JSON:
         accepts — remote, hybrid, or onsite ANYWHERE in the US. If the JD lists
         multiple locations and any is in the US, true. Non-US-only => false>,
     "location_note": "<brief: e.g. 'Remote US' / 'Hybrid NYC' / 'Onsite Dallas or Remote' / 'London only'>",
+    "work_mode": "<remote|hybrid|onsite|unknown — the role's actual arrangement per the JD>",
     "salary": "<pay range from the JD if stated, else a realistic US market estimate for this role+level, e.g. '$180k-230k (est.)'>",
     "ghost_risk": "<low|medium|high — high if JD is vague/generic, evergreen, or a likely repost>",
     "company_note": "<one clause of known context/reputation if you genuinely know the company; else ''>",
@@ -97,6 +98,8 @@ DEFAULT_WEIGHTS = {
     "recruiter_odds": 0.08,
 }
 STABILITY_ADJ = {"low": +3.0, "medium": 0.0, "high": -8.0}  # low RISK is a bonus
+# 候选人偏好 remote：remote 加分、hybrid 降分、onsite 降更多（config `work_mode_adj:` 可覆盖）
+WORK_MODE_ADJ = {"remote": +2.0, "hybrid": -2.0, "onsite": -4.0}
 
 
 def _client():
@@ -149,8 +152,9 @@ def _score_batch(client, model: str, candidate: str, career_goal: str,
     return {r["id"]: r for r in data.get("results", []) if "id" in r}
 
 
-def compute_composite(job: Job, weights: dict | None = None) -> float:
-    """Weighted Fit Score from all scored dimensions + stability adjustment."""
+def compute_composite(job: Job, weights: dict | None = None,
+                      mode_adj: dict | None = None) -> float:
+    """Weighted Fit Score from all scored dimensions + stability/work-mode adjustments."""
     w = {**DEFAULT_WEIGHTS, **(weights or {})}
     parts = {
         "overall": job.ai_score,
@@ -171,7 +175,9 @@ def compute_composite(job: Job, weights: dict | None = None) -> float:
             den += w[k]
     if den == 0:
         return -1.0
-    score = num / den + STABILITY_ADJ.get(job.ai_stability, 0.0)
+    madj = {**WORK_MODE_ADJ, **(mode_adj or {})}
+    score = (num / den + STABILITY_ADJ.get(job.ai_stability, 0.0)
+             + madj.get(job.ai_work_mode, 0.0))
     return max(0.0, min(100.0, score))
 
 
@@ -182,7 +188,8 @@ def _num(r: dict, key: str) -> float:
         return -1.0
 
 
-def _apply(job: Job, r: dict, weights: dict | None = None) -> None:
+def _apply(job: Job, r: dict, weights: dict | None = None,
+           mode_adj: dict | None = None) -> None:
     job.ai_score = float(r.get("overall", 0))
     job.ai_skills = float(r.get("skills_fit", 0))
     job.ai_seniority = float(r.get("seniority_fit", 0))
@@ -195,7 +202,8 @@ def _apply(job: Job, r: dict, weights: dict | None = None) -> None:
     job.ai_career = _num(r, "career_path_fit")
     job.ai_stability = str(r.get("stability", "")).lower()[:10]
     job.ai_recruiter_odds = _num(r, "recruiter_odds")
-    job.ai_composite = compute_composite(job, weights)
+    job.ai_work_mode = str(r.get("work_mode", "")).lower()[:10]
+    job.ai_composite = compute_composite(job, weights, mode_adj)
     job.ai_reason = str(r.get("reason", ""))[:200]
     job.ai_recommendation = str(r.get("recommendation", "")).lower()[:10]
     job.ai_location_ok = bool(r.get("location_ok", True))
@@ -221,6 +229,7 @@ def rescore(jobs: list[Job], resume: str, cfg: dict) -> tuple[list[Job], bool]:
     candidate = _candidate_ctx(cfg)
     career_goal = _career_goal(cfg)
     weights = cfg.get("fit_weights") or {}
+    mode_adj = cfg.get("work_mode_adj") or {}
     used = False
     for i in range(0, len(jobs), BATCH):
         batch = jobs[i:i + BATCH]
@@ -233,6 +242,6 @@ def rescore(jobs: list[Job], resume: str, cfg: dict) -> tuple[list[Job], bool]:
             r = scored.get(j.id)
             if r:
                 used = True
-                _apply(j, r, weights)
+                _apply(j, r, weights, mode_adj)
     print(f"  ai analyzed {sum(1 for j in jobs if j.ai_reason)} jobs", file=sys.stderr)
     return jobs, used

@@ -48,6 +48,39 @@ def _date(v) -> dt.date | None:
     return None
 
 
+def applied_index() -> list[dict]:
+    """所有已记录过的申请（不论 applied/interviewing/offer/rejected）——
+    这些岗位不应再出现在每日推荐里。"""
+    out = []
+    for a in _load(APPS_PATH).get("applications", []) or []:
+        out.append({
+            "company": (a.get("company") or "").lower().strip(),
+            "title": (a.get("title") or "").lower().strip(),
+            "url": (a.get("url") or "").strip(),
+        })
+    return out
+
+
+def is_applied(job, idx: list[dict] | None = None) -> bool:
+    """岗位是否已投过：URL 精确匹配，或 公司匹配+职位词重合≥60%（模糊容错）。"""
+    idx = applied_index() if idx is None else idx
+    if not idx:
+        return False
+    comp = (job.company or "").lower().strip()
+    title_words = set((job.title or "").lower().split())
+    url = (job.url or "").strip()
+    for a in idx:
+        if a["url"] and url and a["url"] == url:
+            return True
+        if not a["company"] or not comp:
+            continue
+        if a["company"] in comp or comp in a["company"]:
+            aw = set(a["title"].split())
+            if aw and title_words and len(aw & title_words) / len(aw) >= 0.6:
+                return True
+    return False
+
+
 def followups_due(today: dt.date | None = None) -> list[dict]:
     """Applications that need action today."""
     today = today or dt.date.today()

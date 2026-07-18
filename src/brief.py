@@ -76,6 +76,9 @@ def gather(dry_run: bool) -> dict:
     dream_jobs: list[Job] = []
     try:
         fresh = dream.fetch_new(mark_seen=not dry_run)
+        applied = track.applied_index()
+        if applied:
+            fresh = [j for j in fresh if not track.is_applied(j, applied)]
         fresh = fresh[: int(bcfg.get("dream_max", 15))]
         if fresh:
             primary = bcfg.get("primary_profile", "ai-governance")
@@ -153,6 +156,11 @@ def _dims(j: Job) -> str:
         bits.append(f"回复概率 {j.ai_recruiter_odds:.0f}")
     if j.ai_stability:
         bits.append(f"稳定性风险 {j.ai_stability}")
+    if j.ai_work_mode:
+        bits.append({"remote": "🏠 Remote", "hybrid": "Hybrid",
+                     "onsite": "Onsite"}.get(j.ai_work_mode, j.ai_work_mode))
+    if j.embed_sim >= 0:
+        bits.append(f"语义相似 {j.embed_sim:.0f}")
     return " · ".join(bits)
 
 
@@ -275,6 +283,12 @@ def _job_html(j: Job, tailored: dict[str, str]) -> str:
         sbg = {"low": "#e7f6ec", "medium": "#fff4e0", "high": "#fde8e8"}.get(j.ai_stability, "#eee")
         sfg = {"low": "#1a7f37", "medium": "#a15c00", "high": "#c02"}.get(j.ai_stability, "#333")
         chips.append(_chip(f"裁员风险 {j.ai_stability}", sbg, sfg))
+    if j.ai_work_mode:
+        wlabel = {"remote": "🏠 Remote", "hybrid": "Hybrid", "onsite": "Onsite"}.get(j.ai_work_mode)
+        if wlabel:
+            wbg = {"remote": "#e7f6ec", "hybrid": "#fff4e0", "onsite": "#f4f4f4"}[j.ai_work_mode]
+            wfg = {"remote": "#1a7f37", "hybrid": "#a15c00", "onsite": "#555"}[j.ai_work_mode]
+            chips.append(_chip(wlabel, wbg, wfg))
     if j.ai_salary:
         chips.append(_chip(f"💰 {j.ai_salary}", "#f3f0ff", "#5b21b6"))
     snip = _snippet(j)

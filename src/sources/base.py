@@ -48,6 +48,9 @@ class Job:
     matched: list[str] = field(default_factory=list)
     missing: list[str] = field(default_factory=list)
 
+    # filled in by the embedding semantic pre-ranker (embed_rank.py); -1 = not run
+    embed_sim: float = -1.0         # resume<->JD semantic similarity 0-100
+
     # filled in by the LLM semantic analyst (ai_score.py); -1 = not AI-scored
     ai_score: float = -1.0          # overall fit 0-100
     ai_skills: float = -1.0         # skill/content fit
@@ -60,6 +63,7 @@ class Job:
     ai_salary: str = ""             # extracted or estimated range
     ai_ghost_risk: str = ""         # low / medium / high
     ai_company_note: str = ""       # brief reputation/context
+    ai_work_mode: str = ""          # remote / hybrid / onsite / unknown
 
     # Fit Score v2 dimensions (ai_score.py); -1 = not scored
     ai_industry: float = -1.0       # industry fit (banking/FS/regulated > other)

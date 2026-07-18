@@ -20,7 +20,7 @@ from pathlib import Path
 
 import yaml
 
-from . import ai_score, digest, notify_email, store
+from . import ai_score, digest, embed_rank, notify_email, store, track
 from .fetch import fetch_all
 from .score import build_profile, score_all
 
@@ -98,12 +98,22 @@ def collect_profile(profile: str | None, dry_run: bool = False) -> dict:
     prefilter = acfg.get("prefilter_min_score", cfg.get("min_score", 25)) if acfg.get("enabled") else cfg.get("min_score", 25)
     candidates = score_all(jobs, prof, prefilter)
 
+    # 已投过的岗位不再进入任何推荐（career/applications.yaml）
+    applied = track.applied_index()
+    if applied:
+        before = len(candidates)
+        candidates = [j for j in candidates if not track.is_applied(j, applied)]
+        if before - len(candidates):
+            print(f"  filtered {before - len(candidates)} already-applied postings", file=sys.stderr)
+
     seen = store.load_seen(ns)
     now = time.time()
     if cfg.get("new_only", True):
         candidates = [j for j in candidates if j.id not in seen]
 
     if acfg.get("enabled"):
+        # 语义预筛：按 简历↔JD 意思相近度 + 关键词 混合重排，再取前 N 进 GPT 深评
+        candidates, _ = embed_rank.rank(candidates, resume, cfg)
         candidates = candidates[: acfg.get("max_candidates", 40)]
         candidates, used_ai = ai_score.rescore(candidates, resume, cfg)
     else:
