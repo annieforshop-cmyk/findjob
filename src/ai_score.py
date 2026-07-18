@@ -51,11 +51,22 @@ Analyze each job for THIS candidate and return JSON:
         band. The candidate has ~10 yrs experience = industry SENIOR MANAGER band.
         Sweet spot (85-100): Senior Manager, Lead, Principal, bank-convention VP,
         Associate Director, and Director at most companies (their current title).
-        Stretch (40-60): Executive Director, SVP, Head-of at large firms.
-        Score 0-15 for Managing Director / C-level / Partner / Global Head
-        (1-2 levels above — must NOT be recommended) and 10-30 for
-        Analyst / Associate / Coordinator IC roles (below band). Judge the
-        ROLE'S REAL level from the JD's yrs-required and scope, not the word>,
+        Stretch (35-65): Executive Director, SVP, Head-of at large firms, AND
+        "Managing Director" at bulge-bracket/major banks (Citi/Goldman/Morgan
+        Stanley/JPMorgan/BofA/etc.) — banks use "Managing Director" as a WIDE
+        internal grade band (e.g. Citi's own MD sub-levels run roughly C15-C19,
+        with lower MD grades landing close to SVP), not the PE/corporate C-suite
+        sense of "MD". Judge these on ACTUAL SCOPE from the JD: an MD title on a
+        hands-on "Lead" role needing ~10-15 yrs that builds/runs a program
+        (e.g. "Managing Director, Responsible AI Lead") can score in the
+        acceptable 45-65 range; an MD role that is clearly enterprise-wide
+        senior leadership (20+ yrs required, sets firm-wide strategy, reports
+        to the Board/CEO) scores low (10-20). Score 0-15 for genuine C-level
+        (Chief * Officer / CEO/CFO/COO/etc.) / Partner / Global Head (1-2
+        levels above — must NOT be recommended) and 10-30 for
+        Analyst / Associate / Coordinator IC roles (below band). Always judge
+        the ROLE'S REAL level from the JD's yrs-required and scope, not the
+        title word alone>,
     "years_fit": <0-100 fit vs the candidate's ~10 yrs total / ~8 yrs bank
         internal audit; roles wanting far more or far less score lower>,
     "industry_fit": <0-100 how well the employer's industry leverages the

@@ -19,13 +19,21 @@ def _norm(s: str) -> str:
 
 # ---- 职级带（候选人 ~10 年经验 ≈ 行业 Senior Manager 段）--------------------
 # 甜蜜区: senior manager / lead / principal / VP(银行语境) / director / associate director
-# 直接丢弃: MD / C-level / Partner / Global Head —— 高 1-2 级，投递纯浪费
+# 直接丢弃: 真正的 C-suite / Partner / Global Head —— 高 1-2 级，投递纯浪费
+#
+# 注意: "Managing Director" 在银行里不能一刀切丢弃！大行(Citi/GS/MS/JPM/BofA)
+# 把 MD 当成一个跨度很大的职级带（比如 Citi 内部 C15-C19 都叫 MD，C16 这种更接近
+# SVP），不是 PE/企业语境里的真 C-suite。"Managing Director, Responsible AI Lead"
+# 这类头衔挂 MD、内容是动手做治理框架的 working lead 岗，应该进候选池（降级展示），
+# 而不是被误杀。所以 MD 放进"冲刺区"降分保留，交给 GPT 层按 JD 里的年限/职责范围
+# 再精细判断；只有明确的 Chief * Officer / CEO-CFO-COO 等 / Partner / Global Head
+# 才是真正高 1-2 级、直接丢弃。
 TITLE_TOO_SENIOR = re.compile(
-    r"\b(managing director|chief\s+[a-z]+\s+officer|ceo|cfo|coo|cro|ciso|cio"
+    r"\b(chief\s+[a-z]+\s+officer|ceo|cfo|coo|cro|ciso|cio"
     r"|partner|global head)\b", re.I)
-# 冲刺区（高半级~一级）: 保留但降分
+# 冲刺区（高半级~一级）: 保留但降分——含银行语境的 Managing Director
 TITLE_STRETCH = re.compile(
-    r"\b(executive director|senior vice president|svp|evp|head of)\b", re.I)
+    r"\b(managing director|executive director|senior vice president|svp|evp|head of)\b", re.I)
 # 低于段位: 重降分（注意 associate director 属于甜蜜区，不算 junior）
 TITLE_TOO_JUNIOR = re.compile(
     r"\b(junior|coordinator|analyst|associate(?!\s*director))\b", re.I)
