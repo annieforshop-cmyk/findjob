@@ -8,7 +8,9 @@ API 和 Workday 的 CxS 搜索接口都是公开的。聚合器(JSearch/Adzuna)�
 """
 from __future__ import annotations
 
+import random
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -20,7 +22,8 @@ from .base import Job, clean_html
 ROOT = Path(__file__).resolve().parent.parent.parent
 CFG_PATH = ROOT / "career" / "ats_companies.yaml"
 TIMEOUT = 25
-WORKERS = 12
+WORKERS = 8                # 温和的并发度，避免触发限流
+DETAILS_PER_COMPANY = 25   # Workday/SmartRecruiters 列表无 JD，最多补抓多少个详情页
 
 # Workday 接口是搜索式的：用覆盖三个方向的核心词查询（profile 无关，可缓存）
 WORKDAY_QUERIES = (
@@ -28,14 +31,36 @@ WORKDAY_QUERIES = (
     "model risk", "operational risk", "compliance",
 )
 
-_HDRS = {"User-Agent": "findjob/1.0", "Accept": "application/json"}
+# 反爬/限流防护：
+#  - 这些全是各 ATS 官方公开的 job-board API（本就是给外部集成用的），不是页面爬取
+#  - 仍然保持礼貌：浏览器式 UA、请求间随机抖动、429/403 时退避重试一次
+_HDRS = {
+    "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"),
+    "Accept": "application/json",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 _cache: list[Job] | None = None
 
 
-def _gh(c: dict) -> list[Job]:
-    r = requests.get(f"https://boards-api.greenhouse.io/v1/boards/{c['token']}/jobs",
-                     params={"content": "true"}, headers=_HDRS, timeout=TIMEOUT)
+def _pause() -> None:
+    time.sleep(random.uniform(0.15, 0.45))
+
+
+def _req(method: str, url: str, **kw) -> requests.Response:
+    """一次礼貌请求：抖动 + 限流时退避重试一次。"""
+    _pause()
+    r = requests.request(method, url, timeout=TIMEOUT, **kw)
+    if r.status_code in (429, 403):
+        time.sleep(random.uniform(4, 8))
+        r = requests.request(method, url, timeout=TIMEOUT, **kw)
     r.raise_for_status()
+    return r
+
+
+def _gh(c: dict) -> list[Job]:
+    r = _req("GET", f"https://boards-api.greenhouse.io/v1/boards/{c['token']}/jobs",
+             params={"content": "true"}, headers=_HDRS)
     return [Job(source=f"ats:{c['name']}", title=j.get("title", ""), company=c["name"],
                 url=j.get("absolute_url", ""),
                 description=clean_html(j.get("content", ""))[:5000],
@@ -45,9 +70,8 @@ def _gh(c: dict) -> list[Job]:
 
 
 def _lever(c: dict) -> list[Job]:
-    r = requests.get(f"https://api.lever.co/v0/postings/{c['token']}",
-                     params={"mode": "json"}, headers=_HDRS, timeout=TIMEOUT)
-    r.raise_for_status()
+    r = _req("GET", f"https://api.lever.co/v0/postings/{c['token']}",
+             params={"mode": "json"}, headers=_HDRS)
     data = r.json()
     return [Job(source=f"ats:{c['name']}", title=j.get("text", ""), company=c["name"],
                 url=j.get("hostedUrl", ""),
@@ -57,9 +81,8 @@ def _lever(c: dict) -> list[Job]:
 
 
 def _ashby(c: dict) -> list[Job]:
-    r = requests.get(f"https://api.ashbyhq.com/posting-api/job-board/{c['token']}",
-                     headers=_HDRS, timeout=TIMEOUT)
-    r.raise_for_status()
+    r = _req("GET", f"https://api.ashbyhq.com/posting-api/job-board/{c['token']}",
+             headers=_HDRS)
     return [Job(source=f"ats:{c['name']}", title=j.get("title", ""), company=c["name"],
                 url=j.get("jobUrl") or j.get("applyUrl", ""),
                 description=clean_html(j.get("descriptionPlain") or "")[:5000],
@@ -68,9 +91,8 @@ def _ashby(c: dict) -> list[Job]:
 
 
 def _smart(c: dict) -> list[Job]:
-    r = requests.get(f"https://api.smartrecruiters.com/v1/companies/{c['token']}/postings",
-                     params={"limit": 100}, headers=_HDRS, timeout=TIMEOUT)
-    r.raise_for_status()
+    r = _req("GET", f"https://api.smartrecruiters.com/v1/companies/{c['token']}/postings",
+             params={"limit": 100}, headers=_HDRS)
     out = []
     for j in r.json().get("content", []):
         loc = j.get("location") or {}
@@ -78,7 +100,19 @@ def _smart(c: dict) -> list[Job]:
                        url=f"https://jobs.smartrecruiters.com/{c['token']}/{j.get('id', '')}",
                        location=", ".join(filter(None, [loc.get("city", ""),
                                                         (loc.get("country") or "").upper()])),
-                       posted=(j.get("releasedDate") or "")[:10]))
+                       posted=(j.get("releasedDate") or "")[:10],
+                       tags=[str(j.get("id", ""))]))
+    # 列表接口没有 JD 正文——为前 N 个补抓详情（内容匹配和"从 JD 判断地点"都需要）
+    for j in out[:DETAILS_PER_COMPANY]:
+        try:
+            rid = j.tags[0]
+            d = _req("GET", f"https://api.smartrecruiters.com/v1/companies/{c['token']}/postings/{rid}",
+                     headers=_HDRS).json()
+            parts = ((d.get("jobAd") or {}).get("sections") or {})
+            j.description = clean_html(" ".join(
+                str(v.get("text", "")) for v in parts.values() if isinstance(v, dict)))[:5000]
+        except Exception:
+            continue
     return out
 
 
@@ -88,11 +122,9 @@ def _workday(c: dict) -> list[Job]:
     url = f"https://{host}/wday/cxs/{tenant}/{site}/jobs"
     out, seen = [], set()
     for kw in WORKDAY_QUERIES:
-        r = requests.post(url, json={"appliedFacets": {}, "limit": 20, "offset": 0,
-                                     "searchText": kw},
-                          headers={**_HDRS, "Content-Type": "application/json"},
-                          timeout=TIMEOUT)
-        r.raise_for_status()
+        r = _req("POST", url, json={"appliedFacets": {}, "limit": 20, "offset": 0,
+                                    "searchText": kw},
+                 headers={**_HDRS, "Content-Type": "application/json"})
         for j in r.json().get("jobPostings", []):
             path = j.get("externalPath", "")
             if not path or path in seen:
@@ -101,9 +133,23 @@ def _workday(c: dict) -> list[Job]:
             out.append(Job(source=f"ats:{c['name']}", title=j.get("title", ""),
                            company=c["name"], url=f"https://{host}/en-US/{site}{path}",
                            location=j.get("locationsText", ""),
-                           posted=j.get("postedOn", "")))
+                           posted=j.get("postedOn", ""),
+                           tags=[path]))
     if not out:
         raise RuntimeError("0 postings — host/site 可能失效")
+    # 搜索接口没有 JD 正文——补抓详情：没有正文，内容匹配层会误杀这些岗位，
+    # 而且"从 JD 全文判断可用地点"也需要正文
+    for j in out[:DETAILS_PER_COMPANY]:
+        try:
+            d = _req("GET", f"https://{host}/wday/cxs/{tenant}/{site}{j.tags[0]}",
+                     headers=_HDRS).json()
+            info = d.get("jobPostingInfo") or {}
+            j.description = clean_html(info.get("jobDescription", ""))[:5000]
+            extra_loc = info.get("additionalLocations") or []
+            if extra_loc:
+                j.location = ", ".join([j.location] + [str(x) for x in extra_loc])[:300]
+        except Exception:
+            continue
     return out
 
 

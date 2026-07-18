@@ -20,6 +20,9 @@ from .sources.base import Job
 BATCH = 96          # embeddings API 单次批量
 JD_CHARS = 1600     # 每个 JD 取前 N 字符（标题+公司+正文开头信息量最大）
 
+# 跨 profile 缓存：同一个岗位在三个方向都出现时只 embed 一次（省钱省时）
+_vec_cache: dict[str, list[float]] = {}
+
 
 def _client():
     try:
@@ -59,17 +62,20 @@ def rank(jobs: list[Job], resume: str, cfg: dict) -> tuple[list[Job], bool]:
         print(f"  embed_rank: resume embedding failed: {e}", file=sys.stderr)
         return jobs, False
 
-    texts = [f"{j.title} | {j.company}\n{(j.description or j.location or '')[:JD_CHARS]}"
-             for j in pool]
-    vecs: list[list[float] | None] = []
-    for i in range(0, len(texts), BATCH):
-        chunk = texts[i:i + BATCH]
+    vecs: list[list[float] | None] = [_vec_cache.get(j.id) for j in pool]
+    todo = [i for i, v in enumerate(vecs) if v is None]
+    for s in range(0, len(todo), BATCH):
+        idxs = todo[s:s + BATCH]
+        chunk = [f"{pool[i].title} | {pool[i].company}\n"
+                 f"{(pool[i].description or pool[i].location or '')[:JD_CHARS]}"
+                 for i in idxs]
         try:
             resp = client.embeddings.create(model=model, input=chunk)
-            vecs.extend([d.embedding for d in resp.data])
+            for i, d in zip(idxs, resp.data):
+                vecs[i] = d.embedding
+                _vec_cache[pool[i].id] = d.embedding
         except Exception as e:
-            print(f"  embed_rank: batch {i // BATCH} failed: {e}", file=sys.stderr)
-            vecs.extend([None] * len(chunk))
+            print(f"  embed_rank: batch {s // BATCH} failed: {e}", file=sys.stderr)
 
     sims = []
     for j, v in zip(pool, vecs):

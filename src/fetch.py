@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib
+import re
 import sys
 
 from .sources.base import Job
@@ -34,11 +35,32 @@ def fetch_all(cfg: dict) -> list[Job]:
         except Exception as e:  # one bad source shouldn't kill the run
             print(f"  [{key}] FAILED: {e}", file=sys.stderr)
 
-    # dedupe by stable id (same job can appear on multiple boards)
+    # pass 1: dedupe by stable id (same URL on multiple boards)
     seen: dict[str, Job] = {}
     for j in all_jobs:
         if j.id not in seen:
             seen[j.id] = j
-    deduped = list(seen.values())
-    print(f"  total {len(all_jobs)} -> {len(deduped)} after dedupe", file=sys.stderr)
+
+    # pass 2: 跨源去重 —— 同一岗位在官网和 LinkedIn/JSearch 上 URL 不同，
+    # 按 规范化(公司+职位) 合并，优先保留官网源(ats:/dream:)、其次 JD 更全的，
+    # 避免同一岗位被重复展示/重复送去 LLM 打分。
+    def _key(j: Job) -> str:
+        return re.sub(r"[^a-z0-9]+", "", f"{j.company}{j.title}".lower())[:100]
+
+    def _pref(j: Job) -> tuple:
+        official = j.source.startswith(("ats:", "dream:"))
+        return (official, len(j.description or ""))
+
+    best: dict[str, Job] = {}
+    for j in seen.values():
+        k = _key(j)
+        if not k:
+            best[j.id] = j
+            continue
+        cur = best.get(k)
+        if cur is None or _pref(j) > _pref(cur):
+            best[k] = j
+    deduped = list(best.values())
+    print(f"  total {len(all_jobs)} -> {len(seen)} by url -> {len(deduped)} after cross-source dedupe",
+          file=sys.stderr)
     return deduped

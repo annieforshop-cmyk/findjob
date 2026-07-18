@@ -102,7 +102,10 @@ def _workday(c: dict) -> list[Job]:
     for kw in ("AI governance", "internal audit", "AI risk"):
         r = requests.post(url, json={"appliedFacets": {}, "limit": 20, "offset": 0,
                                      "searchText": kw}, timeout=25,
-                          headers={"Accept": "application/json", "Content-Type": "application/json"})
+                          headers={"Accept": "application/json", "Content-Type": "application/json",
+                                   "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                                                  "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                                  "Chrome/126.0 Safari/537.36")})
         r.raise_for_status()
         for j in r.json().get("jobPostings", []):
             path = j.get("externalPath", "")

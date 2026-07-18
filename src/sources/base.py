@@ -64,6 +64,7 @@ class Job:
     ai_ghost_risk: str = ""         # low / medium / high
     ai_company_note: str = ""       # brief reputation/context
     ai_work_mode: str = ""          # remote / hybrid / onsite / unknown
+    ai_special: str = ""            # unusual actionable JD detail (apply-by-email, named contact…)
 
     # Fit Score v2 dimensions (ai_score.py); -1 = not scored
     ai_industry: float = -1.0       # industry fit (banking/FS/regulated > other)

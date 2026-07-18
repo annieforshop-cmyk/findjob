@@ -191,6 +191,8 @@ def _job_lines(i: int, j: Job) -> list[str]:
     snip = _snippet(j)
     if snip:
         lines.append(f"   内容: {snip}")
+    if j.ai_special:
+        lines.append(f"   ⚡ 特别注意: {j.ai_special}")
     why = _why(j)
     if why:
         lines.append(f"   💡 {why}")
@@ -297,6 +299,9 @@ def _job_html(j: Job, tailored: dict[str, str]) -> str:
     why = _why(j)
     reason = (f'<div style="color:#333;font-size:13px;margin-top:4px">💡 {esc(why)}</div>'
               if why else "")
+    special = (f'<div style="background:#fffbe6;border:1px solid #f0e0a0;border-radius:6px;'
+               f'padding:5px 8px;font-size:12.5px;color:#7a5c00;margin-top:5px">'
+               f'⚡ {esc(j.ai_special)}</div>' if j.ai_special else "")
     draft = ""
     if j.id in tailored:
         draft = ('<details style="margin-top:6px"><summary style="cursor:pointer;color:#7b2ff7;'
@@ -313,7 +318,7 @@ def _job_html(j: Job, tailored: dict[str, str]) -> str:
              {(_chip(label, "#e8eef7", "#245") if label else "")}</div>
         <div style="color:#444;font-size:13px;margin-top:2px">{esc(j.company)} ·
              {esc(j.ai_location_note or j.location or 'Remote')}</div>
-        {desc}{reason}<div style="margin-top:5px">{''.join(chips)}</div>{draft}
+        {desc}{special}{reason}<div style="margin-top:5px">{''.join(chips)}</div>{draft}
       </td></tr>"""
 
 

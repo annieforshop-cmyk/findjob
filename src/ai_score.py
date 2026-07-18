@@ -69,11 +69,21 @@ Analyze each job for THIS candidate and return JSON:
     "recruiter_odds": <0-100 realistic odds this application gets a recruiter
         response: penalize huge applicant pools, inflated requirements vs the
         candidate, stale posts; boost niche fits where the candidate is rare>,
-    "location_ok": <true if the role can be done from a US location the candidate
-        accepts — remote, hybrid, or onsite ANYWHERE in the US. If the JD lists
-        multiple locations and any is in the US, true. Non-US-only => false>,
-    "location_note": "<brief: e.g. 'Remote US' / 'Hybrid NYC' / 'Onsite Dallas or Remote' / 'London only'>",
+    "location_ok": <true/false. CRITICAL: judge from the FULL DESCRIPTION TEXT,
+        not the location header — JDs often list several offices, rotation
+        options, or say remote-eligible even when the header shows one city.
+        Rules for THIS candidate: (a) fully REMOTE (US) => true anywhere;
+        (b) HYBRID or ONSITE => true ONLY if New York City or New Jersey is
+        among the workable locations mentioned ANYWHERE in the JD (the
+        candidate can only commute to NY/NJ); hybrid/onsite with no NY/NJ
+        option => false; (c) non-US-only with no remote-US option => false>,
+    "location_note": "<brief, cite what the JD text says: e.g. 'Remote US' /
+        'Hybrid — NYC among 4 listed offices' / 'Onsite Dallas only — no NY/NJ'>",
     "work_mode": "<remote|hybrid|onsite|unknown — the role's actual arrangement per the JD>",
+    "special_note": "<any unusual, actionable detail buried in the JD worth
+        surfacing: apply-by-email address, named hiring manager/recruiter to
+        contact, referral instructions, urgent-fill language, unusual perks or
+        constraints. One short clause; '' if nothing special>",
     "salary": "<pay range from the JD if stated, else a realistic US market estimate for this role+level, e.g. '$180k-230k (est.)'>",
     "ghost_risk": "<low|medium|high — high if JD is vague/generic, evergreen, or a likely repost>",
     "company_note": "<one clause of known context/reputation if you genuinely know the company; else ''>",
@@ -203,6 +213,7 @@ def _apply(job: Job, r: dict, weights: dict | None = None,
     job.ai_stability = str(r.get("stability", "")).lower()[:10]
     job.ai_recruiter_odds = _num(r, "recruiter_odds")
     job.ai_work_mode = str(r.get("work_mode", "")).lower()[:10]
+    job.ai_special = str(r.get("special_note", ""))[:200]
     job.ai_composite = compute_composite(job, weights, mode_adj)
     job.ai_reason = str(r.get("reason", ""))[:200]
     job.ai_recommendation = str(r.get("recommendation", "")).lower()[:10]
