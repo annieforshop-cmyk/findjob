@@ -58,6 +58,7 @@ def gather(dry_run: bool) -> dict:
     merged: dict[str, Job] = {}
     tailored: dict[str, str] = {}
     scanned = 0
+    ai_notes: list[str] = []
     for name in discover_profiles():
         try:
             res = collect_profile(name, dry_run)
@@ -65,6 +66,8 @@ def gather(dry_run: bool) -> dict:
             print(f"  brief: profile {name} failed: {e}", file=sys.stderr)
             continue
         scanned += res["meta"].get("scanned", 0)
+        if res["meta"].get("ai_note"):
+            ai_notes.append(res["meta"]["ai_note"])
         tailored.update(res["tailored"])
         for j in res["top"]:
             j.profile_label = res["label"]  # type: ignore[attr-defined]
@@ -81,11 +84,33 @@ def gather(dry_run: bool) -> dict:
             primary = bcfg.get("primary_profile", "ai-governance")
             try:
                 from .main import load_context
-                pcfg, presume, _, _ = load_context(primary)
-                fresh, _ = ai_score.rescore(fresh, presume, pcfg)
+                from .score import build_profile, score_job
+                # keyword-score against EVERY profile and keep the best — so an
+                # internal-audit dream job isn't judged only by the primary
+                # (ai-governance) profile. This also gives every dream job a
+                # real fallback score: an AI outage used to leave [0]-score
+                # noise (e.g. "Analyst II, Full Stack") at the top of the email.
+                kw_profs = []
+                presume, pcfg = "", {}
+                for pname in discover_profiles():
+                    ccfg, cresume, _, _ = load_context(pname)
+                    kw_profs.append(build_profile(ccfg, cresume))
+                    if pname == primary:
+                        pcfg, presume = ccfg, cresume
+                for j in fresh:
+                    best, best_matched = 0.0, []
+                    for kp in kw_profs:
+                        score_job(j, kp)
+                        if j.score > best:
+                            best, best_matched = j.score, j.matched
+                    j.score, j.matched = best, best_matched
+                fresh, _, dream_note = ai_score.rescore(fresh, presume, pcfg)
+                if dream_note:
+                    ai_notes.append(dream_note)
             except Exception as e:
                 print(f"  brief: dream scoring skipped: {e}", file=sys.stderr)
-            dream_jobs = sorted([j for j in fresh if j.ai_location_ok],
+            floor = float(bcfg.get("dream_min_score", 25))
+            dream_jobs = sorted([j for j in fresh if j.ai_location_ok and j.rank_score >= floor],
                                 key=lambda j: (j.dream_tier, -j.rank_score))
             dream_jobs = _cap_per_company(dream_jobs, int(bcfg.get("dream_per_company", 3)))
     except Exception as e:
@@ -136,7 +161,8 @@ def gather(dry_run: bool) -> dict:
     return {"date": today, "scanned": scanned, "top": top, "dream": dream_jobs,
             "tailored": tailored, "research": briefs, "networking": net_top,
             "followups": followups, "pipeline": pipeline, "is_monday": is_monday,
-            "post": post, "cfg": base_cfg}
+            "post": post, "cfg": base_cfg,
+            "ai_warning": "；".join(dict.fromkeys(ai_notes))}
 
 
 # ---------------- render: text ----------------
@@ -179,7 +205,8 @@ def _job_lines(i: int, j: Job) -> list[str]:
     if j.agency:
         lines.append("   🎯 猎头代招岗——投递即进入该猎头数据库；投完顺手在 LinkedIn 连接发帖 recruiter")
     lines.append(f"   {j.ai_location_note or j.location or 'Remote'}"
-                 + (f" | {j.ai_salary}" if j.ai_salary else ""))
+                 + (f" | {j.ai_salary}" if j.ai_salary else "")
+                 + (f" | 发布 {j.posted}" if j.posted else ""))
     snip = _snippet(j)
     if snip:
         lines.append(f"   内容: {snip}")
@@ -198,6 +225,10 @@ def build_text(d: dict) -> str:
          f"扫描 {d['scanned']} 个岗位 → 精选 {len(d['top'])} | Dream 新岗 {len(d['dream'])}"
          f" | 待跟进 {len(d['followups'])}",
          "=" * 62, ""]
+
+    if d.get("ai_warning"):
+        L += [f"⚠️ AI 语义打分今天没有正常运行：{d['ai_warning']}",
+              "   以下排序退化为关键词匹配，准确度较低——修好后质量会明显回升。", ""]
 
     if d["dream"]:
         L.append("⭐ DREAM COMPANY 官网新岗位")
@@ -277,6 +308,8 @@ def _job_html(j: Job, tailored: dict[str, str]) -> str:
         chips.append(_chip(f"裁员风险 {j.ai_stability}", sbg, sfg))
     if j.ai_salary:
         chips.append(_chip(f"💰 {j.ai_salary}", "#f3f0ff", "#5b21b6"))
+    if j.posted:
+        chips.append(_chip(f"📅 {j.posted}", "#eef7ee", "#1a5c2e"))
     snip = _snippet(j)
     desc = (f'<div style="color:#555;font-size:12.5px;margin-top:4px">{esc(snip)}</div>'
             if snip else "")
@@ -315,6 +348,12 @@ def _row(inner: str) -> str:
 
 def build_html(d: dict) -> str:
     parts = []
+    if d.get("ai_warning"):
+        parts.append(
+            '<div style="background:#fff4e0;border:1px solid #f0c36d;border-radius:8px;'
+            'padding:10px 14px;margin:14px 0;font-size:13px;color:#7a4b00">'
+            f'⚠️ <b>AI 语义打分今天没有正常运行</b>：{esc(d["ai_warning"])}<br>'
+            '以下排序退化为关键词匹配，准确度较低——修好后质量会明显回升。</div>')
     if d["dream"]:
         parts.append(_section("⭐ Dream Company 官网新岗位",
                               "".join(_job_html(j, d["tailored"]) for j in d["dream"])))

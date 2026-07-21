@@ -13,7 +13,14 @@
 - ✍️ **每周一 LinkedIn 帖子草稿**（AI Governance/NIST AI RMF 话题轮换，你的口吻）
 
 配套资产库（`career/`，全部可携带）：**STAR 故事库**（简历/CL/面试复用）、
-**Interview Knowledge Base**（每家公司历次面试题沉淀）、申请与人脉 CRM。
+**Interview Knowledge Base**（每家公司历次面试题沉淀）、申请与人脉 CRM、
+**Candidate Profile + Answer Bank**（申请表事实与措辞库，借鉴开源项目 ApplyPilot）。
+
+**投递执行**：仓库根目录的 [`AGENTS.md`](AGENTS.md) 是给 AI agent（Claude Code /
+Codex）的投递 SOP——从邮件挑好岗位后，对 agent 说"帮我投这个岗"，它会按
+海投/精投两种模式走流程，自动填低风险字段、缺高影响事实就停下来问你、
+**最终提交永远由你确认**。每个岗位落入
+Submitted / Pending / Skipped / Blocked / Needs-user 五种状态之一（`src.track` 记录）。
 
 **完整手册见 [docs/career-os.md](docs/career-os.md)。** 以下是基础引擎说明。
 
@@ -26,6 +33,16 @@
 **打分是两段式**：先用关键词撒大网初筛（便宜），再用 **LLM 语义打分**只对候选深度评估——
 读懂 JD 描述的"实际工作内容"是否和你简历吻合，即使用词不同也能识别，这才是"看内容不看 title"。
 输出结构化的总分/技能契合/经历契合/一句话理由。没有 OpenAI key 时自动退回纯关键词打分，不影响运行。
+
+关键词初筛不只是撒网，还有四道硬闸门（LLM 挂掉时也能保住质量）：
+- **核心技能门槛**（`profiles/*/core_skills`）：岗位必须命中至少一个"定义这个方向"的词
+  （如 internal audit / model risk），光靠 banking、cpa 这类通用词进不来。
+- **标题排除**（`exclude_title_keywords`）：sales / customer success / tax 等岗位族按 title 直接排除。
+- **美国岗过滤**（`us_only`）：location 明确写 Remote UK / Singapore 等的直接过滤。
+- **新鲜度**：48 小时内 +8 分、一周内 +4 分、三周以上 -6 分（新岗转化率高，旧岗多为幽灵岗）。
+
+如果某天 AI 语义打分没跑成（key 失效/欠费），邮件顶部会出现**醒目告警**说明原因，
+而不是默默退化——看到告警就去修，否则排序质量会差很多。
 
 **能：** 从有公开免费 API 的平台稳定拉岗位并智能匹配：
 RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who is hiring"，
@@ -70,6 +87,11 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 
 > **Gmail 应用专用密码**：需先开两步验证，然后到 Google 账号 → 安全 → 应用专用密码，
 > 生成一个 16 位密码填到 `SMTP_PASS`。用 `smtp.gmail.com` + 端口 `465`。
+
+> **两个最常见的静默故障**（邮件顶部出现 ⚠️ 告警时先查这两项）：
+> ① OpenAI 余额用尽（429 insufficient_quota）→ platform.openai.com → Billing 充值；
+> ② JSearch 返回 404 → RapidAPI 账号没订阅 JSearch（key 存在≠已订阅），
+> 到 rapidapi.com 搜 JSearch 点 Subscribe（免费档即可）。
 
 ### 3. 开启定时任务
 `.github/workflows/daily-job-search.yml` 已配好每天 UTC 13:00 运行。
@@ -160,6 +182,9 @@ python -m src.main             # 真正发邮件（需设好 SMTP 环境变量�
 config.yaml                    # 共享设置 + career_goal + fit_weights + brief 配置
 profiles/<方向>/profile.yaml    # 各方向的岗位名/技能/过滤/搜索词（覆盖 config.yaml）
 profiles/<方向>/resume.md       # 各方向的简历（事实来源）
+career/candidate_profile.yaml  # 申请表事实来源（TBD 项填一次，处处复用）
+career/answer_bank.md          # 申请表常见问题的可复用措辞库
+AGENTS.md                      # AI agent 投递 SOP（安全边界 + 五状态模型）
 career/dream_companies.yaml    # ⭐ Target-50 名单（ATS 直连配置）
 career/stories/                # STAR 故事库（简历/CL/面试复用）
 career/interviews/             # Interview Knowledge Base（每公司一个文件）

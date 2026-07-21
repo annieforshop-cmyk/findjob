@@ -1,0 +1,64 @@
+# ============================================================
+#  Candidate Profile — 申请表事实的唯一来源（借鉴 ApplyPilot）
+#  规则：这里没写的高影响事实（签证/薪资/身份/入职时间等），
+#  任何 AI agent 都【不允许猜】，必须标 Needs-user 问你本人。
+#  TBD 项请你自己填一次，之后所有投递复用。
+#  ⚠️ 本仓库若公开，请先把本文件加入 .gitignore 或脱敏。
+# ============================================================
+
+identity:
+  legal_name: TBD                 # 申请表用的法定姓名
+  preferred_name: TBD
+  email: TBD
+  phone: TBD
+  linkedin: TBD                   # 完整 URL
+  location: TBD                   # 现居城市, 州（如 New York, NY）
+
+authorization:                    # 已确认的事实（来自 config.yaml candidate）
+  us_work_authorized: true
+  needs_sponsorship_now: false
+  needs_sponsorship_future: false
+
+current:
+  title: Director (Internal Audit)     # 真实职级带 ≈ Senior Manager–Director
+  employer: TBD                        # 大型投行（申请表需要精确名称时填这里）
+  years_total: 10
+  years_bank_internal_audit: 8
+  credentials: [CPA, MSA, "AIGP (in progress)"]
+  notice_period: TBD                   # 如 "2 weeks" / "1 month"
+  earliest_start: TBD
+
+targets:
+  role_families:                       # 与 profiles/ 三个方向一一对应
+    - AI Governance (primary)
+    - AI Risk / Model Risk
+    - Internal Audit (senior manager / director / VP)
+  location_policy: Remote / Hybrid / Onsite anywhere in the US；不接受非美国岗
+  level_policy: Senior Manager – Director – VP；明显 IC 初级岗或需 20 年+ 的岗跳过
+
+compensation:
+  target_base_range: TBD               # 如 "$180k-230k"；表格必填时的口径见 answer_bank
+  target_total_range: TBD
+  disclose_current: false              # 默认不披露当前薪资
+
+self_identification:                   # 自愿披露题（EEO / 残障 / 退伍军人等）
+  strategy: prefer_not_to_say          # 默认全部选 "Prefer not to say"/留空
+  # 如想如实填写，把 strategy 改为 exact 并在下面写明；否则 agent 一律不猜
+  exact_answers: {}
+
+resumes:                               # 方向 → 简历文件（Volume 模式直接路由）
+  ai-governance: profiles/ai-governance/resume.md
+  ai-risk: profiles/ai-risk/resume.md
+  internal-audit: profiles/internal-audit/resume.md
+
+networks:                              # 内推搜索用（network.py 已在用）
+  alma_mater: Clark University
+  ex_employers: [Morgan Stanley]
+
+never_guess:                           # agent 遇到这些且上面没答案 → Needs-user
+  - 法定姓名/地址/身份信息
+  - 签证与工作许可细节（超出上面 authorization 的）
+  - 当前/期望薪资的具体数字
+  - 竞业限制、背景调查、推荐人
+  - 残障/退伍军人/性别/族裔等自愿披露题的具体答案
+  - 未在简历中出现的任何经历、学位、技能、日期

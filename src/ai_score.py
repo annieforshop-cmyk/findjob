@@ -207,32 +207,65 @@ def _apply(job: Job, r: dict, weights: dict | None = None) -> None:
         job.missing = [str(m) for m in r["missing"]][:8]
 
 
-def rescore(jobs: list[Job], resume: str, cfg: dict) -> tuple[list[Job], bool]:
-    """Attach multi-dimensional LLM analysis. Returns (jobs, used_ai)."""
+def _fatal_api_error(msg: str) -> str:
+    """Classify errors that will fail every subsequent batch too, so we stop
+    hammering the API instead of burning minutes on 20 doomed calls."""
+    low = msg.lower()
+    if "insufficient_quota" in low or "exceeded your current quota" in low:
+        return "OpenAI 配额/余额用尽（429 insufficient_quota）——请到 platform.openai.com 充值或检查 billing"
+    if "invalid_api_key" in low or "incorrect api key" in low or "error code: 401" in low:
+        return "OPENAI_API_KEY 无效（401）——请检查 GitHub Secret"
+    if "model_not_found" in low or "does not exist" in low:
+        return "OPENAI_MODEL 配置的模型不存在——请检查 OPENAI_MODEL secret"
+    return ""
+
+
+def rescore(jobs: list[Job], resume: str, cfg: dict) -> tuple[list[Job], bool, str]:
+    """Attach multi-dimensional LLM analysis.
+    Returns (jobs, used_ai, note) — note is a human-readable reason when AI
+    scoring did not (fully) run, so the email can SAY the ranking degraded
+    instead of silently showing keyword-only scores."""
     acfg = cfg.get("ai_scoring", {}) or {}
     if not acfg.get("enabled", False):
-        return jobs, False
+        return jobs, False, ""
     client = _client()
     if client is None:
         print("  ai_scoring enabled but no OPENAI_API_KEY/openai — using keyword scores", file=sys.stderr)
-        return jobs, False
+        return jobs, False, "未设置 OPENAI_API_KEY——AI 语义打分未运行"
 
     model = acfg.get("model", "gpt-4o-mini")
     candidate = _candidate_ctx(cfg)
     career_goal = _career_goal(cfg)
     weights = cfg.get("fit_weights") or {}
     used = False
+    note = ""
+    consecutive_failures = 0
     for i in range(0, len(jobs), BATCH):
         batch = jobs[i:i + BATCH]
         try:
             scored = _score_batch(client, model, candidate, career_goal, resume, batch)
+            consecutive_failures = 0
         except Exception as e:
-            print(f"  ai batch {i // BATCH} failed: {e}", file=sys.stderr)
+            msg = str(e)
+            print(f"  ai batch {i // BATCH} failed: {msg}", file=sys.stderr)
+            fatal = _fatal_api_error(msg)
+            if fatal:
+                note = fatal
+                break
+            consecutive_failures += 1
+            if consecutive_failures >= 3:
+                note = f"AI 打分连续失败已中止：{msg[:120]}"
+                break
             continue
         for j in batch:
             r = scored.get(j.id)
             if r:
                 used = True
                 _apply(j, r, weights)
-    print(f"  ai analyzed {sum(1 for j in jobs if j.ai_reason)} jobs", file=sys.stderr)
-    return jobs, used
+    n = sum(1 for j in jobs if j.ai_reason)
+    print(f"  ai analyzed {n} jobs", file=sys.stderr)
+    if not used and not note:
+        note = "AI 打分未成功分析任何岗位"
+    if used and note:
+        note = f"AI 打分中途失败（已分析 {n}/{len(jobs)}）：{note}"
+    return jobs, used, (note if not used or n < len(jobs) else "")

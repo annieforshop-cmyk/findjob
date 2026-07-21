@@ -30,18 +30,27 @@ def fetch(cfg: dict) -> list[Job]:
 
     jobs: list[Job] = []
     for q in queries:
-        data = get_json(
-            f"https://{HOST}/search",
-            params={
-                "query": f"{q} in USA" if "in " not in q.lower() else q,
-                "page": 1,
-                "num_pages": num_pages,
-                "country": country,
-                "date_posted": jcfg.get("date_posted", "week"),
-                "remote_jobs_only": "true" if remote_only else "false",
-            },
-            headers=headers,
-        )
+        try:
+            data = get_json(
+                f"https://{HOST}/search",
+                params={
+                    "query": f"{q} in USA" if "in " not in q.lower() else q,
+                    "page": 1,
+                    "num_pages": num_pages,
+                    "country": country,
+                    "date_posted": jcfg.get("date_posted", "week"),
+                    "remote_jobs_only": "true" if remote_only else "false",
+                },
+                headers=headers,
+            )
+        except Exception as e:
+            if "404" in str(e):
+                raise RuntimeError(
+                    "JSearch 返回 404 —— 通常是 RapidAPI 账号没有订阅 JSearch"
+                    "（或订阅已失效/被下架）。请登录 rapidapi.com → 搜 JSearch → "
+                    "Subscribe（有免费档），确认后 RAPIDAPI_KEY 才会生效。"
+                ) from e
+            raise
         for item in data.get("data", []):
             city = item.get("job_city") or ""
             state = item.get("job_state") or ""

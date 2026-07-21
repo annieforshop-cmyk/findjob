@@ -8,6 +8,7 @@ to highlight something you already have.
 """
 from __future__ import annotations
 
+import datetime as dt
 import re
 
 from .sources.base import Job
@@ -40,17 +41,103 @@ def build_profile(cfg: dict, resume_text: str) -> dict:
         "must_have": [_norm(t) for t in cfg.get("must_have", [])],
         "nice_to_have": [_norm(t) for t in cfg.get("nice_to_have", [])],
         "exclude": [_norm(t) for t in cfg.get("exclude_keywords", [])],
+        # core skills = words that actually SIGNAL this role family (e.g. "internal
+        # audit", "model risk"), as opposed to generic resume words ("banking",
+        # "cpa") that appear in every fintech JD. A job must hit at least one core
+        # skill or a target title, or it is dropped — this is what keeps
+        # "Customer Success Manager" out of an audit brief.
+        "core": [_norm(t) for t in cfg.get("core_skills", [])],
+        # title-level exclusions: role families never worth showing, matched
+        # against the TITLE only (JD text mentions "sales" too often to use blob)
+        "exclude_title": [_norm(t) for t in cfg.get("exclude_title_keywords", [])],
         "locations": [_norm(t) for t in cfg.get("locations", [])],
         "remote_only": bool(cfg.get("remote_only", False)),
+        "us_only": bool(cfg.get("us_only", True)),
     }
+
+
+# location strings that clearly place a job OUTSIDE the US. Word-boundary
+# matched; a posting that ALSO names a US location is kept (multi-location).
+_NON_US = [
+    "united kingdom", "uk", "london", "ireland", "dublin", "canada", "toronto",
+    "vancouver", "ottawa", "montreal", "india", "bengaluru", "bangalore",
+    "mumbai", "hyderabad", "pune", "singapore", "australia", "sydney",
+    "melbourne", "france", "paris", "germany", "berlin", "munich",
+    "netherlands", "amsterdam", "spain", "madrid", "poland", "warsaw",
+    "brazil", "sao paulo", "mexico", "japan", "tokyo", "seoul", "korea",
+    "china", "hong kong", "taiwan", "cyprus", "israel", "tel aviv", "dubai",
+    "uae", "switzerland", "zurich", "geneva", "sweden", "stockholm",
+    "denmark", "copenhagen", "portugal", "lisbon", "italy", "milan",
+    "belgium", "brussels", "austria", "vienna", "philippines", "manila",
+    "colombia", "argentina", "chile", "new zealand", "egypt", "nigeria",
+    "south africa", "malaysia", "indonesia", "thailand", "vietnam",
+]
+_US_MARKERS = [
+    "united states", "usa", "u.s.", "america", "us-based", "remote us",
+    "us remote", "remote - us", "remote, us", "new york", "san francisco",
+    "chicago", "boston", "austin", "seattle", "denver", "atlanta", "dallas",
+    "charlotte", "miami", "washington", "los angeles", "houston", "phoenix",
+    "philadelphia", "columbus", "nashville", "jacksonville", "salt lake",
+]
+_US_STATE_ABBR = {
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID",
+    "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS",
+    "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK",
+    "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV",
+    "WI", "WY", "DC",
+}
+
+
+def location_is_non_us(location: str) -> bool:
+    """True only when the location names a non-US place and NO US place.
+    Empty/unknown locations return False (kept — the LLM pass judges those)."""
+    loc = _norm(location)
+    if not loc:
+        return False
+    if not any(_present(m, loc) for m in _NON_US):
+        return False
+    if any(_present(m, loc) for m in _US_MARKERS):
+        return False
+    if _US_STATE_ABBR & set(re.findall(r"\b[A-Z]{2}\b", location)):
+        return False
+    return True
+
+
+def recency_bonus(posted: str) -> float:
+    """ApplyPilot-style freshness: fresh postings convert better, stale ones
+    are likely filled or ghost. Unknown dates are neutral."""
+    try:
+        age = (dt.date.today() - dt.date.fromisoformat(posted[:10])).days
+    except (ValueError, TypeError):
+        return 0.0
+    if age <= 2:
+        return 8.0
+    if age <= 7:
+        return 4.0
+    if age <= 21:
+        return 0.0
+    return -6.0
+
+
+# words too generic to establish title relevance on their own
+_GENERIC_TITLE_WORDS = {
+    "senior", "manager", "director", "head", "lead", "vice", "president",
+    "principal", "staff", "associate", "analyst", "chief", "officer",
+    "global", "executive",
+}
 
 
 def score_job(job: Job, prof: dict) -> Job:
     blob = job.blob
+    title = _norm(job.title)
 
     # hard filters -> score 0 means "drop"
     for bad in prof["exclude"]:
         if _present(bad, blob):
+            job.score = 0.0
+            return job
+    for bad in prof.get("exclude_title", []):
+        if _present(bad, title):
             job.score = 0.0
             return job
     for req in prof["must_have"]:
@@ -60,32 +147,46 @@ def score_job(job: Job, prof: dict) -> Job:
     if prof["remote_only"] and not (job.remote or _present("remote", blob)):
         job.score = 0.0
         return job
-
-    # skill overlap — the main signal
-    matched = [s for s in prof["skills"] if _present(s, blob)]
-    job.matched = matched
-    skill_ratio = len(matched) / max(len(prof["skills"]), 1)
-    skill_score = min(len(matched) * 9, 60) + skill_ratio * 10  # up to ~70
+    if prof.get("us_only") and location_is_non_us(job.location):
+        job.score = 0.0
+        return job
 
     # title relevance — light signal
-    title = _norm(job.title)
     title_score = 0
+    title_hit = False
     for t in prof["titles"]:
         if t and t in title:
-            title_score = 20
+            title_score, title_hit = 20, True
             break
-        # partial: any significant word of a target title in the job title
-        words = [w for w in t.split() if len(w) > 3]
+        # partial: significant words of a target title in the job title.
+        # Seniority words ("senior", "manager", …) are excluded — matching on
+        # those alone made "Senior Manager, Compensation" count as a title hit.
+        words = [w for w in t.split() if len(w) > 3 and w not in _GENERIC_TITLE_WORDS]
         if words and sum(w in title for w in words) >= max(1, len(words) - 1):
-            title_score = max(title_score, 12)
+            title_score, title_hit = max(title_score, 12), True
+
+    # skill overlap — the main signal. Core skills (role-defining terms) weigh
+    # far more than generic resume words, and a job matching NO core skill and
+    # no target title is dropped outright.
+    core = prof.get("core") or []
+    matched_core = [s for s in core if _present(s, blob)]
+    if core and not matched_core and not title_hit:
+        job.score = 0.0
+        return job
+    matched_other = [s for s in prof["skills"] if s not in set(core) and _present(s, blob)]
+    matched = matched_core + matched_other
+    job.matched = matched
+    skill_ratio = len(matched) / max(len(prof["skills"]), 1)
+    skill_score = min(len(matched_core) * 14 + len(matched_other) * 5, 60) + skill_ratio * 10
 
     # nice-to-have + location bonuses
     bonus = sum(4 for n in prof["nice_to_have"] if _present(n, blob))
     if not prof["remote_only"] and prof["locations"]:
         if any(_present(l, blob) for l in prof["locations"]):
             bonus += 6
+    bonus += recency_bonus(job.posted)
 
-    job.score = round(min(skill_score + title_score + bonus, 100), 1)
+    job.score = round(min(max(skill_score + title_score + bonus, 0), 100), 1)
 
     # gap keywords: skills the JD clearly asks for that aren't yours yet
     missing = [s for s in prof["skills"] if s not in matched and _present(s, blob)]

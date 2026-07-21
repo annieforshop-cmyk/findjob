@@ -126,8 +126,14 @@ FETCHERS = {
 # ---------------- pipeline ----------------
 
 def _kw_match(job: Job, keywords: list[str]) -> bool:
-    blob = f"{job.title} {job.description}".lower()
-    return any(k.lower() in blob for k in keywords)
+    """A keyword in the TITLE is a real signal. Keywords in the JD body are
+    weak — every fintech JD's boilerplate mentions "compliance" — so require
+    at least two distinct keywords there before treating it as a match."""
+    title = job.title.lower()
+    if any(k.lower() in title for k in keywords):
+        return True
+    desc = job.description.lower()
+    return sum(1 for k in keywords if k.lower() in desc) >= 2
 
 
 def _load_seen() -> dict[str, float]:
