@@ -29,6 +29,55 @@ queries:
   - AI Assurance
   - Head of AI Governance
 
+# 核心技能：真正"定义这个方向"的词。岗位必须命中至少一个核心词或目标 title，
+# 否则直接过滤——防止 Customer Success / Sales 这类岗只靠 "banking" 等通用词混进来。
+core_skills:
+  - ai governance
+  - responsible ai
+  - ai assurance
+  - nist ai rmf
+  - eu ai act
+  - iso 42001
+  - ai risk assessment
+  - ai risk management
+  - ai policy
+  - ai controls
+  - model risk
+  - model governance
+  - ai compliance
+  - ai ethics
+
+# 只按 TITLE 排除的岗位族（JD 正文里常提到 sales/marketing，不能用全文排除）
+exclude_title_keywords:
+  - sales
+  - account executive
+  - account director
+  - account manager
+  - customer success
+  - marketing
+  - business development
+  - solutions engineer
+  - solutions architect
+  - forward deployed
+  - full stack
+  - frontend
+  - backend
+  - tax
+  - payroll
+  - accountant
+  - accounting manager
+  - revenue
+  - treasury
+  - fp&a
+  - financial planning
+  - recruiter
+  - talent acquisition
+  - relationship manager
+  - wealth
+  - concierge
+  - field marketing
+  - partnerships
+
 # 你真实拥有的技能/关键词（内容匹配主力，尽量全）
 skills:
   - ai governance

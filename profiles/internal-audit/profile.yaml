@@ -28,6 +28,62 @@ queries:
   - Compliance Audit Manager
   - Head of Internal Audit
 
+# 核心技能：必须命中至少一个（或目标 title），否则过滤——挡住靠通用词混入的无关岗
+core_skills:
+  - internal audit
+  - risk-based audit
+  - audit plan
+  - control testing
+  - control design
+  - sox
+  - sarbanes-oxley
+  - coso
+  - pcaob
+  - icfr
+  - internal controls
+  - audit report
+  - workpaper
+  - it audit
+  - technology audit
+  - operational audit
+
+# 只按 TITLE 排除的岗位族
+exclude_title_keywords:
+  - sales
+  - account executive
+  - account director
+  - account manager
+  - customer success
+  - marketing
+  - business development
+  - solutions engineer
+  - solutions architect
+  - forward deployed
+  - full stack
+  - frontend
+  - backend
+  - payroll
+  - tax
+  - accountant
+  - accounting manager
+  - accounting policy
+  - treasury
+  - revenue
+  - financial reporting
+  - financial planning
+  - fp&a
+  - recruiter
+  - talent acquisition
+  - relationship manager
+  - wealth
+  - concierge
+  - field marketing
+  - partnerships
+  - product manager
+  - program manager
+  - fraud intelligence
+  - strategy and growth
+
 skills:
   - internal audit
   - global compliance audit

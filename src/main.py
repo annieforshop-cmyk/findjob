@@ -105,9 +105,9 @@ def collect_profile(profile: str | None, dry_run: bool = False) -> dict:
 
     if acfg.get("enabled"):
         candidates = candidates[: acfg.get("max_candidates", 40)]
-        candidates, used_ai = ai_score.rescore(candidates, resume, cfg)
+        candidates, used_ai, ai_note = ai_score.rescore(candidates, resume, cfg)
     else:
-        used_ai = False
+        used_ai, ai_note = False, ""
 
     min_score = cfg.get("min_score", 25)
     ranked = sorted(
@@ -120,7 +120,8 @@ def collect_profile(profile: str | None, dry_run: bool = False) -> dict:
         seen[j.id] = now
 
     tailored = _auto_tailor(top, resume, cfg)
-    meta = {"scanned": scanned, "min_score": min_score, "used_ai": used_ai, "label": label}
+    meta = {"scanned": scanned, "min_score": min_score, "used_ai": used_ai,
+            "ai_note": ai_note, "label": label}
 
     if not dry_run:
         store.save_seen(seen, ns)

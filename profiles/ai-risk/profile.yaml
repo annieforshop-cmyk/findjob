@@ -27,6 +27,57 @@ queries:
   - Responsible AI Risk
   - AI Model Risk Management
 
+# 核心技能：必须命中至少一个（或目标 title），否则过滤——挡住靠通用词混入的无关岗
+core_skills:
+  - ai risk
+  - ai risk management
+  - nist ai rmf
+  - iso 42001
+  - eu ai act
+  - model risk
+  - model risk management
+  - model validation
+  - model governance
+  - responsible ai
+  - ai governance
+  - ai controls
+  - technology risk
+  - operational risk
+  - enterprise risk
+
+# 只按 TITLE 排除的岗位族
+exclude_title_keywords:
+  - sales
+  - account executive
+  - account director
+  - account manager
+  - customer success
+  - marketing
+  - business development
+  - solutions engineer
+  - solutions architect
+  - forward deployed
+  - full stack
+  - frontend
+  - backend
+  - tax
+  - payroll
+  - accountant
+  - accounting manager
+  - revenue
+  - treasury
+  - fp&a
+  - financial planning
+  - recruiter
+  - talent acquisition
+  - relationship manager
+  - wealth
+  - concierge
+  - field marketing
+  - partnerships
+  - general counsel
+  - counsel
+
 skills:
   - ai risk
   - ai risk management

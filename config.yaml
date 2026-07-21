@@ -59,6 +59,7 @@ brief:
   per_company_cap: 3    # Top Jobs 里同一家公司最多出现几次（防刷屏）
   dream_per_company: 3  # Dream 栏目里同一家公司最多出现几次
   dream_max: 12         # dream 官网新岗每天最多精评几个
+  dream_min_score: 25   # Dream 岗也要过这个分数线（关键词或 AI 综合分），杜绝 0 分噪音
   research_top: 3       # 自动尽调几家公司（缓存14天，不重复花钱）
   networking_top: 4     # 为前几个岗位生成内推人选链接
   weekly_day: 0         # 周几做每周动作（0=周一：LinkedIn 内容 + recruiter 周计划）
@@ -73,6 +74,10 @@ top_n: 40
 new_only: true
 
 remote_only: false          # 你是资深岗，未必只看 remote；按需在 profile 里覆盖
+
+# 关键词阶段就把"明确非美国"的岗位（Remote UK / Singapore / Bengaluru…）直接过滤，
+# 不再依赖 LLM 的 location_ok（LLM 挂掉时以前会漏进来一堆海外岗）
+us_only: true
 locations:
   - united states
   - new york
