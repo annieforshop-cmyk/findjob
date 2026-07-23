@@ -52,13 +52,16 @@ fit_weights:
   recruiter_odds: 0.08   # 现实回复概率（避免全投神仙岗）
 # 另有稳定性调整：裁员风险 low +3 / high -8（见 src/ai_score.py）
 
-# ---- 每日新岗邮件（一封邮件只做一件事：今天的高匹配新岗）---------
+# ---- 每日新岗邮件（一封邮件只做一件事：今天的高匹配 AI 治理新岗）-----
 brief:
-  top_jobs: 50          # 每天邮件里最多列多少个（跨三方向合并去重后）
+  # ⭐ 每天邮件只跑这些方向。现在聚焦 AI Governance——只想看这一类岗。
+  #   想把审计/风控也加回来：写成 [ai-governance, internal-audit, ai-risk]。
+  profiles: [ai-governance]
+  top_jobs: 50          # 每天邮件里最多列多少个
   per_company_cap: 3    # 同一家公司最多出现几次（防刷屏）
 
 # ⭐ 只保留最终分 >= 这个阈值的岗位（0-100）。宁缺毋滥——低于此分不推。
-# 有 OpenAI key 时这是 12 维综合分；没有时退回关键词分（邮件顶部会告警）。
+# 现在是纯规则打分（不需要 OpenAI）：AI 治理居中 + 业务背景信号 + 职级 + 新鲜度。
 min_score: 60
 
 # 每个方向每天最多展示多少个岗位（合并前的上限）
@@ -69,17 +72,19 @@ new_only: true
 
 remote_only: false          # 你是资深岗，未必只看 remote；按需在 profile 里覆盖
 
-# 关键词阶段就把"明确非美国"的岗位（Remote UK / Singapore / Bengaluru…）直接过滤，
-# 不再依赖 LLM 的 location_ok（LLM 挂掉时以前会漏进来一堆海外岗）
+# 关键词阶段就把"明确非美国"的岗位（Remote UK / Singapore / Bengaluru…）直接过滤
 us_only: true
 locations:
   - united states
   - new york
   - remote
 
-# ---- LLM 语义打分（像人一样读 JD 内容，不看 title）----------
+# ---- LLM 语义打分：关闭 ----------------------------------------
+# 你不用 OpenAI，所以关掉。打分完全走 src/score.py 的规则引擎（focus 路径），
+# 不需要任何 API key、不花钱、不会因为额度用尽而退化。
+# （若以后有了 key 想开：改 enabled: true 即可，规则打分会作为初筛保留。）
 ai_scoring:
-  enabled: true
+  enabled: false
   model: gpt-4o-mini
   max_candidates: 60
   prefilter_min_score: 8

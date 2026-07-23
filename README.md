@@ -1,16 +1,19 @@
-# findjob — 每天一封邮件：市场上今天出的高匹配新岗
+# findjob — 每天一封邮件：今天新出的高匹配 AI Governance 岗
 
-> 只做一件事，做深：**每天扫全网免费岗位源，只把和你高度匹配（≥60 分）的
-> 新岗推给你。** 没有 target-firm 清单、没有内推、没有公司尽调——就是一份
-> 干净、准确、当天新鲜的岗位 feed。
+> 只做一件事，做深：**每天扫全网免费岗位源，只把真正围绕「AI 治理 / 责任 AI」
+> 且要你这种业务/风控背景来推动的资深岗（≥60 分）推给你。** 美国岗，
+> 不用 OpenAI、不花钱，一份干净、准确、当天新鲜的岗位 feed。
 
 每天早上**一封「每日新岗」邮件**：
-- 🎯 **今日高匹配新岗**：三个方向（AI Governance / AI Risk / Internal Audit）
-  合并去重，按**综合 Fit Score 排序**，**只保留 ≥60 分**的岗位——宁缺毋滥。
-- 每个岗位带：匹配分、技能/职级分项分、一句话匹配理由、薪资区间（JD 有则取）、
-  地点、**发布日期**、**来源平台**、直达链接。
+- 🎯 **今日高匹配 AI 治理岗**：按 Fit Score 排序，**只保留 ≥60 分**——宁缺毋滥。
+- 每个岗位带：匹配分、命中理由、地点、**发布日期**、**来源平台**、直达链接；
+  同一岗位多地点自动合并成一行。
 
-**只推 60 分以上**是刻意的：与其给你一屏 0 分噪音，不如每天几个真正值得投的。
+**不用 OpenAI**：打分完全走本地规则引擎（`src/score.py` 的 focus 路径）——判断岗位
+是否**以 AI 治理为中心**（focus 词进标题，或正文出现 ≥2 个），再按"要业务/治理背景
+来推动 AI"的信号加权、按职级和新鲜度调整。不需要任何 API key、不会因欠费而失灵。
+
+**只推 60 分以上**是刻意的：与其给你一屏噪音，不如每天几个真正值得投的。
 今天没有达标的，就明说"今天没有"，不硬凑。
 
 **投递执行**（可选）：仓库根目录的 [`AGENTS.md`](AGENTS.md) 是给 AI agent
@@ -21,31 +24,29 @@
 
 ---
 
-## 它怎么保证"准确"
+## 它怎么保证"准确"（不用 OpenAI）
 
-**打分两段式**：先用关键词撒大网初筛（便宜），再用 **LLM 语义打分**深度评估——
-读懂 JD 描述的"实际工作内容"是否和你简历吻合，即使用词不同也能识别（看内容不看 title）。
-没有 OpenAI key 时退回关键词打分（邮件顶部会告警）。
+打分在 `src/score.py`，纯规则、无网络、无 API key。对 AI Governance 方向走 **focus 路径**：
 
-关键词阶段有四道硬闸门，把噪音挡在门外：
-- **核心技能门槛**（`profiles/*/core_skills`）：岗位必须命中至少一个"定义这个方向"的词
-  （如 internal audit / model risk），光靠 banking、cpa 这类通用词进不来。
-- **标题排除**（`exclude_title_keywords`）：sales / customer success / tax 等岗位族按 title 直接排除。
-- **美国岗过滤**（`us_only`）：location 明确写 Remote UK / Singapore 等的直接过滤。
-- **新鲜度**：48 小时内 +8 分、一周内 +4 分、三周以上 -6 分（新岗转化率高，旧岗多为幽灵岗）。
+1. **中心性闸门**：岗位必须真的以 AI 治理为中心——focus 词（ai governance / responsible ai
+   / ai policy / ai risk / model governance / nist ai rmf / eu ai act…）出现在**标题**，
+   或正文里出现 **≥2 个**。只顺嘴提一句 AI 的合规/法务岗直接丢。
+2. **业务背景加权**：命中 governance / risk / compliance / policy / framework / audit /
+   stakeholder 等信号越多，说明这岗要的正是"懂业务、懂风控的人来推动 AI"——你的画像。
+3. **职级调整**：director / head / manager / lead 加分；engineer / scientist / intern 等
+   技术或初级岗直接由标题排除。
+4. **美国岗过滤 + 新鲜度**：明确写 UK / Singapore / Europe 等的丢；48 小时内 +8、
+   三周以上 -6（旧岗多为幽灵岗）。
 
-最后再卡 **60 分总线**。所以邮件里出现的，基本都是真的对得上的岗。
+最后卡 **60 分总线**。所以邮件里出现的，基本都是真·AI 治理、且要你这种背景的美国岗。
 
-如果某天 AI 语义打分没跑成（key 失效/欠费），邮件顶部会出现**醒目告警**说明原因，
-而不是默默退化——看到告警就去修。
+> focus 词表、业务信号、排除规则都在 `profiles/ai-governance/profile.yaml`，随时可调。
 
-**能：** 从一堆公开免费 API 稳定拉岗位：RemoteOK、Remotive、Arbeitnow、
-We Work Remotely、Jobicy、Hacker News "Who is hiring"、**The Muse**（专业/企业岗，免 key）、
-公司官网直连（Greenhouse/Lever/Ashby/SmartRecruiters/Workday，免 key），
-以及可选的 **JSearch**（Google-for-Jobs，聚合 LinkedIn/Indeed/Glassdoor 等，需免费 key）
-和 **Adzuna**（需免费 key）。
+**数据源（全部免 key，广撒网）：** 公司官网直连（Greenhouse/Lever/Ashby/SmartRecruiters/
+Workday，清单在 `career/ats_companies.yaml`）、**The Muse**、RemoteOK、Remotive、Arbeitnow、
+We Work Remotely、Jobicy、Hacker News "Who is hiring"。**JSearch / Adzuna** 有免费 key 时自动加入。
 
-**不能：** 自动登录抓 **LinkedIn / Indeed 官网**（反爬 + 使用条款，易封号，刻意不做）。
+**不做：** 自动登录抓 **LinkedIn / Indeed 官网**（反爬 + 使用条款，易封号，刻意不做）。
 
 ---
 
@@ -61,32 +62,25 @@ We Work Remotely、Jobicy、Hacker News "Who is hiring"、**The Muse**（专业/
   `exclude_keywords` / `exclude_title_keywords`（按标题排除的岗位族）/ `queries`——
   **会覆盖根目录 `config.yaml` 的同名项**。
 
-根目录 `config.yaml` 是**共享设置**：数据源开关、`ai_scoring`、`min_score`(60)、邮件行为等，所有方向继承。
-想加/删方向：复制一个 `profiles/xxx/` 目录改内容即可。
+根目录 `config.yaml` 是**共享设置**：数据源开关、`min_score`(60)、`brief.profiles`（每天跑哪些方向）
+等，所有方向继承。想加/删方向：复制一个 `profiles/xxx/` 目录改内容即可。
 
 ### 2. 在 GitHub 加 Secrets
-仓库 → Settings → Secrets and variables → Actions → New repository secret，加以下几个：
+**只需要邮箱相关的 5 个**（不需要 OpenAI，不需要 RapidAPI）：
 
-| Secret | 说明 |
-|---|---|
-| `OPENAI_API_KEY` | **LLM 语义打分**（决定 60 分线准不准）+ cover letter；没有它会退回关键词打分并在邮件顶部告警 |
-| `SMTP_HOST` | 邮件服务器，如 Gmail 用 `smtp.gmail.com` |
-| `SMTP_PORT` | `465`（SSL）或 `587`（TLS） |
-| `SMTP_USER` | 发件邮箱地址 |
-| `SMTP_PASS` | 邮箱**应用专用密码**（不是登录密码，见下） |
-| `EMAIL_TO` | 收件邮箱（你自己） |
-| `EMAIL_FROM` | 可选，默认同 `SMTP_USER` |
-| `RAPIDAPI_KEY` | **JSearch 用**（LinkedIn/Indeed/Glassdoor/ZipRecruiter 聚合）。rapidapi.com 免费订阅 JSearch |
-| `OPENAI_MODEL` | 可选，默认 `gpt-4o-mini` |
-| `ADZUNA_APP_ID` / `ADZUNA_APP_KEY` | 可选，启用 Adzuna 时才需要 |
+| Secret | 必需？ | 说明 |
+|---|---|---|
+| `SMTP_HOST` | ✅ | 邮件服务器，Gmail 用 `smtp.gmail.com` |
+| `SMTP_PORT` | ✅ | `465`（SSL）或 `587`（TLS） |
+| `SMTP_USER` | ✅ | 发件邮箱地址 |
+| `SMTP_PASS` | ✅ | 邮箱**应用专用密码**（不是登录密码，见下） |
+| `EMAIL_TO` | ✅ | 收件邮箱（你自己） |
+| `EMAIL_FROM` | 可选 | 默认同 `SMTP_USER` |
+| `RAPIDAPI_KEY` / `ADZUNA_*` | 可选 | **不填也能跑**；填了会多两个聚合源（JSearch/Adzuna）。免 key 的源已经够用 |
+| `OPENAI_API_KEY` | 不需要 | 打分已改成本地规则引擎，用不到。只有想用 `src.tailor` 生成 cover letter 才需要 |
 
 > **Gmail 应用专用密码**：需先开两步验证，然后到 Google 账号 → 安全 → 应用专用密码，
 > 生成一个 16 位密码填到 `SMTP_PASS`。用 `smtp.gmail.com` + 端口 `465`。
-
-> **两个最常见的静默故障**（邮件顶部出现 ⚠️ 告警时先查这两项）：
-> ① OpenAI 余额用尽（429 insufficient_quota）→ platform.openai.com → Billing 充值；
-> ② JSearch 返回 404 → RapidAPI 账号没订阅 JSearch（key 存在≠已订阅），
-> 到 rapidapi.com 搜 JSearch 点 Subscribe（免费档即可）。
 
 ### 3. 开启定时任务
 `.github/workflows/daily-job-search.yml` 已配好每天 UTC 13:00 运行。

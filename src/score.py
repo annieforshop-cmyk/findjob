@@ -50,10 +50,31 @@ def build_profile(cfg: dict, resume_text: str) -> dict:
         # title-level exclusions: role families never worth showing, matched
         # against the TITLE only (JD text mentions "sales" too often to use blob)
         "exclude_title": [_norm(t) for t in cfg.get("exclude_title_keywords", [])],
+        # focus_terms = the ONE central theme the role must be about (e.g. AI
+        # governance). Precision gate: the job must have a focus term in its
+        # TITLE, or >=2 distinct focus terms in its body — otherwise it's a
+        # role that merely mentions the theme in boilerplate and is dropped.
+        # When set, scoring is driven by focus + business_signals (no LLM needed).
+        "focus": [_norm(t) for t in cfg.get("focus_terms", [])],
+        # business_signals = evidence the role wants a business/governance/risk
+        # background driving the theme, not a hands-on ML builder.
+        "business": [_norm(t) for t in cfg.get("business_signals", [])],
         "locations": [_norm(t) for t in cfg.get("locations", [])],
         "remote_only": bool(cfg.get("remote_only", False)),
         "us_only": bool(cfg.get("us_only", True)),
     }
+
+
+# title words that signal an appropriate senior/business level for these roles
+_SENIOR_WORDS = {
+    "director", "head", "lead", "leader", "manager", "senior", "principal",
+    "vp", "vice", "chief", "officer", "governance", "counsel", "president",
+}
+# title words that signal a hands-on / junior role this candidate doesn't want
+_JUNIOR_WORDS = {
+    "intern", "internship", "coordinator", "assistant", "entry", "junior",
+    "engineer", "developer", "scientist", "researcher",
+}
 
 
 # location strings that clearly place a job OUTSIDE the US. Word-boundary
@@ -71,6 +92,9 @@ _NON_US = [
     "belgium", "brussels", "austria", "vienna", "philippines", "manila",
     "colombia", "argentina", "chile", "new zealand", "egypt", "nigeria",
     "south africa", "malaysia", "indonesia", "thailand", "vietnam",
+    "europe", "emea", "apac", "latam", "quezon", "cebu", "gurgaon",
+    "gurugram", "noida", "chennai", "kolkata", "krakow", "wroclaw",
+    "bucharest", "sofia", "istanbul", "riyadh", "doha", "nairobi",
 ]
 _US_MARKERS = [
     "united states", "usa", "u.s.", "america", "us-based", "remote us",
@@ -151,6 +175,15 @@ def score_job(job: Job, prof: dict) -> Job:
         job.score = 0.0
         return job
 
+    # ---- focus-driven precision path (no LLM needed) ----
+    # When the profile declares focus_terms, the role must be CENTRALLY about
+    # that theme, and we score it on theme centrality + business-background
+    # signals + seniority + freshness. This is what makes AI-governance matching
+    # accurate without any OpenAI call.
+    focus = prof.get("focus") or []
+    if focus:
+        return _score_focus(job, prof, blob, title, focus)
+
     # title relevance — light signal
     title_score = 0
     title_hit = False
@@ -191,6 +224,50 @@ def score_job(job: Job, prof: dict) -> Job:
     # gap keywords: skills the JD clearly asks for that aren't yours yet
     missing = [s for s in prof["skills"] if s not in matched and _present(s, blob)]
     job.missing = missing
+    return job
+
+
+def _score_focus(job: Job, prof: dict, blob: str, title: str, focus: list[str]) -> Job:
+    """Score a role that must be centrally about the profile's focus theme
+    (e.g. AI governance). No LLM. Precision comes from three gates + weighting:
+      1. Centrality: focus term in title, OR >=2 distinct focus terms in body.
+      2. Business fit: rewards governance/risk/policy framing (the "business
+         background driving responsible AI" the candidate has), not ML building.
+      3. Seniority: rewards director/manager/lead/head; penalizes junior/hands-on.
+    """
+    focus_in_title = [t for t in focus if t in title]
+    focus_in_body = [t for t in focus if _present(t, blob)]
+    # centrality gate
+    if not focus_in_title and len(focus_in_body) < 2:
+        job.score = 0.0
+        job.matched = []
+        return job
+
+    business = prof.get("business") or []
+    biz_hits = [b for b in business if _present(b, blob)]
+
+    # base by how central the theme is
+    score = 45.0 if focus_in_title else 28.0
+    # more distinct focus terms in the JD => more genuinely about the theme
+    score += min(len(focus_in_body), 5) * 6          # up to +30
+    # business/governance framing => wants this candidate's background
+    score += min(len(biz_hits), 6) * 4               # up to +24
+
+    # seniority read from the title
+    words = set(re.findall(r"[a-z]+", title))
+    if words & _SENIOR_WORDS:
+        score += 8
+    if words & _JUNIOR_WORDS:
+        score -= 18
+
+    score += recency_bonus(job.posted)
+    if prof["locations"] and any(_present(l, blob) for l in prof["locations"]):
+        score += 4
+
+    job.matched = (focus_in_title + [t for t in focus_in_body if t not in focus_in_title]
+                   + biz_hits)[:10]
+    job.missing = [t for t in focus if t not in focus_in_body][:6]
+    job.score = round(min(max(score, 0), 100), 1)
     return job
 
 
