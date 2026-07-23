@@ -1,57 +1,51 @@
-# findjob — Career OS：每天一封 Career Brief，20-30 分钟搞定求职
+# findjob — 每天一封邮件：市场上今天出的高匹配新岗
 
-> **Job Search ≠ Apply More。** Job Search = 精准匹配 + Recruiter + Networking +
-> Personal Brand + ATS 优化 + Career Strategy。这个仓库把每一项都自动化。
+> 只做一件事，做深：**每天扫全网免费岗位源，只把和你高度匹配（≥60 分）的
+> 新岗推给你。** 没有 target-firm 清单、没有内推、没有公司尽调——就是一份
+> 干净、准确、当天新鲜的岗位 feed。
 
-每天早上**一封 Career Brief 邮件**，包含：
-- ⭐ **Dream Company 官网新岗**（Target-50 名单，直连 Greenhouse/Lever/Ashby/Workday 等官方 API，不依赖 LinkedIn）
-- 🎯 **Top Jobs**：三个方向合并，按 12 维**综合 Fit Score** 排序（含职业路径分、recruiter 回复概率、裁员风险）
-- 🔎 **公司自动尽调**：近期新闻、AI 布局、裁员风险、cover letter 切入点、面试角度
-- 🤝 **内推人选**：每个 Top 岗位的校友/前同事/决策者 LinkedIn 精准搜索链接 + 破冰消息草稿
-- ⏰ **跟进提醒**：投递 7/14 天无回音自动提醒 follow-up
-- 📇 **Recruiter Pipeline**：每周新增 5-10 个猎头连接的执行计划 + 到期关系提醒
-- ✍️ **每周一 LinkedIn 帖子草稿**（AI Governance/NIST AI RMF 话题轮换，你的口吻）
+每天早上**一封「每日新岗」邮件**：
+- 🎯 **今日高匹配新岗**：三个方向（AI Governance / AI Risk / Internal Audit）
+  合并去重，按**综合 Fit Score 排序**，**只保留 ≥60 分**的岗位——宁缺毋滥。
+- 每个岗位带：匹配分、技能/职级分项分、一句话匹配理由、薪资区间（JD 有则取）、
+  地点、**发布日期**、**来源平台**、直达链接。
 
-配套资产库（`career/`，全部可携带）：**STAR 故事库**（简历/CL/面试复用）、
-**Interview Knowledge Base**（每家公司历次面试题沉淀）、申请与人脉 CRM、
-**Candidate Profile + Answer Bank**（申请表事实与措辞库，借鉴开源项目 ApplyPilot）。
+**只推 60 分以上**是刻意的：与其给你一屏 0 分噪音，不如每天几个真正值得投的。
+今天没有达标的，就明说"今天没有"，不硬凑。
 
-**投递执行**：仓库根目录的 [`AGENTS.md`](AGENTS.md) 是给 AI agent（Claude Code /
-Codex）的投递 SOP——从邮件挑好岗位后，对 agent 说"帮我投这个岗"，它会按
-海投/精投两种模式走流程，自动填低风险字段、缺高影响事实就停下来问你、
-**最终提交永远由你确认**。每个岗位落入
-Submitted / Pending / Skipped / Blocked / Needs-user 五种状态之一（`src.track` 记录）。
+**投递执行**（可选）：仓库根目录的 [`AGENTS.md`](AGENTS.md) 是给 AI agent
+（Claude Code / Codex）的投递 SOP——挑好岗位后对 agent 说"帮我投这个"，它按
+海投/精投走流程、自动填低风险字段、缺关键事实停下来问你、**最终提交永远由你确认**。
 
-**完整手册见 [docs/career-os.md](docs/career-os.md)。** 以下是基础引擎说明。
-
-全程跑在 **GitHub Actions**，不占用你电脑、不用你每天盯着 LinkedIn 刷。
+全程跑在 **GitHub Actions**，不占用你电脑、不用每天盯着刷。
 
 ---
 
-## 它能做 / 不能做（先说清楚）
+## 它怎么保证"准确"
 
-**打分是两段式**：先用关键词撒大网初筛（便宜），再用 **LLM 语义打分**只对候选深度评估——
-读懂 JD 描述的"实际工作内容"是否和你简历吻合，即使用词不同也能识别，这才是"看内容不看 title"。
-输出结构化的总分/技能契合/经历契合/一句话理由。没有 OpenAI key 时自动退回纯关键词打分，不影响运行。
+**打分两段式**：先用关键词撒大网初筛（便宜），再用 **LLM 语义打分**深度评估——
+读懂 JD 描述的"实际工作内容"是否和你简历吻合，即使用词不同也能识别（看内容不看 title）。
+没有 OpenAI key 时退回关键词打分（邮件顶部会告警）。
 
-关键词初筛不只是撒网，还有四道硬闸门（LLM 挂掉时也能保住质量）：
+关键词阶段有四道硬闸门，把噪音挡在门外：
 - **核心技能门槛**（`profiles/*/core_skills`）：岗位必须命中至少一个"定义这个方向"的词
   （如 internal audit / model risk），光靠 banking、cpa 这类通用词进不来。
 - **标题排除**（`exclude_title_keywords`）：sales / customer success / tax 等岗位族按 title 直接排除。
 - **美国岗过滤**（`us_only`）：location 明确写 Remote UK / Singapore 等的直接过滤。
 - **新鲜度**：48 小时内 +8 分、一周内 +4 分、三周以上 -6 分（新岗转化率高，旧岗多为幽灵岗）。
 
+最后再卡 **60 分总线**。所以邮件里出现的，基本都是真的对得上的岗。
+
 如果某天 AI 语义打分没跑成（key 失效/欠费），邮件顶部会出现**醒目告警**说明原因，
-而不是默默退化——看到告警就去修，否则排序质量会差很多。
+而不是默默退化——看到告警就去修。
 
-**能：** 从有公开免费 API 的平台稳定拉岗位并智能匹配：
-RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who is hiring"，
-以及可选的 **Adzuna**（聚合器，含部分 Indeed 来源，需免费 key）。
+**能：** 从一堆公开免费 API 稳定拉岗位：RemoteOK、Remotive、Arbeitnow、
+We Work Remotely、Jobicy、Hacker News "Who is hiring"、**The Muse**（专业/企业岗，免 key）、
+公司官网直连（Greenhouse/Lever/Ashby/SmartRecruiters/Workday，免 key），
+以及可选的 **JSearch**（Google-for-Jobs，聚合 LinkedIn/Indeed/Glassdoor 等，需免费 key）
+和 **Adzuna**（需免费 key）。
 
-**不能：** 自动登录并抓 **LinkedIn / Indeed 官网**。它们有反爬和使用条款限制，
-自动抓取不稳定且可能封号，本项目刻意不做。LinkedIn 请继续手动用，但把精力留给「申请」而不是「刷」。
-
-**「让别人看到你」** 属于简历/主页 SEO，自动化帮不上——见文末清单。
+**不能：** 自动登录抓 **LinkedIn / Indeed 官网**（反爬 + 使用条款，易封号，刻意不做）。
 
 ---
 
@@ -63,10 +57,11 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 
 每个目录里：
 - `resume.md`：该方向的简历（已按你三份简历填好；也可放 `resume.pdf` 自动抽取，PDF 优先）。
-- `profile.yaml`：该方向的 `target_titles` / `skills` / `exclude_keywords` / `jsearch.queries` /
-  `min_score`——**会覆盖根目录 `config.yaml` 的同名项**。
+- `profile.yaml`：该方向的 `target_titles` / `skills` / `core_skills`（核心技能门槛）/
+  `exclude_keywords` / `exclude_title_keywords`（按标题排除的岗位族）/ `queries`——
+  **会覆盖根目录 `config.yaml` 的同名项**。
 
-根目录 `config.yaml` 是**共享设置**：数据源开关、`ai_scoring`、邮件行为、`top_n` 等，所有方向继承。
+根目录 `config.yaml` 是**共享设置**：数据源开关、`ai_scoring`、`min_score`(60)、邮件行为等，所有方向继承。
 想加/删方向：复制一个 `profiles/xxx/` 目录改内容即可。
 
 ### 2. 在 GitHub 加 Secrets
@@ -74,7 +69,7 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 
 | Secret | 说明 |
 |---|---|
-| `OPENAI_API_KEY` | 生成 cover letter / 对齐建议用 |
+| `OPENAI_API_KEY` | **LLM 语义打分**（决定 60 分线准不准）+ cover letter；没有它会退回关键词打分并在邮件顶部告警 |
 | `SMTP_HOST` | 邮件服务器，如 Gmail 用 `smtp.gmail.com` |
 | `SMTP_PORT` | `465`（SSL）或 `587`（TLS） |
 | `SMTP_USER` | 发件邮箱地址 |
@@ -102,35 +97,32 @@ RemoteOK、Remotive、Arbeitnow、We Work Remotely、Jobicy、Hacker News "Who i
 
 ## 每天你会收到什么
 
-**一封 Career Brief**（内容见文首；想恢复"每方向一封"的旧模式，改跑 `python -m src.main`）。
-其中每个岗位带一份多维度分析：
-- **AI 匹配分** + 投递建议徽标（建议投 / 可考虑 / 可跳过）
-- **技能 / 职级 / 年限** 三个分项分（职级和年限按你的真实画像判断，不被 title 误导）
-- **一句话匹配理由**、**薪资区间**（JD 有则取，无则市场估算）、**幽灵岗风险**、**公司简评**
-- 命中技能、「可如实补充的缺口关键词」、地点（remote/hybrid/onsite，仅限美国）、链接
+**一封「每日新岗」邮件**：三个方向合并去重、按综合分排序、**只保留 ≥60 分**的今日新岗。
+每个岗位带：
+- **匹配分**（≥60）+ 技能/职级/行业/回复概率分项分
+- **一句话匹配理由**、**薪资区间**（JD 有则取，无则市场估算）
+- **地点**、**发布日期**、**来源平台**、直达链接
 
-打分对你的画像是**多角度**的：内容契合 > title；判断真实职级（senior manager–director 带）；
-匹配 ~10 年经验；只保留美国岗（JD 列多地点、含美国即可）；识别幽灵岗；估算薪资。
-画像写在 `config.yaml` 的 `candidate:`，可随时调。
+阈值在 `config.yaml` 的 `min_score`（默认 60）。想更严就调高、想多看点就调低。
 
-把 `config.yaml` 的 `auto_tailor_top` 设成 >0（如 3），邮件会为最强的前几个岗位**直接附上 cover letter 草稿**（点开可见），做到"投递就绪"。默认 0（省钱）。
+### 数据源
+远程板（RemoteOK / Remotive / Arbeitnow / WWR / Jobicy）、HN "Who is hiring"、
+**The Muse**（专业岗，免 key）、公司官网直连（ats_boards，免 key，清单在
+`career/ats_companies.yaml`）都默认打开；**JSearch / Adzuna** 有 key 时自动加入。
+撒网撒得多，靠 60 分门槛保证进邮件的都准。
 
-### 数据源覆盖 & 配额
-- **JSearch**（走 Google for Jobs）一个源就覆盖 **LinkedIn / Indeed / Glassdoor / ZipRecruiter / Ladders / Built In / Dice / Wellfound** 等主流板——不用逐站爬。
-- **Adzuna** 作第二聚合源补充。
-- 注意配额：JSearch 免费档约 200 次/月，每个 `queries` 词 = 1 次调用。三方向共 ~24 词 × 每天 ≈ 超免费档；
-  可（a）减少 `queries`，或（b）升 JSearch 便宜付费档，或（c）主要靠 Adzuna（免费档 ~250 次/天，更宽松）。
+> JSearch 配额：免费档约 200 次/月，每个 `queries` 词 = 1 次调用。词多了可能超额——
+> 超了也不影响，其余源照常跑。
 
 ## 对某个岗位深度加工
+
+投某个岗位前，用 tailor 生成 ATS 关键词对齐 + cover letter 草稿：
 
 ```bash
 pip install -r requirements.txt
 export OPENAI_API_KEY=sk-...
 
-python -m src.main                                   # 跑全部 profile
-python -m src.main --profile ai-governance           # 只跑一个方向
-python -m src.tailor --profile ai-governance 3       # 对该方向今天第 3 个岗位生成对齐+cover letter
-python -m src.tailor --profile ai-risk "https://..." # 或按链接
+python -m src.tailor --profile ai-governance "https://…岗位链接"
 python -m src.tailor --title "Director, AI Governance" --company "Acme" --desc "粘贴JD" -o out.md
 ```
 
@@ -138,41 +130,15 @@ python -m src.tailor --title "Director, AI Governance" --company "Acme" --desc "
 
 ---
 
-## 用法速查：我之后要怎么调用这些 agent？
+## 用法速查
 
-平时你**什么都不用做**——GitHub Actions 每天自动跑、自动发三封邮件。只有想深度加工某个岗位时才动手：
+平时你**什么都不用做**——GitHub Actions 每天自动跑、自动发一封「每日新岗」邮件。
 
-**1) 每日找 job + 多维匹配（自动，也可手动触发）**
-- 自动：每天定时跑；或到 GitHub 仓库 Actions 页点 **Run workflow** 立即跑一次。
-- 本地手动：`python -m src.main`（全部方向）或 `python -m src.main --profile ai-governance`（单方向）。
-
-**2) 改简历 + 写 cover letter（投某个岗位前用）**
-```bash
-python -m src.tailor --profile ai-governance 3        # 对该方向今天邮件里第 3 个岗位
-python -m src.tailor --profile internal-audit "https://…链接的一部分"
-python -m src.tailor --title "IT Audit Director" --company "Acme" --desc "整段粘贴JD" -o out.md
-```
-输出：① ATS 关键词对齐（哪些词你有、用 JD 的措辞对齐；哪些是缺口）② 一封 cover letter 草稿。
-你人肉微调几句 → 用 **Simplify** 浏览器插件自动填表、**你自己点提交**（不做自动投递）。
-
-**3) 调方向/技能/搜索词**：编辑 `profiles/<方向>/profile.yaml`，commit 即生效。
-**4) 调你的画像（职级/年限/地点偏好）**：编辑 `config.yaml` 的 `candidate:`。
-
-## 本地手动跑
-
-```bash
-python -m src.main --dry-run   # 只打印，不发邮件、不写状态
-python -m src.main             # 真正发邮件（需设好 SMTP 环境变量）
-```
-
----
-
-## 让别人主动找到你（自动化之外，但很关键）
-
-1. **LinkedIn 打开 "Open to work"**（可仅对招聘者可见），headline 写清方向+技能关键词，不只写 title。
-2. **About / 经历里堆真实关键词**：招聘者搜的是技能词（"A/B testing" "SQL" "causal inference"），把你真有的都写进去。
-3. 简历文件名、GitHub、个人站保持一致的关键词，方便被搜索到。
-4. 与其每天刷，不如**每天投 3-5 个高匹配岗位**——本工具就是帮你把「找」的时间省下来投在「投」上。
+- **手动跑一次**：`python -m src.brief`（发邮件）或 `python -m src.brief --dry-run`（只打印）。
+- **改门槛**：`config.yaml` 的 `min_score`（默认 60）。
+- **改方向/技能/搜索词**：编辑 `profiles/<方向>/profile.yaml`，commit 即生效。
+- **改画像（职级/年限/地点）**：编辑 `config.yaml` 的 `candidate:`。
+- **投递前加工某岗**：`python -m src.tailor ...`（见上）。
 
 ---
 
@@ -182,33 +148,31 @@ python -m src.main             # 真正发邮件（需设好 SMTP 环境变量�
 config.yaml                    # 共享设置 + career_goal + fit_weights + brief 配置
 profiles/<方向>/profile.yaml    # 各方向的岗位名/技能/过滤/搜索词（覆盖 config.yaml）
 profiles/<方向>/resume.md       # 各方向的简历（事实来源）
+config.yaml                    # 共享设置：数据源开关、min_score(60)、候选人画像
+profiles/<方向>/profile.yaml    # 各方向岗位名/技能/core_skills/过滤/搜索词
+profiles/<方向>/resume.md       # 各方向简历（事实来源）
+src/brief.py                   # ⭐ 每日新岗邮件（合并去重 + 60 分门槛 + 渲染）
+src/main.py                    # 抓取 + 评分流水线（被 brief 复用）
+src/fetch.py                   # 汇总抓取 + 去重（单个源失败不影响整体）
+src/sources/*.py               # 各平台适配器（themuse / jsearch / ats_boards / 远程板…）
+src/score.py                   # 第一段：关键词打分 + core_skills/标题/美国岗/新鲜度闸门
+src/ai_score.py                # 第二段：LLM 多维评分 + 加权综合（挂掉会告警）
+src/notify_email.py            # SMTP 发送
+src/digest.py                  # 单方向邮件正文（legacy，python -m src.main 用）
+# ——— 投递 & 面试辅助（可选，非每日邮件的一部分）———
+AGENTS.md                      # AI agent 投递 SOP（安全边界 + 五状态模型）
 career/candidate_profile.yaml  # 申请表事实来源（TBD 项填一次，处处复用）
 career/answer_bank.md          # 申请表常见问题的可复用措辞库
-AGENTS.md                      # AI agent 投递 SOP（安全边界 + 五状态模型）
-career/dream_companies.yaml    # ⭐ Target-50 名单（ATS 直连配置）
-career/stories/                # STAR 故事库（简历/CL/面试复用）
-career/interviews/             # Interview Knowledge Base（每公司一个文件）
-career/recruiters.yaml         # Recruiter pipeline CRM
-career/network.yaml            # 校友/前同事/目标角色（内推网络）
-career/applications.yaml       # 申请跟踪（follow-up 提醒数据源）
-docs/career-os.md              # ⭐ 完整使用手册（十大模块）
-docs/job-search-plan.md        # 针对你三个方向的详细找工作方案
-src/brief.py                   # ⭐ 每日 Career Brief（一封邮件整合一切）
-src/dream.py                   # Dream 公司官网监控（Greenhouse/Lever/Ashby/Workday...）
-src/research.py                # 公司尽调 agent（新闻 + LLM，缓存14天）
-src/network.py                 # Networking agent（内推链接 + recruiter pipeline）
-src/track.py                   # 申请/recruiter 跟踪 CLI
-src/interview.py               # 面试记录 + 准备包生成
-src/branding.py                # 每周 LinkedIn 内容引擎
-src/stories.py                 # 故事库加载/按 JD 匹配
-src/sources/*.py               # 各平台适配器（含 jsearch = LinkedIn/Indeed 聚合）
-src/fetch.py                   # 汇总抓取 + 去重（单个源失败不影响整体）
-src/score.py                   # 第一段：关键词匹配打分（初筛）
-src/ai_score.py                # 第二段：Fit Score v2 —— 12 维 LLM 评分 + 加权综合
-src/digest.py                  # 单方向邮件正文（legacy 模式）
-src/notify_email.py            # SMTP 发送
+career/ats_companies.yaml      # ats_boards 源要直连的公司清单
+career/stories/                # STAR 故事库（tailor/面试复用）
+career/interviews/             # 面试题库（每公司一个文件）
+career/applications.yaml       # 投递记录（src.track）
 src/tailor.py                  # ATS 对齐 + cover letter（自动注入故事库）
-src/main.py                    # 抓取+评分流水线（被 brief 复用；也可单独跑）
+src/track.py                   # 投递记录 CLI
+src/interview.py               # 面试记录 + 准备包生成
+src/research.py                # 公司尽调（仅 interview 用，不进每日邮件）
+src/stories.py                 # 故事库加载/按 JD 匹配
+docs/job-search-plan.md        # 针对三个方向的找工作方案
 .github/workflows/             # 每日定时（跑 src.brief）
-data/                          # 去重状态/研究缓存/发帖历史（CI 自动回写）
+data/                          # 跨天去重状态（CI 自动回写）
 ```

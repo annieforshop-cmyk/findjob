@@ -52,23 +52,17 @@ fit_weights:
   recruiter_odds: 0.08   # 现实回复概率（避免全投神仙岗）
 # 另有稳定性调整：裁员风险 low +3 / high -8（见 src/ai_score.py）
 
-# ---- 每日 Career Brief（一封邮件管所有事）---------------------
+# ---- 每日新岗邮件（一封邮件只做一件事：今天的高匹配新岗）---------
 brief:
-  primary_profile: ai-governance  # dream 岗位用哪个 profile 的简历评分
-  top_jobs: 50          # Top Jobs 数量（跨三个方向合并去重后，公司多样性优先）
-  per_company_cap: 3    # Top Jobs 里同一家公司最多出现几次（防刷屏）
-  dream_per_company: 3  # Dream 栏目里同一家公司最多出现几次
-  dream_max: 12         # dream 官网新岗每天最多精评几个
-  dream_min_score: 25   # Dream 岗也要过这个分数线（关键词或 AI 综合分），杜绝 0 分噪音
-  research_top: 3       # 自动尽调几家公司（缓存14天，不重复花钱）
-  networking_top: 4     # 为前几个岗位生成内推人选链接
-  weekly_day: 0         # 周几做每周动作（0=周一：LinkedIn 内容 + recruiter 周计划）
+  top_jobs: 50          # 每天邮件里最多列多少个（跨三方向合并去重后）
+  per_company_cap: 3    # 同一家公司最多出现几次（防刷屏）
 
-# 只保留最终排名分 >= 这个阈值的岗位（0-100）。可被 profile 覆盖。
-min_score: 30
+# ⭐ 只保留最终分 >= 这个阈值的岗位（0-100）。宁缺毋滥——低于此分不推。
+# 有 OpenAI key 时这是 12 维综合分；没有时退回关键词分（邮件顶部会告警）。
+min_score: 60
 
-# 每个方向每天邮件里最多展示多少个岗位
-top_n: 40
+# 每个方向每天最多展示多少个岗位（合并前的上限）
+top_n: 60
 
 # 只推送"今天新出现"的岗位（跨天去重，每个 profile 独立）
 new_only: true
@@ -93,16 +87,18 @@ ai_scoring:
 # 每天给最匹配的前 N 个岗位自动生成 cover letter 草稿附在邮件里（0=关闭）
 auto_tailor_top: 0
 
-# ---- 数据源 -------------------------------------------------
+# ---- 数据源（尽量多撒网，靠 60 分门槛保证准确）-----------------
+# 全部打开：远程技术板出的无关岗会被核心技能门槛+60分线过滤掉，不会污染邮件。
 sources:
-  remoteok: false           # 偏技术岗，和你方向关系不大，默认关
-  remotive: false
-  arbeitnow: false
-  weworkremotely: false
-  jobicy: false
-  hackernews: false
-  adzuna: true              # 第二聚合源，需 ADZUNA_APP_ID / ADZUNA_APP_KEY（免费）
-  jsearch: true             # ⭐ 主力：Google-for-Jobs 聚合 LinkedIn/Indeed/Glassdoor/ZipRecruiter/Ladders/BuiltIn/Dice/Wellfound，需 RAPIDAPI_KEY
+  remoteok: true            # RemoteOK 远程岗
+  remotive: true            # Remotive 远程岗
+  arbeitnow: true           # Arbeitnow
+  weworkremotely: true      # We Work Remotely
+  jobicy: true              # Jobicy 远程岗
+  hackernews: true          # HN "Who is hiring" 每月帖
+  themuse: true             # ⭐ The Muse —— 专业/企业岗，免 key，适合你这种资深岗
+  adzuna: true              # 聚合源，需 ADZUNA_APP_ID / ADZUNA_APP_KEY（免费）
+  jsearch: true             # ⭐ Google-for-Jobs 聚合 LinkedIn/Indeed/Glassdoor/ZipRecruiter/BuiltIn/Dice/Wellfound，需 RAPIDAPI_KEY
   ats_boards: true          # ⭐⭐ 公司官网直连（Greenhouse/Lever/Ashby/SmartRecruiters/Workday 公开接口，无需任何 key）
                             #    公司清单在 career/ats_companies.yaml；key 失效时管道靠它保底
 

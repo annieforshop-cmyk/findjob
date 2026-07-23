@@ -1,7 +1,7 @@
 # Agent Instructions — findjob 投递工作流 SOP
 
 给任何在这个仓库里工作的 AI agent（Claude Code / Codex / 其他）。
-本文件把每日邮件（发现岗位）和"实际投递"衔接起来：用户从 Career Brief
+本文件把每日邮件（发现岗位）和"实际投递"衔接起来：用户从「每日新岗」
 邮件里挑出岗位后，agent 按这里的 SOP 协助完成申请。工作流设计参考了
 开源项目 ApplyPilot 的安全边界与状态模型。
 
@@ -49,9 +49,9 @@ Skipped/Blocked/Needs-user 记在 `career/applications.yaml` 的 notes 或
 - **Precision（精投）**：高匹配岗先跑
   `python -m src.tailor --profile <方向> "<岗位链接或JD>"`
   生成 ATS 关键词对齐 + cover letter 草稿（自动注入 STAR 故事），
-  用户确认方向后再填表。Dream 公司（⭐）默认走 Precision。
+  用户确认方向后再填表。
 
-判断标准：邮件里综合分 ≥75 或 ⭐Dream 岗 → 建议 Precision；其余 Volume。
+判断标准：邮件里综合分 ≥75 → 建议 Precision；60–75 → Volume。
 
 ## 重复卡点 → 沉淀成规则
 

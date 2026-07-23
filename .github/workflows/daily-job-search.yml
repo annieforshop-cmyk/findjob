@@ -26,7 +26,7 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Run daily Career Brief (jobs + dream companies + research + networking)
+      - name: Run daily job feed (fetch + score + email high-fit new jobs)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
