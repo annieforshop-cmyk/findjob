@@ -72,12 +72,10 @@ class Job:
     ai_recruiter_odds: float = -1.0 # realistic odds of recruiter response / interview
     ai_composite: float = -1.0      # weighted composite of all dimensions
 
-    # set by the dream-company monitor: this employer is on the Target-50 list
+    # legacy fields kept for backward compat with digest.py / stored state;
+    # no longer populated (target-firm + agency flagging were removed)
     dream: bool = False
     dream_tier: int = 0
-
-    # set by network.flag_agencies: posted by a staffing/search firm —
-    # applying puts you in that recruiter's database (high-value channel)
     agency: bool = False
 
     @property

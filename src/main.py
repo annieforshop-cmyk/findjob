@@ -87,14 +87,6 @@ def collect_profile(profile: str | None, dry_run: bool = False) -> dict:
     jobs = fetch_all(cfg)
     scanned = len(jobs)
 
-    try:
-        from . import dream
-        flagged = dream.flag_dream(jobs)
-        if flagged:
-            print(f"  dream: flagged {flagged} aggregator jobs at Target-50 companies", file=sys.stderr)
-    except Exception as e:
-        print(f"  dream flagging skipped: {e}", file=sys.stderr)
-
     prefilter = acfg.get("prefilter_min_score", cfg.get("min_score", 25)) if acfg.get("enabled") else cfg.get("min_score", 25)
     candidates = score_all(jobs, prof, prefilter)
 
