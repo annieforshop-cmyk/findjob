@@ -38,6 +38,20 @@ focus_terms:
   - ai controls
   - genai governance
   - generative ai governance
+  - responsible ai officer
+  - ai governance officer
+  - ai risk officer
+  - chief ai officer
+  - ai act
+  - ai audit
+  - ai governance program
+  - ai risk and controls
+  - genai risk
+  - generative ai risk
+  - ml governance
+  - ai fairness
+  - algorithmic bias
+  - ai trust
 
 # 业务/治理背景信号：命中越多，说明这岗要的是"懂业务、懂风控的人来推动 AI"，
 # 正是你的画像（而不是让你去训练模型）。
@@ -83,6 +97,15 @@ queries:
   - AI Ethics
   - AI Risk Management
   - Director Responsible AI
+  - AI Governance Officer
+  - Responsible AI Officer
+  - AI Risk Officer
+  - Head of Responsible AI
+  - AI Audit
+  - AI Controls
+  - Model Governance
+  - GenAI Governance
+  - AI Trust and Safety Policy
 
 # 现实职级带——title 只是轻信号，真正匹配靠 focus + 内容
 target_titles:
@@ -105,6 +128,15 @@ target_titles:
   - ai trust and safety
   - ai ethics
   - ai oversight
+  - responsible ai officer
+  - ai governance officer
+  - ai risk officer
+  - head of responsible ai
+  - vp responsible ai
+  - ai audit
+  - ai controls
+  - ai governance program manager
+  - model governance
 
 # 你真实拥有的技能/关键词（用于命中理由展示 + 缺口提示）
 skills:
