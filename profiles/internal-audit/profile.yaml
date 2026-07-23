@@ -135,6 +135,17 @@ nice_to_have:
   - investment
   - insurance
 
+# ---- 职级 / 年限 / 匹配度闸门（你的硬要求：至少 manager、6-8 年以上）----
+# require_title_seniority: 标题必须是 manager/director/head/vp/lead 级——
+#   直接丢掉 "Internal Auditor" / "Senior Auditor" 这类个人贡献者岗。
+require_title_seniority: true
+# min_years: JD 明确写"低于 4 年"（min_years-2）的初级岗直接丢；
+#   写 6-15 年的正好落你区间，加分。JD 没写年限的，靠标题职级判断、保留。
+min_years: 6
+# min_skill_hits: JD 里至少要命中你 3 个技能，才算"要求和你有实质重合"，
+#   否则只是标题沾边——丢。想更宽松改 2，更严改 4。
+min_skill_hits: 3
+
 exclude_keywords:
   - intern
   - internship

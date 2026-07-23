@@ -62,6 +62,14 @@ def build_profile(cfg: dict, resume_text: str) -> dict:
         "locations": [_norm(t) for t in cfg.get("locations", [])],
         "remote_only": bool(cfg.get("remote_only", False)),
         "us_only": bool(cfg.get("us_only", True)),
+        # opt-in seniority / experience gates (see _MANAGER_PLUS, extract_required_years):
+        #   require_seniority -> title must be manager-level or above
+        #   min_years         -> drop roles whose JD targets a clearly junior band
+        #   min_skill_hits    -> require at least N of YOUR skills to appear in the JD
+        #                        (i.e. a real chunk of the role's asks overlaps your profile)
+        "require_seniority": bool(cfg.get("require_title_seniority", False)),
+        "min_years": cfg.get("min_years"),
+        "min_skill_hits": int(cfg.get("min_skill_hits", 0) or 0),
     }
 
 
@@ -75,6 +83,35 @@ _JUNIOR_WORDS = {
     "intern", "internship", "coordinator", "assistant", "entry", "junior",
     "engineer", "developer", "scientist", "researcher",
 }
+# title words that signal manager-level or above. Used by the opt-in seniority
+# gate (require_title_seniority) so a direction can demand "at least manager"
+# and drop individual-contributor roles ("Internal Auditor", "Senior Auditor").
+# NOTE: "senior" is deliberately NOT here — a Senior Auditor is still an IC.
+_MANAGER_PLUS = {
+    "manager", "director", "head", "vp", "vice", "president",
+    "principal", "lead", "chief", "officer", "partner", "cae",
+}
+
+# Pull the minimum years-of-experience a JD asks for, so a direction can drop
+# roles clearly aimed at a more junior band than the candidate. Matches
+# "5+ years", "5-7 years", "minimum of 8 years", "6 years of experience".
+# Returns the LOWEST stated bar (the entry requirement), or None if unstated.
+_YEARS_PATS = [
+    re.compile(r"(\d{1,2})\s*\+?\s*(?:to|-|–|—)\s*\d{1,2}\s*\+?\s*years", re.I),
+    re.compile(r"(\d{1,2})\s*\+\s*years", re.I),
+    re.compile(r"(?:minimum|at least|min\.?|minimum of|a minimum of)\s*(\d{1,2})\s*years", re.I),
+    re.compile(r"(\d{1,2})\s*years?\s+(?:of\s+)?(?:relevant\s+|related\s+|progressive\s+)?(?:work\s+)?experience", re.I),
+]
+
+
+def extract_required_years(text: str) -> int | None:
+    yrs: list[int] = []
+    for pat in _YEARS_PATS:
+        for m in pat.finditer(text):
+            n = int(m.group(1))
+            if 1 <= n <= 30:
+                yrs.append(n)
+    return min(yrs) if yrs else None
 
 
 # location strings that clearly place a job OUTSIDE the US. Word-boundary
@@ -175,6 +212,21 @@ def score_job(job: Job, prof: dict) -> Job:
         job.score = 0.0
         return job
 
+    # ---- seniority / experience gates (opt-in per direction) ----
+    # Fire only when the profile sets the keys, so focus directions (e.g. AI
+    # governance) are untouched unless they opt in. This is what enforces
+    # "at least manager, ~6-8+ years" for internal audit.
+    min_years = prof.get("min_years")
+    req_years = extract_required_years(blob) if min_years else None
+    if prof.get("require_seniority"):
+        tw = set(re.findall(r"[a-z]+", title))
+        if not (tw & _MANAGER_PLUS):
+            job.score = 0.0          # individual-contributor / unspecified level
+            return job
+    if min_years and req_years is not None and req_years < min_years - 2:
+        job.score = 0.0              # JD explicitly aims at a junior band
+        return job
+
     # ---- focus-driven precision path (no LLM needed) ----
     # When the profile declares focus_terms, the role must be CENTRALLY about
     # that theme, and we score it on theme centrality + business-background
@@ -209,6 +261,11 @@ def score_job(job: Job, prof: dict) -> Job:
     matched_other = [s for s in prof["skills"] if s not in set(core) and _present(s, blob)]
     matched = matched_core + matched_other
     job.matched = matched
+    # require a real overlap between the JD and your profile: at least N of your
+    # skills must show up in the posting, else it's only a loose title match.
+    if prof.get("min_skill_hits") and len(matched) < prof["min_skill_hits"]:
+        job.score = 0.0
+        return job
     skill_ratio = len(matched) / max(len(prof["skills"]), 1)
     skill_score = min(len(matched_core) * 14 + len(matched_other) * 5, 60) + skill_ratio * 10
 
@@ -218,6 +275,16 @@ def score_job(job: Job, prof: dict) -> Job:
         if any(_present(l, blob) for l in prof["locations"]):
             bonus += 6
     bonus += recency_bonus(job.posted)
+
+    # seniority + experience-band rewards (only for directions that opt in)
+    if prof.get("require_seniority") or min_years:
+        tw = set(re.findall(r"[a-z]+", title))
+        if tw & _MANAGER_PLUS:
+            bonus += 8
+        elif tw & _JUNIOR_WORDS:
+            bonus -= 15
+        if min_years and req_years is not None and min_years <= req_years <= min_years + 9:
+            bonus += 6               # JD's stated band matches your 6-8+ yrs
 
     job.score = round(min(max(skill_score + title_score + bonus, 0), 100), 1)
 

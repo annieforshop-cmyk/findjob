@@ -54,9 +54,9 @@ fit_weights:
 
 # ---- 每日新岗邮件（一封邮件只做一件事：今天的高匹配 AI 治理新岗）-----
 brief:
-  # ⭐ 每天邮件只跑这些方向。现在聚焦 AI Governance——只想看这一类岗。
-  #   想把审计/风控也加回来：写成 [ai-governance, internal-audit, ai-risk]。
-  profiles: [ai-governance]
+  # ⭐ 每天邮件跑这些方向，合并去重后按分排序。
+  #   internal-audit / ai-risk 各自带职级+年限+JD命中数闸门（见各自 profile.yaml）。
+  profiles: [ai-governance, internal-audit, ai-risk]
   top_jobs: 50          # 每天邮件里最多列多少个
   per_company_cap: 3    # 同一家公司最多出现几次（防刷屏）
 
