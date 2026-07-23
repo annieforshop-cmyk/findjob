@@ -83,29 +83,14 @@ business_signals:
   - insurance
   - regulated
 
-# 搜索词：喂给 jsearch / adzuna（有 key 才用）。免 key 的源靠上面的打分过滤。
+# 搜索词：只喂 jsearch / adzuna 去「抓」，不参与打分（打分靠上面的 focus_terms）。
+# ⚠️ 每个词 = 1 次 JSearch 调用，免费档约 200 次/月。JSearch 会模糊匹配，
+#   "AI Governance" 已能带出 Director/Manager/Lead/Officer/Responsible AI 各种变体，
+#   所以少而广即可；想多抓就加词（注意配额，见 config.yaml 顶部说明）。
 queries:
   - AI Governance
   - Responsible AI
-  - AI Governance Manager
-  - AI Governance Director
-  - Head of AI Governance
-  - Responsible AI Lead
-  - AI Policy Manager
-  - AI Risk and Compliance
-  - AI Assurance
-  - AI Ethics
   - AI Risk Management
-  - Director Responsible AI
-  - AI Governance Officer
-  - Responsible AI Officer
-  - AI Risk Officer
-  - Head of Responsible AI
-  - AI Audit
-  - AI Controls
-  - Model Governance
-  - GenAI Governance
-  - AI Trust and Safety Policy
 
 # 现实职级带——title 只是轻信号，真正匹配靠 focus + 内容
 target_titles:

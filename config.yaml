@@ -108,6 +108,11 @@ sources:
                             #    公司清单在 career/ats_companies.yaml；key 失效时管道靠它保底
 
 # JSearch 默认参数（queries 在各 profile 里定义）
+# ⚠️ 配额账：每个 profile 的每个 query = 1 次调用，每天三方向合计 = 当前
+#   3(治理)+2(审计)+2(风险)=7 次/天 ≈ 210 次/月。免费档约 200 次/月——
+#   月底若超额，JSearch 当天返回 429 直接跳过，其它免 key 源（ats_boards/
+#   themuse/远程板/HN）照常跑，不影响邮件。想多抓就在各 profile 的 queries 加词，
+#   但要么升级 RapidAPI 套餐、要么接受月底几天 JSearch 歇菜。num_pages 每 +1 也翻倍。
 jsearch:
   num_pages: 1
   date_posted: week

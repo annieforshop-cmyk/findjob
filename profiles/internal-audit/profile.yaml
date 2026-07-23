@@ -18,15 +18,10 @@ target_titles:
   - compliance audit
   - operational audit
 
+# ⚠️ 每词 = 1 次 JSearch 调用（免费档 ~200/月）。少而广即可，JSearch 会模糊匹配。
 queries:
   - Internal Audit Manager
-  - Internal Audit Senior Manager
   - Internal Audit Director
-  - IT Audit Manager
-  - Audit Vice President financial services
-  - Technology Audit Manager
-  - Compliance Audit Manager
-  - Head of Internal Audit
 
 # 核心技能：必须命中至少一个（或目标 title），否则过滤——挡住靠通用词混入的无关岗
 core_skills:
