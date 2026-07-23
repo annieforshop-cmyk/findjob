@@ -56,7 +56,10 @@ def gather(dry_run: bool) -> dict:
     merged: dict[str, Job] = {}
     scanned = 0
     ai_notes: list[str] = []
-    for name in discover_profiles():
+    # which directions feed today's email (default: all discovered)
+    wanted = bcfg.get("profiles")
+    names = [p for p in discover_profiles() if not wanted or p in wanted] or discover_profiles()
+    for name in names:
         try:
             res = collect_profile(name, dry_run)
         except Exception as e:
@@ -73,6 +76,17 @@ def gather(dry_run: bool) -> dict:
 
     jobs = [j for j in merged.values() if j.rank_score >= floor]
     jobs.sort(key=lambda j: -j.rank_score)
+    # collapse the same role posted at multiple locations (same title+company,
+    # different URLs) into one line — keep the highest-scored, note the count
+    by_role: dict[tuple, Job] = {}
+    for j in jobs:
+        key = ((j.title or "").strip().lower(), (j.company or "").strip().lower())
+        if key not in by_role:
+            j.dupe_count = 1  # type: ignore[attr-defined]
+            by_role[key] = j
+        else:
+            by_role[key].dupe_count = getattr(by_role[key], "dupe_count", 1) + 1  # type: ignore[attr-defined]
+    jobs = list(by_role.values())
     jobs = _cap_per_company(jobs, int(bcfg.get("per_company_cap", 3)))
     top = jobs[: int(bcfg.get("top_jobs", 50))]
 
@@ -112,8 +126,10 @@ def _why(j: Job) -> str:
 
 def _job_lines(i: int, j: Job) -> list[str]:
     label = getattr(j, "profile_label", "")
+    n = getattr(j, "dupe_count", 1)
     lines = [f"{i}. [{j.rank_score:.0f}] {j.title} — {j.company}"
-             + (f"  〈{label}〉" if label else "")]
+             + (f"  〈{label}〉" if label else "")
+             + (f"  (+{n - 1} 个其他地点)" if n > 1 else "")]
     lines.append(f"   {j.ai_location_note or j.location or 'Remote'}"
                  + (f" | {j.ai_salary}" if j.ai_salary else "")
                  + (f" | 发布 {j.posted}" if j.posted else "")
@@ -186,7 +202,8 @@ def _job_html(j: Job) -> str:
       <td style="padding:12px;border-bottom:1px solid #eee">
         <div><a href="{esc(j.url)}" style="font-size:15px;font-weight:600;color:#0a58ca;
              text-decoration:none">{esc(j.title)}</a>
-             {(_chip(label, "#e8eef7", "#245") if label else "")}</div>
+             {(_chip(label, "#e8eef7", "#245") if label else "")}
+             {(_chip(f"+{getattr(j,'dupe_count',1)-1} 地点", "#eee", "#555") if getattr(j,'dupe_count',1) > 1 else "")}</div>
         <div style="color:#444;font-size:13px;margin-top:2px">{esc(j.company)} ·
              {esc(j.ai_location_note or j.location or 'Remote')}</div>
         {desc}{reason}<div style="margin-top:5px">{''.join(chips)}</div>

@@ -8,6 +8,8 @@ API 和 Workday 的 CxS 搜索接口都是公开的。聚合器(JSearch/Adzuna)�
 """
 from __future__ import annotations
 
+import datetime as dt
+import re
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -16,6 +18,27 @@ import requests
 import yaml
 
 from .base import Job, clean_html
+
+
+def _workday_date(s: str) -> str:
+    """Workday returns relative posted text ('Posted Today', 'Posted 13 Days
+    Ago', 'Posted 30+ Days Ago'). Convert to an ISO date so freshness scoring
+    and the email display work like every other source. Unknown -> ''."""
+    if not s:
+        return ""
+    low = s.lower()
+    today = dt.date.today()
+    if "today" in low:
+        return today.isoformat()
+    if "yesterday" in low:
+        return (today - dt.timedelta(days=1)).isoformat()
+    m = re.search(r"(\d+)\+?\s*day", low)
+    if m:
+        return (today - dt.timedelta(days=int(m.group(1)))).isoformat()
+    m = re.search(r"(\d+)\+?\s*month", low)
+    if m:
+        return (today - dt.timedelta(days=30 * int(m.group(1)))).isoformat()
+    return s[:10] if re.match(r"\d{4}-\d{2}-\d{2}", s) else ""
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 CFG_PATH = ROOT / "career" / "ats_companies.yaml"
@@ -101,7 +124,7 @@ def _workday(c: dict) -> list[Job]:
             out.append(Job(source=f"ats:{c['name']}", title=j.get("title", ""),
                            company=c["name"], url=f"https://{host}/en-US/{site}{path}",
                            location=j.get("locationsText", ""),
-                           posted=j.get("postedOn", "")))
+                           posted=_workday_date(j.get("postedOn", ""))))
     if not out:
         raise RuntimeError("0 postings — host/site 可能失效")
     return out
