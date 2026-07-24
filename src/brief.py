@@ -112,6 +112,13 @@ def _dims(j: Job) -> str:
         bits.append(f"职级 {j.ai_seniority:.0f}")
     if j.ai_recruiter_odds >= 0:
         bits.append(f"回复概率 {j.ai_recruiter_odds:.0f}")
+    if j.ai_stability:
+        bits.append(f"稳定性风险 {j.ai_stability}")
+    if j.ai_work_mode:
+        bits.append({"remote": "🏠 Remote", "hybrid": "Hybrid",
+                     "onsite": "Onsite"}.get(j.ai_work_mode, j.ai_work_mode))
+    if j.embed_sim >= 0:
+        bits.append(f"语义相似 {j.embed_sim:.0f}")
     return " · ".join(bits)
 
 
@@ -161,6 +168,8 @@ def _job_lines(i: int, j: Job) -> list[str]:
     snip = _snippet(j)
     if snip:
         lines.append(f"   内容: {snip}")
+    if j.ai_special:
+        lines.append(f"   ⚡ 特别注意: {j.ai_special}")
     why = _why(j)
     if why:
         lines.append(f"   💡 {why}")
@@ -214,6 +223,16 @@ def _job_html(j: Job) -> str:
                         ("行业", j.ai_industry), ("回复概率", j.ai_recruiter_odds)):
             if v >= 0:
                 chips.append(_chip(f"{name} {v:.0f}", "#eef", "#334"))
+    if j.ai_stability:
+        sbg = {"low": "#e7f6ec", "medium": "#fff4e0", "high": "#fde8e8"}.get(j.ai_stability, "#eee")
+        sfg = {"low": "#1a7f37", "medium": "#a15c00", "high": "#c02"}.get(j.ai_stability, "#333")
+        chips.append(_chip(f"裁员风险 {j.ai_stability}", sbg, sfg))
+    if j.ai_work_mode:
+        wlabel = {"remote": "🏠 Remote", "hybrid": "Hybrid", "onsite": "Onsite"}.get(j.ai_work_mode)
+        if wlabel:
+            wbg = {"remote": "#e7f6ec", "hybrid": "#fff4e0", "onsite": "#f4f4f4"}[j.ai_work_mode]
+            wfg = {"remote": "#1a7f37", "hybrid": "#a15c00", "onsite": "#555"}[j.ai_work_mode]
+            chips.append(_chip(wlabel, wbg, wfg))
     if j.ai_salary:
         chips.append(_chip(f"💰 {j.ai_salary}", "#f3f0ff", "#5b21b6"))
     if j.posted:
@@ -226,6 +245,9 @@ def _job_html(j: Job) -> str:
     why = _why(j)
     reason = (f'<div style="color:#333;font-size:13px;margin-top:4px">💡 {esc(why)}</div>'
               if why else "")
+    special = (f'<div style="background:#fffbe6;border:1px solid #f0e0a0;border-radius:6px;'
+               f'padding:5px 8px;font-size:12.5px;color:#7a5c00;margin-top:5px">'
+               f'⚡ {esc(j.ai_special)}</div>' if j.ai_special else "")
     return f"""<tr>
       <td style="padding:12px;border-bottom:1px solid #eee;vertical-align:top;width:46px">
         <div style="text-align:center;background:#0b6;color:#fff;border-radius:6px;
@@ -237,7 +259,7 @@ def _job_html(j: Job) -> str:
              {(_chip(f"+{getattr(j,'dupe_count',1)-1} 地点", "#eee", "#555") if getattr(j,'dupe_count',1) > 1 else "")}</div>
         <div style="color:#444;font-size:13px;margin-top:2px">{esc(j.company)} ·
              {esc(j.ai_location_note or j.location or 'Remote')}</div>
-        {desc}{reason}<div style="margin-top:5px">{''.join(chips)}</div>
+        {desc}{special}{reason}<div style="margin-top:5px">{''.join(chips)}</div>
       </td></tr>"""
 
 

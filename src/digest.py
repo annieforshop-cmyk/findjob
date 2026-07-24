@@ -37,6 +37,8 @@ def build_text(jobs: list[Job], meta: dict, tailored: dict[str, str] | None = No
         if j.description:
             d = j.description.strip()
             lines.append(f"    内容: {d[:219] + '…' if len(d) > 220 else d}")
+        if j.ai_special:
+            lines.append(f"    ⚡ 特别注意: {j.ai_special}")
         if j.ai_reason:
             lines.append(f"    匹配理由: {j.ai_reason}")
             lines.append(f"    技能 {j.ai_skills:.0f} · 职级 {j.ai_seniority:.0f} · 年限 {j.ai_years_fit:.0f}")
@@ -123,6 +125,10 @@ def build_html(jobs: list[Job], meta: dict, tailored: dict[str, str] | None = No
             f'<div style="color:#555;font-size:12.5px;margin-top:4px">{esc(d[:219] + "…" if len(d) > 220 else d)}</div>'
             if d else ""
         )
+        if j.ai_special:
+            snippet += (f'<div style="background:#fffbe6;border:1px solid #f0e0a0;border-radius:6px;'
+                        f'padding:5px 8px;font-size:12.5px;color:#7a5c00;margin-top:5px">'
+                        f'⚡ {esc(j.ai_special)}</div>')
         rows.append(
             f"""
         <tr>

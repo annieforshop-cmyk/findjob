@@ -18,6 +18,30 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s.lower()).strip()
 
 
+# ---- 职级带（候选人 ~10 年经验 ≈ 行业 Senior Manager 段）--------------------
+# 甜蜜区: senior manager / lead / principal / VP(银行语境) / director / associate director
+# 直接丢弃: 真正的 C-suite / Partner / Global Head —— 高 1-2 级，投递纯浪费
+#
+# 注意: "Managing Director" 在银行里不能一刀切丢弃！大行(Citi/GS/MS/JPM/BofA)
+# 把 MD 当成一个跨度很大的职级带（比如 Citi 内部 C15-C19 都叫 MD，C16 这种更接近
+# SVP），不是 PE/企业语境里的真 C-suite。"Managing Director, Responsible AI Lead"
+# 这类头衔挂 MD、内容是动手做治理框架的 working lead 岗，应该进候选池（降级展示），
+# 而不是被误杀。所以 MD 放进"冲刺区"降分保留，交给 GPT 层按 JD 里的年限/职责范围
+# 再精细判断；只有明确的 Chief * Officer / CEO-CFO-COO 等 / Partner / Global Head
+# 才是真正高 1-2 级、直接丢弃。
+TITLE_TOO_SENIOR = re.compile(
+    r"\b(chief\s+[a-z]+\s+officer|ceo|cfo|coo|cro|ciso|cio"
+    r"|partner|global head)\b", re.I)
+# 冲刺区（高半级~一级）: 保留但降分——含银行语境的 Managing Director
+TITLE_STRETCH = re.compile(
+    r"\b(managing director|executive director|senior vice president|svp|evp|head of)\b", re.I)
+# 低于段位: 重降分（注意 associate director 属于甜蜜区，不算 junior）
+TITLE_TOO_JUNIOR = re.compile(
+    r"\b(junior|coordinator|analyst|associate(?!\s*director))\b", re.I)
+STRETCH_PENALTY = 12
+JUNIOR_PENALTY = 18
+
+
 def _present(term: str, text: str) -> bool:
     """Whole-word-ish containment so 'r' doesn't match 'react'."""
     t = _norm(term)
@@ -193,6 +217,10 @@ def score_job(job: Job, prof: dict) -> Job:
     title = _norm(job.title)
 
     # hard filters -> score 0 means "drop"
+    title_norm = _norm(job.title)
+    if TITLE_TOO_SENIOR.search(title_norm):   # MD/C-level/Partner：不抓
+        job.score = 0.0
+        return job
     for bad in prof["exclude"]:
         if _present(bad, blob):
             job.score = 0.0
@@ -286,7 +314,15 @@ def score_job(job: Job, prof: dict) -> Job:
         if min_years and req_years is not None and min_years <= req_years <= min_years + 9:
             bonus += 6               # JD's stated band matches your 6-8+ yrs
 
-    job.score = round(min(max(skill_score + title_score + bonus, 0), 100), 1)
+    # 职级带调整：冲刺岗降分保留，低于段位重降分（与上面的 opt-in 门槛互补，
+    # 对所有方向生效——按标题正则识别"够一段"与"低于段位"的岗位）
+    band_penalty = 0
+    if TITLE_STRETCH.search(title_norm):
+        band_penalty = STRETCH_PENALTY
+    elif TITLE_TOO_JUNIOR.search(title_norm):
+        band_penalty = JUNIOR_PENALTY
+
+    job.score = round(min(max(skill_score + title_score + bonus - band_penalty, 0), 100), 1)
 
     # gap keywords: skills the JD clearly asks for that aren't yours yet
     missing = [s for s in prof["skills"] if s not in matched and _present(s, blob)]

@@ -48,8 +48,25 @@ Analyze each job for THIS candidate and return JSON:
     "overall": <0-100 overall fit, weighing content > title>,
     "skills_fit": <0-100 skill/domain overlap with the described work>,
     "seniority_fit": <0-100 how well the ROLE'S real level matches the candidate's
-        real band (senior manager to director/VP); a title of 'Director' that is
-        really an IC, or a 'VP' needing 20 yrs, should score lower>,
+        band. The candidate has ~10 yrs experience = industry SENIOR MANAGER band.
+        Sweet spot (85-100): Senior Manager, Lead, Principal, bank-convention VP,
+        Associate Director, and Director at most companies (their current title).
+        Stretch (35-65): Executive Director, SVP, Head-of at large firms, AND
+        "Managing Director" at bulge-bracket/major banks (Citi/Goldman/Morgan
+        Stanley/JPMorgan/BofA/etc.) — banks use "Managing Director" as a WIDE
+        internal grade band (e.g. Citi's own MD sub-levels run roughly C15-C19,
+        with lower MD grades landing close to SVP), not the PE/corporate C-suite
+        sense of "MD". Judge these on ACTUAL SCOPE from the JD: an MD title on a
+        hands-on "Lead" role needing ~10-15 yrs that builds/runs a program
+        (e.g. "Managing Director, Responsible AI Lead") can score in the
+        acceptable 45-65 range; an MD role that is clearly enterprise-wide
+        senior leadership (20+ yrs required, sets firm-wide strategy, reports
+        to the Board/CEO) scores low (10-20). Score 0-15 for genuine C-level
+        (Chief * Officer / CEO/CFO/COO/etc.) / Partner / Global Head (1-2
+        levels above — must NOT be recommended) and 10-30 for
+        Analyst / Associate / Coordinator IC roles (below band). Always judge
+        the ROLE'S REAL level from the JD's yrs-required and scope, not the
+        title word alone>,
     "years_fit": <0-100 fit vs the candidate's ~10 yrs total / ~8 yrs bank
         internal audit; roles wanting far more or far less score lower>,
     "industry_fit": <0-100 how well the employer's industry leverages the
@@ -69,10 +86,21 @@ Analyze each job for THIS candidate and return JSON:
     "recruiter_odds": <0-100 realistic odds this application gets a recruiter
         response: penalize huge applicant pools, inflated requirements vs the
         candidate, stale posts; boost niche fits where the candidate is rare>,
-    "location_ok": <true if the role can be done from a US location the candidate
-        accepts — remote, hybrid, or onsite ANYWHERE in the US. If the JD lists
-        multiple locations and any is in the US, true. Non-US-only => false>,
-    "location_note": "<brief: e.g. 'Remote US' / 'Hybrid NYC' / 'Onsite Dallas or Remote' / 'London only'>",
+    "location_ok": <true/false. CRITICAL: judge from the FULL DESCRIPTION TEXT,
+        not the location header — JDs often list several offices, rotation
+        options, or say remote-eligible even when the header shows one city.
+        Rules for THIS candidate: (a) fully REMOTE (US) => true anywhere;
+        (b) HYBRID or ONSITE => true ONLY if New York City or New Jersey is
+        among the workable locations mentioned ANYWHERE in the JD (the
+        candidate can only commute to NY/NJ); hybrid/onsite with no NY/NJ
+        option => false; (c) non-US-only with no remote-US option => false>,
+    "location_note": "<brief, cite what the JD text says: e.g. 'Remote US' /
+        'Hybrid — NYC among 4 listed offices' / 'Onsite Dallas only — no NY/NJ'>",
+    "work_mode": "<remote|hybrid|onsite|unknown — the role's actual arrangement per the JD>",
+    "special_note": "<any unusual, actionable detail buried in the JD worth
+        surfacing: apply-by-email address, named hiring manager/recruiter to
+        contact, referral instructions, urgent-fill language, unusual perks or
+        constraints. One short clause; '' if nothing special>",
     "salary": "<pay range from the JD if stated, else a realistic US market estimate for this role+level, e.g. '$180k-230k (est.)'>",
     "ghost_risk": "<low|medium|high — high if JD is vague/generic, evergreen, or a likely repost>",
     "company_note": "<one clause of known context/reputation if you genuinely know the company; else ''>",
@@ -97,6 +125,8 @@ DEFAULT_WEIGHTS = {
     "recruiter_odds": 0.08,
 }
 STABILITY_ADJ = {"low": +3.0, "medium": 0.0, "high": -8.0}  # low RISK is a bonus
+# 候选人偏好 remote：remote 加分、hybrid 降分、onsite 降更多（config `work_mode_adj:` 可覆盖）
+WORK_MODE_ADJ = {"remote": +2.0, "hybrid": -2.0, "onsite": -4.0}
 
 
 def _client():
@@ -149,8 +179,9 @@ def _score_batch(client, model: str, candidate: str, career_goal: str,
     return {r["id"]: r for r in data.get("results", []) if "id" in r}
 
 
-def compute_composite(job: Job, weights: dict | None = None) -> float:
-    """Weighted Fit Score from all scored dimensions + stability adjustment."""
+def compute_composite(job: Job, weights: dict | None = None,
+                      mode_adj: dict | None = None) -> float:
+    """Weighted Fit Score from all scored dimensions + stability/work-mode adjustments."""
     w = {**DEFAULT_WEIGHTS, **(weights or {})}
     parts = {
         "overall": job.ai_score,
@@ -171,7 +202,9 @@ def compute_composite(job: Job, weights: dict | None = None) -> float:
             den += w[k]
     if den == 0:
         return -1.0
-    score = num / den + STABILITY_ADJ.get(job.ai_stability, 0.0)
+    madj = {**WORK_MODE_ADJ, **(mode_adj or {})}
+    score = (num / den + STABILITY_ADJ.get(job.ai_stability, 0.0)
+             + madj.get(job.ai_work_mode, 0.0))
     return max(0.0, min(100.0, score))
 
 
@@ -182,7 +215,8 @@ def _num(r: dict, key: str) -> float:
         return -1.0
 
 
-def _apply(job: Job, r: dict, weights: dict | None = None) -> None:
+def _apply(job: Job, r: dict, weights: dict | None = None,
+           mode_adj: dict | None = None) -> None:
     job.ai_score = float(r.get("overall", 0))
     job.ai_skills = float(r.get("skills_fit", 0))
     job.ai_seniority = float(r.get("seniority_fit", 0))
@@ -195,7 +229,9 @@ def _apply(job: Job, r: dict, weights: dict | None = None) -> None:
     job.ai_career = _num(r, "career_path_fit")
     job.ai_stability = str(r.get("stability", "")).lower()[:10]
     job.ai_recruiter_odds = _num(r, "recruiter_odds")
-    job.ai_composite = compute_composite(job, weights)
+    job.ai_work_mode = str(r.get("work_mode", "")).lower()[:10]
+    job.ai_special = str(r.get("special_note", ""))[:200]
+    job.ai_composite = compute_composite(job, weights, mode_adj)
     job.ai_reason = str(r.get("reason", ""))[:200]
     job.ai_recommendation = str(r.get("recommendation", "")).lower()[:10]
     job.ai_location_ok = bool(r.get("location_ok", True))
@@ -237,6 +273,7 @@ def rescore(jobs: list[Job], resume: str, cfg: dict) -> tuple[list[Job], bool, s
     candidate = _candidate_ctx(cfg)
     career_goal = _career_goal(cfg)
     weights = cfg.get("fit_weights") or {}
+    mode_adj = cfg.get("work_mode_adj") or {}
     used = False
     note = ""
     consecutive_failures = 0
@@ -261,7 +298,7 @@ def rescore(jobs: list[Job], resume: str, cfg: dict) -> tuple[list[Job], bool, s
             r = scored.get(j.id)
             if r:
                 used = True
-                _apply(j, r, weights)
+                _apply(j, r, weights, mode_adj)
     n = sum(1 for j in jobs if j.ai_reason)
     print(f"  ai analyzed {n} jobs", file=sys.stderr)
     if not used and not note:
