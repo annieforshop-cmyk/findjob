@@ -122,6 +122,15 @@ def _why(j: Job) -> str:
     return ""
 
 
+def _source_label(j: Job) -> str:
+    """人话来源：ats:BlackRock -> 'BlackRock 官网直连'，其余（The Muse /
+    'LinkedIn (via JSearch)' / RemoteOK …）原样显示。"""
+    s = (getattr(j, "source", "") or "").strip()
+    if s.startswith("ats:"):
+        return f"{s[4:]} 官网直连"
+    return s
+
+
 # ---------------- render: text ----------------
 
 def _job_lines(i: int, j: Job) -> list[str]:
@@ -133,7 +142,7 @@ def _job_lines(i: int, j: Job) -> list[str]:
     lines.append(f"   {j.ai_location_note or j.location or 'Remote'}"
                  + (f" | {j.ai_salary}" if j.ai_salary else "")
                  + (f" | 发布 {j.posted}" if j.posted else "")
-                 + (f" | 来源 {j.source}" if j.source else ""))
+                 + (f" | 来源 {_source_label(j)}" if j.source else ""))
     snip = _snippet(j)
     if snip:
         lines.append(f"   内容: {snip}")
@@ -188,7 +197,7 @@ def _job_html(j: Job) -> str:
     if j.posted:
         chips.append(_chip(f"📅 {j.posted}", "#eef7ee", "#1a5c2e"))
     if j.source:
-        chips.append(_chip(f"🔗 {j.source}", "#eef", "#345"))
+        chips.append(_chip(f"🔗 {_source_label(j)}", "#eef", "#345"))
     snip = _snippet(j)
     desc = (f'<div style="color:#555;font-size:12.5px;margin-top:4px">{esc(snip)}</div>'
             if snip else "")
