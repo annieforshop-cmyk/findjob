@@ -18,15 +18,10 @@ target_titles:
   - compliance audit
   - operational audit
 
+# ⚠️ 每词 = 1 次 JSearch 调用（免费档 ~200/月）。少而广即可，JSearch 会模糊匹配。
 queries:
   - Internal Audit Manager
-  - Internal Audit Senior Manager
   - Internal Audit Director
-  - IT Audit Manager
-  - Audit Vice President financial services
-  - Technology Audit Manager
-  - Compliance Audit Manager
-  - Head of Internal Audit
 
 # 核心技能：必须命中至少一个（或目标 title），否则过滤——挡住靠通用词混入的无关岗
 core_skills:
@@ -134,6 +129,17 @@ nice_to_have:
   - banking
   - investment
   - insurance
+
+# ---- 职级 / 年限 / 匹配度闸门（你的硬要求：至少 manager、6-8 年以上）----
+# require_title_seniority: 标题必须是 manager/director/head/vp/lead 级——
+#   直接丢掉 "Internal Auditor" / "Senior Auditor" 这类个人贡献者岗。
+require_title_seniority: true
+# min_years: JD 明确写"低于 4 年"（min_years-2）的初级岗直接丢；
+#   写 6-15 年的正好落你区间，加分。JD 没写年限的，靠标题职级判断、保留。
+min_years: 6
+# min_skill_hits: JD 里至少要命中你 3 个技能，才算"要求和你有实质重合"，
+#   否则只是标题沾边——丢。想更宽松改 2，更严改 4。
+min_skill_hits: 3
 
 exclude_keywords:
   - intern

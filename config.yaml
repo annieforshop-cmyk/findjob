@@ -54,9 +54,9 @@ fit_weights:
 
 # ---- 每日新岗邮件（一封邮件只做一件事：今天的高匹配 AI 治理新岗）-----
 brief:
-  # ⭐ 每天邮件只跑这些方向。现在聚焦 AI Governance——只想看这一类岗。
-  #   想把审计/风控也加回来：写成 [ai-governance, internal-audit, ai-risk]。
-  profiles: [ai-governance]
+  # ⭐ 每天邮件跑这些方向，合并去重后按分排序。
+  #   internal-audit / ai-risk 各自带职级+年限+JD命中数闸门（见各自 profile.yaml）。
+  profiles: [ai-governance, internal-audit, ai-risk]
   top_jobs: 50          # 每天邮件里最多列多少个
   per_company_cap: 3    # 同一家公司最多出现几次（防刷屏）
 
@@ -108,6 +108,11 @@ sources:
                             #    公司清单在 career/ats_companies.yaml；key 失效时管道靠它保底
 
 # JSearch 默认参数（queries 在各 profile 里定义）
+# ⚠️ 配额账：每个 profile 的每个 query = 1 次调用，每天三方向合计 = 当前
+#   3(治理)+2(审计)+2(风险)=7 次/天 ≈ 210 次/月。免费档约 200 次/月——
+#   月底若超额，JSearch 当天返回 429 直接跳过，其它免 key 源（ats_boards/
+#   themuse/远程板/HN）照常跑，不影响邮件。想多抓就在各 profile 的 queries 加词，
+#   但要么升级 RapidAPI 套餐、要么接受月底几天 JSearch 歇菜。num_pages 每 +1 也翻倍。
 jsearch:
   num_pages: 1
   date_posted: week

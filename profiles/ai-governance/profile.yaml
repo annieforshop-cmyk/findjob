@@ -38,6 +38,20 @@ focus_terms:
   - ai controls
   - genai governance
   - generative ai governance
+  - responsible ai officer
+  - ai governance officer
+  - ai risk officer
+  - chief ai officer
+  - ai act
+  - ai audit
+  - ai governance program
+  - ai risk and controls
+  - genai risk
+  - generative ai risk
+  - ml governance
+  - ai fairness
+  - algorithmic bias
+  - ai trust
 
 # 业务/治理背景信号：命中越多，说明这岗要的是"懂业务、懂风控的人来推动 AI"，
 # 正是你的画像（而不是让你去训练模型）。
@@ -69,20 +83,14 @@ business_signals:
   - insurance
   - regulated
 
-# 搜索词：喂给 jsearch / adzuna（有 key 才用）。免 key 的源靠上面的打分过滤。
+# 搜索词：只喂 jsearch / adzuna 去「抓」，不参与打分（打分靠上面的 focus_terms）。
+# ⚠️ 每个词 = 1 次 JSearch 调用，免费档约 200 次/月。JSearch 会模糊匹配，
+#   "AI Governance" 已能带出 Director/Manager/Lead/Officer/Responsible AI 各种变体，
+#   所以少而广即可；想多抓就加词（注意配额，见 config.yaml 顶部说明）。
 queries:
   - AI Governance
   - Responsible AI
-  - AI Governance Manager
-  - AI Governance Director
-  - Head of AI Governance
-  - Responsible AI Lead
-  - AI Policy Manager
-  - AI Risk and Compliance
-  - AI Assurance
-  - AI Ethics
   - AI Risk Management
-  - Director Responsible AI
 
 # 现实职级带——title 只是轻信号，真正匹配靠 focus + 内容
 target_titles:
@@ -105,6 +113,15 @@ target_titles:
   - ai trust and safety
   - ai ethics
   - ai oversight
+  - responsible ai officer
+  - ai governance officer
+  - ai risk officer
+  - head of responsible ai
+  - vp responsible ai
+  - ai audit
+  - ai controls
+  - ai governance program manager
+  - model governance
 
 # 你真实拥有的技能/关键词（用于命中理由展示 + 缺口提示）
 skills:

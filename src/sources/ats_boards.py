@@ -43,7 +43,7 @@ def _workday_date(s: str) -> str:
 ROOT = Path(__file__).resolve().parent.parent.parent
 CFG_PATH = ROOT / "career" / "ats_companies.yaml"
 TIMEOUT = 25
-WORKERS = 12
+WORKERS = 24     # bumped for a larger verified company list (see verify_boards.py)
 
 # Workday 接口是搜索式的：用覆盖三个方向的核心词查询（profile 无关，可缓存）
 WORKDAY_QUERIES = (

@@ -1,0 +1,46 @@
+name: verify-boards
+
+# 每周探测 career/ats_candidates.yaml 里的 ~1000+ 候选公司，把真能抓到岗的
+# 晋升进 career/ats_companies.yaml（每日 run 只读这个已验证清单）。
+# 想扩容：编辑 career/gen_candidates.py 加公司 -> python career/gen_candidates.py
+# -> 提交 ats_candidates.yaml，本 workflow 下次运行会自动验证晋升。
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"     # 每周一 UTC 09:00
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: verify-boards
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Probe candidate boards and refresh the verified list
+        run: python career/verify_boards.py --workers 32
+
+      - name: Commit refreshed ats_companies.yaml
+        run: |
+          git config user.name "findjob-bot"
+          git config user.email "actions@github.com"
+          git add career/ats_companies.yaml
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: refresh verified ATS boards [skip ci]"
+            git push
+          else
+            echo "no change to verified boards"
+          fi
