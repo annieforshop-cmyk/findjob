@@ -42,8 +42,14 @@ def _workday_date(s: str) -> str:
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 CFG_PATH = ROOT / "career" / "ats_companies.yaml"
+CAND_PATH = ROOT / "career" / "ats_candidates.yaml"
+# candidate boards on these ATS are ONE cheap GET each, so we can probe the whole
+# ~900-company candidate pool every day — this is what surfaces startups without
+# waiting for the weekly verifier. Workday is a 6-query POST loop, too heavy to
+# probe unverified daily, so those stay gated to the verified list.
+CHEAP_KINDS = {"greenhouse", "lever", "ashby"}
 TIMEOUT = 25
-WORKERS = 24     # bumped for a larger verified company list (see verify_boards.py)
+WORKERS = 32     # verified + cheap candidate boards (see verify_boards.py)
 
 # Workday 接口是搜索式的：用覆盖三个方向的核心词查询（profile 无关，可缓存）
 WORKDAY_QUERIES = (
@@ -134,15 +140,40 @@ _FETCHERS = {"greenhouse": _gh, "lever": _lever, "ashby": _ashby,
              "smartrecruiters": _smart, "workday": _workday}
 
 
+def _load(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    return (yaml.safe_load(path.read_text()) or {}).get("companies", [])
+
+
+def _companies(cfg: dict) -> list[dict]:
+    """Verified list (all kinds) + cheap candidate boards (gh/lever/ashby only),
+    deduped. Candidates carry _cand=True so their misses stay quiet."""
+    verified = _load(CFG_PATH)
+    seen = {(c.get("kind"), c.get("token") or c.get("host")) for c in verified}
+    out = list(verified)
+    if cfg.get("ats_include_candidates", True):
+        for c in _load(CAND_PATH):
+            if c.get("kind") not in CHEAP_KINDS:
+                continue
+            k = (c.get("kind"), c.get("token") or c.get("host"))
+            if k in seen:
+                continue
+            seen.add(k)
+            out.append({**c, "_cand": True})
+    return out
+
+
 def fetch(cfg: dict) -> list[Job]:
     global _cache
     if _cache is not None:
         return list(_cache)
-    if not CFG_PATH.exists():
+    companies = _companies(cfg)
+    if not companies:
         return []
-    companies = (yaml.safe_load(CFG_PATH.read_text()) or {}).get("companies", [])
     jobs: list[Job] = []
-    failed = []
+    failed = []            # only verified-board failures are worth surfacing
+    cand_miss = 0          # wrong candidate slugs 404 by design — count, don't spam
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         futs = {ex.submit(_FETCHERS[c["kind"]], c): c
                 for c in companies if c.get("kind") in _FETCHERS}
@@ -151,11 +182,15 @@ def fetch(cfg: dict) -> list[Job]:
             try:
                 jobs.extend(f.result())
             except Exception as e:
-                failed.append(f"{c['name']}: {str(e)[:60]}")
+                if c.get("_cand"):
+                    cand_miss += 1
+                else:
+                    failed.append(f"{c['name']}: {str(e)[:60]}")
     if failed:
-        print(f"  ats_boards: {len(failed)} boards failed — " + "; ".join(failed[:8]),
-              file=sys.stderr)
-    print(f"  ats_boards: {len(companies) - len(failed)} boards ok, {len(jobs)} raw jobs",
+        print(f"  ats_boards: {len(failed)} verified boards failed — "
+              + "; ".join(failed[:8]), file=sys.stderr)
+    print(f"  ats_boards: {len(companies) - len(failed) - cand_miss} boards ok "
+          f"({cand_miss} candidate boards empty — expected), {len(jobs)} raw jobs",
           file=sys.stderr)
     _cache = jobs
     return list(jobs)

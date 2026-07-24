@@ -1,4 +1,5 @@
 label: Internal Audit
+section: "内部审计"
 
 target_titles:
   - internal audit
@@ -9,9 +10,6 @@ target_titles:
   - audit manager
   - audit senior manager
   - senior internal auditor
-  - it audit
-  - it audit manager
-  - technology audit
   - audit vice president
   - vp internal audit
   - head of internal audit
@@ -38,12 +36,19 @@ core_skills:
   - internal controls
   - audit report
   - workpaper
-  - it audit
-  - technology audit
   - operational audit
 
 # 只按 TITLE 排除的岗位族
 exclude_title_keywords:
+  # ⛔ 你要求：IT 审计 / IT 经理这类不要推
+  - it audit
+  - it auditor
+  - technology audit
+  - tech audit
+  - it manager
+  - it risk
+  - cybersecurity audit
+  - information technology
   - sales
   - account executive
   - account director
