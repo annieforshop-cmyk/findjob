@@ -87,14 +87,6 @@ def collect_profile(profile: str | None, dry_run: bool = False) -> dict:
     jobs = fetch_all(cfg)
     scanned = len(jobs)
 
-    try:
-        from . import dream
-        flagged = dream.flag_dream(jobs)
-        if flagged:
-            print(f"  dream: flagged {flagged} aggregator jobs at Target-50 companies", file=sys.stderr)
-    except Exception as e:
-        print(f"  dream flagging skipped: {e}", file=sys.stderr)
-
     prefilter = acfg.get("prefilter_min_score", cfg.get("min_score", 25)) if acfg.get("enabled") else cfg.get("min_score", 25)
     candidates = score_all(jobs, prof, prefilter)
 
@@ -115,9 +107,9 @@ def collect_profile(profile: str | None, dry_run: bool = False) -> dict:
         # 语义预筛：按 简历↔JD 意思相近度 + 关键词 混合重排，再取前 N 进 GPT 深评
         candidates, _ = embed_rank.rank(candidates, resume, cfg)
         candidates = candidates[: acfg.get("max_candidates", 40)]
-        candidates, used_ai = ai_score.rescore(candidates, resume, cfg)
+        candidates, used_ai, ai_note = ai_score.rescore(candidates, resume, cfg)
     else:
-        used_ai = False
+        used_ai, ai_note = False, ""
 
     min_score = cfg.get("min_score", 25)
     ranked = sorted(
@@ -130,7 +122,8 @@ def collect_profile(profile: str | None, dry_run: bool = False) -> dict:
         seen[j.id] = now
 
     tailored = _auto_tailor(top, resume, cfg)
-    meta = {"scanned": scanned, "min_score": min_score, "used_ai": used_ai, "label": label}
+    meta = {"scanned": scanned, "min_score": min_score, "used_ai": used_ai,
+            "ai_note": ai_note, "label": label}
 
     if not dry_run:
         store.save_seen(seen, ns)

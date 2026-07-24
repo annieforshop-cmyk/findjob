@@ -1,9 +1,103 @@
 label: AI Governance
+section: "AI 治理 & 风险"     # 与 ai-risk 合并展示在同一板块
 
-# 现实职级带（不只 director）——匹配主要靠 JD 内容，title 只是轻信号
+# ============================================================
+#  AI Governance 精准检索（无需 OpenAI）
+#  目标画像：有 business / 风控 / 审计 / 合规背景，去【推动】
+#  responsible AI / AI 治理 的资深岗（manager–director–head 带），美国。
+#  打分逻辑见 src/score.py 的 focus 路径：岗位必须"以 AI 治理为中心"
+#  （focus 词进标题，或正文出现 ≥2 个 focus 词），再按业务背景信号加权。
+# ============================================================
+
+# ⭐ focus_terms：这个方向的"中心主题"。岗位必须真的围绕它，否则直接过滤。
+# 只放 AI-explicit 的词——保证进邮件的都是真·AI 治理岗，不是顺嘴提一句 AI 的岗。
+focus_terms:
+  - ai governance
+  - responsible ai
+  - responsible ai governance
+  - ai risk
+  - ai risk management
+  - ai policy
+  - ai ethics
+  - ai assurance
+  - ai compliance
+  - ai oversight
+  - ai accountability
+  - algorithmic accountability
+  - algorithmic risk
+  - trustworthy ai
+  - ai trust and safety
+  - ai safety governance
+  - ai regulation
+  - ai regulatory
+  - model governance
+  - ai model governance
+  - nist ai rmf
+  - eu ai act
+  - iso 42001
+  - ai management system
+  - ai controls
+  - genai governance
+  - generative ai governance
+  - responsible ai officer
+  - ai governance officer
+  - ai risk officer
+  - chief ai officer
+  - ai act
+  - ai audit
+  - ai governance program
+  - ai risk and controls
+  - genai risk
+  - generative ai risk
+  - ml governance
+  - ai fairness
+  - algorithmic bias
+  - ai trust
+
+# 业务/治理背景信号：命中越多，说明这岗要的是"懂业务、懂风控的人来推动 AI"，
+# 正是你的画像（而不是让你去训练模型）。
+business_signals:
+  - governance
+  - risk
+  - risk management
+  - compliance
+  - regulatory
+  - policy
+  - framework
+  - controls
+  - internal controls
+  - audit
+  - assurance
+  - oversight
+  - enterprise risk
+  - operational risk
+  - third party risk
+  - model risk
+  - stakeholder
+  - cross-functional
+  - program
+  - program management
+  - strategy
+  - regulatory compliance
+  - financial services
+  - banking
+  - insurance
+  - regulated
+
+# 搜索词：只喂 jsearch / adzuna 去「抓」，不参与打分（打分靠上面的 focus_terms）。
+# ⚠️ 每个词 = 1 次 JSearch 调用，免费档约 200 次/月。JSearch 会模糊匹配，
+#   "AI Governance" 已能带出 Director/Manager/Lead/Officer/Responsible AI 各种变体，
+#   所以少而广即可；想多抓就加词（注意配额，见 config.yaml 顶部说明）。
+queries:
+  - AI Governance
+  - Responsible AI
+  - AI Risk Management
+
+# 现实职级带——title 只是轻信号，真正匹配靠 focus + 内容
 target_titles:
   - ai governance
   - responsible ai
+  - responsible ai lead
   - ai governance lead
   - ai governance manager
   - ai governance senior manager
@@ -12,24 +106,25 @@ target_titles:
   - head of ai governance
   - vp ai governance
   - ai policy
+  - ai policy manager
   - ai compliance
   - ai risk and governance
+  - ai risk manager
   - ai assurance
-  - ai trust and safety governance
+  - ai trust and safety
   - ai ethics
+  - ai oversight
+  - responsible ai officer
+  - ai governance officer
+  - ai risk officer
+  - head of responsible ai
+  - vp responsible ai
+  - ai audit
+  - ai controls
+  - ai governance program manager
+  - model governance
 
-# 搜索词：喂给 jsearch + adzuna 两个聚合源（覆盖 LinkedIn/Indeed/Glassdoor 等）
-queries:
-  - AI Governance
-  - Responsible AI
-  - AI Governance Manager
-  - AI Governance Director
-  - AI Risk and Compliance
-  - AI Policy
-  - AI Assurance
-  - Head of AI Governance
-
-# 你真实拥有的技能/关键词（内容匹配主力，尽量全）
+# 你真实拥有的技能/关键词（用于命中理由展示 + 缺口提示）
 skills:
   - ai governance
   - responsible ai
@@ -42,7 +137,6 @@ skills:
   - ai risk management
   - ai policy
   - ai controls
-  - ai onboarding
   - model risk
   - model governance
   - governance framework
@@ -52,7 +146,6 @@ skills:
   - risk management
   - internal controls
   - internal audit
-  - audit
   - control testing
   - data governance
   - continuous monitoring
@@ -63,7 +156,6 @@ skills:
   - genai
   - generative ai
   - agentic ai
-  - llm
   - financial services
   - banking
   - cpa
@@ -73,25 +165,48 @@ must_have: []
 nice_to_have:
   - director
   - senior manager
+  - head of
   - vp
   - lead
-  - head of
-  - financial services
-  - banking
-  - insurance
-  - asset management
 
-exclude_keywords:
-  - intern
-  - internship
-  - unpaid
-  - entry level
+# 按 TITLE 直接排除：技术/工程/初级/无关岗位族——你要的是"推动 AI 治理"的
+# 业务岗，不是去建模型或写代码。
+exclude_title_keywords:
   - machine learning engineer
+  - ml engineer
   - software engineer
   - data engineer
-  - prompt engineer
+  - data scientist
   - research scientist
+  - applied scientist
+  - research engineer
+  - member of technical staff
+  - platform engineer
+  - infrastructure
+  - devops
+  - sales
+  - account executive
+  - account director
+  - account manager
+  - customer success
+  - marketing
+  - business development
+  - solutions engineer
+  - solutions architect
+  - forward deployed
+  - full stack
+  - frontend
+  - backend
+  - designer
+  - recruiter
+  - talent acquisition
+  - intern
+
+# 兜底：正文出现这些词直接丢（和方向明显冲突的）
+exclude_keywords:
+  - unpaid
   - security clearance required
   - ts/sci
+  - active clearance
 
-min_score: 30
+min_score: 60

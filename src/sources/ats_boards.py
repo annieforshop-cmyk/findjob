@@ -8,6 +8,7 @@ API 和 Workday 的 CxS 搜索接口都是公开的。聚合器(JSearch/Adzuna)�
 """
 from __future__ import annotations
 
+import datetime as dt
 import json
 import random
 import re
@@ -22,12 +23,39 @@ import yaml
 
 from .base import Job, clean_html
 
+
+def _workday_date(s: str) -> str:
+    """Workday returns relative posted text ('Posted Today', 'Posted 13 Days
+    Ago', 'Posted 30+ Days Ago'). Convert to an ISO date so freshness scoring
+    and the email display work like every other source. Unknown -> ''."""
+    if not s:
+        return ""
+    low = s.lower()
+    today = dt.date.today()
+    if "today" in low:
+        return today.isoformat()
+    if "yesterday" in low:
+        return (today - dt.timedelta(days=1)).isoformat()
+    m = re.search(r"(\d+)\+?\s*day", low)
+    if m:
+        return (today - dt.timedelta(days=int(m.group(1)))).isoformat()
+    m = re.search(r"(\d+)\+?\s*month", low)
+    if m:
+        return (today - dt.timedelta(days=30 * int(m.group(1)))).isoformat()
+    return s[:10] if re.match(r"\d{4}-\d{2}-\d{2}", s) else ""
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 CFG_PATH = ROOT / "career" / "ats_companies.yaml"
+CAND_PATH = ROOT / "career" / "ats_candidates.yaml"
+# candidate boards on these ATS are ONE cheap GET each, so we can probe the whole
+# ~900-company candidate pool every day — this is what surfaces startups without
+# waiting for the weekly verifier. Workday is a 6-query POST loop, too heavy to
+# probe unverified daily, so those stay gated to the verified list.
+CHEAP_KINDS = {"greenhouse", "lever", "ashby"}
 DETAIL_CACHE_PATH = ROOT / "data" / "ats_details.json"
 DETAIL_CACHE_TTL = 21 * 86400   # 抓过的 JD 详情缓存 3 周——每天只补抓"新增"岗位
 TIMEOUT = 25
-WORKERS = 8                # 温和的并发度，避免触发限流
+WORKERS = 32     # verified + cheap candidate boards (see verify_boards.py)
 DETAILS_PER_COMPANY = 30   # 每公司每天最多补抓多少个【相关】岗位的详情页
 
 # 详情补抓前的标题相关性过滤：只有标题命中这些方向的岗位才值得花请求抓 JD。
@@ -200,7 +228,7 @@ def _workday(c: dict) -> list[Job]:
             out.append(Job(source=f"ats:{c['name']}", title=j.get("title", ""),
                            company=c["name"], url=f"https://{host}/en-US/{site}{path}",
                            location=j.get("locationsText", ""),
-                           posted=j.get("postedOn", ""),
+                           posted=_workday_date(j.get("postedOn", "")),
                            tags=[path]))
     if not out:
         raise RuntimeError("0 postings — host/site 可能失效")
@@ -231,15 +259,40 @@ _FETCHERS = {"greenhouse": _gh, "lever": _lever, "ashby": _ashby,
              "smartrecruiters": _smart, "workday": _workday}
 
 
+def _load(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    return (yaml.safe_load(path.read_text()) or {}).get("companies", [])
+
+
+def _companies(cfg: dict) -> list[dict]:
+    """Verified list (all kinds) + cheap candidate boards (gh/lever/ashby only),
+    deduped. Candidates carry _cand=True so their misses stay quiet."""
+    verified = _load(CFG_PATH)
+    seen = {(c.get("kind"), c.get("token") or c.get("host")) for c in verified}
+    out = list(verified)
+    if cfg.get("ats_include_candidates", True):
+        for c in _load(CAND_PATH):
+            if c.get("kind") not in CHEAP_KINDS:
+                continue
+            k = (c.get("kind"), c.get("token") or c.get("host"))
+            if k in seen:
+                continue
+            seen.add(k)
+            out.append({**c, "_cand": True})
+    return out
+
+
 def fetch(cfg: dict) -> list[Job]:
     global _cache
     if _cache is not None:
         return list(_cache)
-    if not CFG_PATH.exists():
+    companies = _companies(cfg)
+    if not companies:
         return []
-    companies = (yaml.safe_load(CFG_PATH.read_text()) or {}).get("companies", [])
     jobs: list[Job] = []
-    failed = []
+    failed = []            # only verified-board failures are worth surfacing
+    cand_miss = 0          # wrong candidate slugs 404 by design — count, don't spam
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         futs = {ex.submit(_FETCHERS[c["kind"]], c): c
                 for c in companies if c.get("kind") in _FETCHERS}
@@ -248,11 +301,15 @@ def fetch(cfg: dict) -> list[Job]:
             try:
                 jobs.extend(f.result())
             except Exception as e:
-                failed.append(f"{c['name']}: {str(e)[:60]}")
+                if c.get("_cand"):
+                    cand_miss += 1
+                else:
+                    failed.append(f"{c['name']}: {str(e)[:60]}")
     if failed:
-        print(f"  ats_boards: {len(failed)} boards failed — " + "; ".join(failed[:8]),
-              file=sys.stderr)
-    print(f"  ats_boards: {len(companies) - len(failed)} boards ok, {len(jobs)} raw jobs",
+        print(f"  ats_boards: {len(failed)} verified boards failed — "
+              + "; ".join(failed[:8]), file=sys.stderr)
+    print(f"  ats_boards: {len(companies) - len(failed) - cand_miss} boards ok "
+          f"({cand_miss} candidate boards empty — expected), {len(jobs)} raw jobs",
           file=sys.stderr)
     _save_details()
     _cache = jobs

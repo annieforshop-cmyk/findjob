@@ -451,3 +451,47 @@ companies:
   - {name: Strava,            kind: greenhouse, token: strava}
   - {name: Calm,              kind: greenhouse, token: calm}
   - {name: Headspace,         kind: greenhouse, token: headspace}
+
+  # ============================================================
+  #  ⬇⬇ 2026-07-23 新增：更广的 AI-治理猎场（尚未在本环境验证——
+  #  首次每日运行的日志里会把失效接口标成 "[ats:公司名] FAILED"，
+  #  据此把抓不到的行删掉/改 token 即可。宁可先撒网，靠 60 分门槛保准确。）
+  # ============================================================
+
+  # ---------- A) AI 实验室 / AI 产品公司（这些自己就有 Responsible-AI / AI-policy / trust&safety 团队）----------
+  - {name: Hugging Face,      kind: greenhouse, token: huggingface}
+  - {name: Runway,            kind: greenhouse, token: runwayml}
+  - {name: Together AI,       kind: greenhouse, token: togetherai}
+  - {name: Writer,            kind: greenhouse, token: writer}
+  - {name: Glean,             kind: greenhouse, token: glean}
+  - {name: Abridge,           kind: greenhouse, token: abridge}
+  - {name: Grammarly,         kind: greenhouse, token: grammarly}
+  - {name: Harvey,            kind: ashby, token: harvey}
+  - {name: Sierra,            kind: ashby, token: sierra}
+  - {name: Anysphere (Cursor),kind: ashby, token: anysphere}
+  - {name: Hebbia,            kind: ashby, token: hebbia}
+  - {name: Decagon,           kind: ashby, token: decagon}
+
+  # ---------- B) AI 治理 / 责任 AI / GRC / 信任软件厂商（AI 治理岗密度最高）----------
+  - {name: Vanta,             kind: greenhouse, token: vanta}
+  - {name: Drata,             kind: greenhouse, token: drata}
+  - {name: OneTrust,          kind: greenhouse, token: onetrust}
+  - {name: Collibra,          kind: greenhouse, token: collibra}
+  - {name: Fiddler AI,        kind: greenhouse, token: fiddlerai}
+  - {name: Arthur,            kind: greenhouse, token: arthur}
+  - {name: Securiti,          kind: greenhouse, token: securiti}
+  - {name: Holistic AI,       kind: ashby, token: holisticai}
+
+  # ---------- C) 受监管金融 / 保险 / 数据机构（Workday，最贴你银行审计→AI 治理的画像）----------
+  - {name: Prudential Financial, kind: workday, host: prudential.wd5.myworkdayjobs.com,  site: PrudentialCareers}
+  - {name: MetLife,           kind: workday, host: metlife.wd5.myworkdayjobs.com,        site: External}
+  - {name: Nasdaq,            kind: workday, host: nasdaq.wd1.myworkdayjobs.com,         site: Global_External_Site}
+  - {name: Marsh McLennan,    kind: workday, host: mmc.wd5.myworkdayjobs.com,            site: MMC}
+  - {name: Nationwide,        kind: workday, host: nationwide.wd1.myworkdayjobs.com,     site: Nationwide_External}
+  - {name: USAA,              kind: workday, host: usaa.wd1.myworkdayjobs.com,           site: External}
+  - {name: Charles Schwab,    kind: workday, host: schwab.wd1.myworkdayjobs.com,         site: External}
+  - {name: Equifax,           kind: workday, host: equifax.wd5.myworkdayjobs.com,        site: Equifax_External}
+  - {name: Moody's,           kind: workday, host: moodys.wd5.myworkdayjobs.com,         site: Careers}
+  - {name: Crowe,             kind: workday, host: crowe.wd1.myworkdayjobs.com,          site: External}
+  - {name: Grant Thornton,    kind: workday, host: grantthornton.wd1.myworkdayjobs.com,  site: GT_External}
+  - {name: Kroll,             kind: workday, host: kroll.wd1.myworkdayjobs.com,          site: Kroll_External}

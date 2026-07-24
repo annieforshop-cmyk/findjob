@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import html as _html
 import re
 from dataclasses import dataclass, field, asdict
 from typing import Any
@@ -16,18 +17,15 @@ _WS_RE = re.compile(r"\s+")
 
 
 def clean_html(text: str | None) -> str:
-    """Strip tags / collapse whitespace so JD text is scoreable + emailable."""
+    """Strip tags / collapse whitespace so JD text is scoreable + emailable.
+
+    Unescape entities FIRST, then strip tags: some ATS (Greenhouse) return the
+    JD as HTML-ENCODED text (`&lt;div&gt;`), so stripping before unescaping would
+    leave the tags visible as literal `<div>` text in the email."""
     if not text:
         return ""
-    text = _TAG_RE.sub(" ", text)
-    text = (
-        text.replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&nbsp;", " ")
-        .replace("&#39;", "'")
-        .replace("&quot;", '"')
-    )
+    text = _html.unescape(text)     # &lt;p&gt; -> <p>, &amp; -> & …
+    text = _TAG_RE.sub(" ", text)   # now strip the real tags
     return _WS_RE.sub(" ", text).strip()
 
 
@@ -77,12 +75,10 @@ class Job:
     ai_recruiter_odds: float = -1.0 # realistic odds of recruiter response / interview
     ai_composite: float = -1.0      # weighted composite of all dimensions
 
-    # set by the dream-company monitor: this employer is on the Target-50 list
+    # legacy fields kept for backward compat with digest.py / stored state;
+    # no longer populated (target-firm + agency flagging were removed)
     dream: bool = False
     dream_tier: int = 0
-
-    # set by network.flag_agencies: posted by a staffing/search firm —
-    # applying puts you in that recruiter's database (high-value channel)
     agency: bool = False
 
     @property
