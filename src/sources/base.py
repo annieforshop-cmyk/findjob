@@ -96,10 +96,12 @@ class Job:
 
     @property
     def blob(self) -> str:
-        """Everything a scorer should look at, lowercased."""
-        return " ".join(
-            [self.title, self.company, self.location, self.description, " ".join(self.tags)]
-        ).lower()
+        """Everything a scorer should look at, lowercased. None-safe: ATS APIs
+        routinely return null for location/description on some postings, and a
+        single None here used to crash the whole profile's scoring pass."""
+        parts = [self.title, self.company, self.location, self.description,
+                 " ".join(str(t) for t in self.tags if t)]
+        return " ".join(p for p in parts if p).lower()
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
