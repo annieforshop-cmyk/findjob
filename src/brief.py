@@ -56,6 +56,7 @@ def gather(dry_run: bool) -> dict:
     merged: dict[str, Job] = {}
     scanned = 0
     ai_notes: list[str] = []
+    section_order: list[str] = []      # 板块展示顺序（按 config 里 profile 出现顺序）
     # which directions feed today's email (default: all discovered)
     wanted = bcfg.get("profiles")
     names = [p for p in discover_profiles() if not wanted or p in wanted] or discover_profiles()
@@ -68,8 +69,12 @@ def gather(dry_run: bool) -> dict:
         scanned += res["meta"].get("scanned", 0)
         if res["meta"].get("ai_note"):
             ai_notes.append(res["meta"]["ai_note"])
+        section = res["cfg"].get("section") or res["label"]  # 多个 profile 可共享一个板块
+        if section not in section_order:
+            section_order.append(section)
         for j in res["top"]:
             j.profile_label = res["label"]  # type: ignore[attr-defined]
+            j.section = section             # type: ignore[attr-defined]
             old = merged.get(j.id)
             if old is None or j.rank_score > old.rank_score:
                 merged[j.id] = j
@@ -91,7 +96,8 @@ def gather(dry_run: bool) -> dict:
     top = jobs[: int(bcfg.get("top_jobs", 50))]
 
     return {"date": today, "scanned": scanned, "top": top, "floor": floor,
-            "cfg": base_cfg, "ai_warning": "；".join(dict.fromkeys(ai_notes))}
+            "cfg": base_cfg, "section_order": section_order,
+            "ai_warning": "；".join(dict.fromkeys(ai_notes))}
 
 
 # ---------------- render helpers ----------------
@@ -120,6 +126,15 @@ def _why(j: Job) -> str:
     if j.matched:
         return "命中你简历的关键词: " + ", ".join(j.matched[:8])
     return ""
+
+
+def _sections_in_order(d: dict) -> list[str]:
+    order = list(d.get("section_order") or [])
+    for j in d["top"]:                      # 兜底：把任何漏掉的板块补到末尾
+        s = getattr(j, "section", "") or ""
+        if s and s not in order:
+            order.append(s)
+    return order
 
 
 def _source_label(j: Job) -> str:
@@ -166,8 +181,15 @@ def build_text(d: dict) -> str:
               "   排序退化为关键词匹配，达标数量可能偏少——修好后会明显回升。", ""]
 
     if d["top"]:
-        for i, j in enumerate(d["top"], 1):
-            L += _job_lines(i, j) + [""]
+        i = 0
+        for sec in _sections_in_order(d):
+            secjobs = [j for j in d["top"] if getattr(j, "section", "") == sec]
+            if not secjobs:
+                continue
+            L += [f"━━━━━ {sec}（{len(secjobs)} 个）━━━━━", ""]
+            for j in secjobs:
+                i += 1
+                L += _job_lines(i, j) + [""]
     else:
         L.append("今天没有达标（≥60 分）的新岗位。宁缺毋滥——明天再看。\n")
 
@@ -229,9 +251,18 @@ def build_html(d: dict) -> str:
             '排序退化为关键词匹配，达标数量可能偏少——修好后会明显回升。</div>')
 
     if d["top"]:
-        rows = "".join(_job_html(j) for j in d["top"])
-        body = (f'<table style="width:100%;border-collapse:collapse;background:#fff;'
+        blocks = []
+        for sec in _sections_in_order(d):
+            secjobs = [j for j in d["top"] if getattr(j, "section", "") == sec]
+            if not secjobs:
+                continue
+            rows = "".join(_job_html(j) for j in secjobs)
+            blocks.append(
+                f'<h2 style="font-size:15px;margin:22px 0 8px;color:#111">{esc(sec)}'
+                f'<span style="color:#888;font-weight:400;font-size:13px"> · {len(secjobs)} 个</span></h2>'
+                f'<table style="width:100%;border-collapse:collapse;background:#fff;'
                 f'border-radius:10px;overflow:hidden">{rows}</table>')
+        body = "".join(blocks)
     else:
         body = ('<div style="background:#fff;border-radius:10px;padding:20px;color:#555;'
                 'font-size:14px">今天没有达标（≥60 分）的新岗位。宁缺毋滥——明天再看。</div>')

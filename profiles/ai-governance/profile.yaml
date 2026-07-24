@@ -1,4 +1,5 @@
 label: AI Governance
+section: "AI 治理 & 风险"     # 与 ai-risk 合并展示在同一板块
 
 # ============================================================
 #  AI Governance 精准检索（无需 OpenAI）
