@@ -1,497 +1,1565 @@
 # ============================================================
-#  ATS 直连公司清单 — src/sources/ats_boards.py 每天自动抓取
-#  不需要任何 API key：这些都是各公司招聘系统的公开接口。
-#
-#  kind: greenhouse | lever | ashby | smartrecruiters | workday
-#    - greenhouse/lever/ashby/smartrecruiters: 需要 token
-#    - workday: 需要 host + site（用搜索词查询，见 ats_boards.py）
-#
-#  verified: 2026-07-18 = 当天真实抓到过岗位的接口
-#  接口失效会在每日日志里提示 "[ats:公司名] FAILED"，改这里即可。
-#  这份清单和 dream_companies.yaml 独立：dream 是"梦想公司精评"，
-#  这里是"广撒网"——两者岗位最终都会被 AI 按简历逐条打分。
+#  ATS 直连清单 — 由 career/verify_boards.py 自动维护（每周 CI 刷新）。
+#  只包含最近一次验证真的抓到过岗位的公司；候选池在 ats_candidates.yaml。
+#  最近验证：2026-07-27。手动加公司请加到 gen_candidates.py 再跑验证。
 # ============================================================
-
 companies:
-  # ---------- 保险 / 资管 / 金融（Workday，2026-07-18 验证） ----------
-  - {name: Allstate,          kind: workday, host: allstate.wd5.myworkdayjobs.com,      site: allstate_careers,      verified: 2026-07-18}
-  - {name: AIG,               kind: workday, host: aig.wd1.myworkdayjobs.com,           site: aig,                   verified: 2026-07-18}
-  - {name: GEICO,             kind: workday, host: geico.wd1.myworkdayjobs.com,         site: External,              verified: 2026-07-18}
-  - {name: Invesco,           kind: workday, host: invesco.wd1.myworkdayjobs.com,       site: IVZ,                   verified: 2026-07-18}
-  - {name: Fannie Mae,        kind: workday, host: fanniemae.wd1.myworkdayjobs.com,     site: FannieMaeCareers,      verified: 2026-07-18}
-  - {name: PwC,               kind: workday, host: pwc.wd3.myworkdayjobs.com,           site: US_Experienced_Careers, verified: 2026-07-18}
-  - {name: RSM US,            kind: workday, host: rsm.wd1.myworkdayjobs.com,           site: RSMCareers,            verified: 2026-07-18}
-  - {name: UMB Bank,          kind: workday, host: umb.wd1.myworkdayjobs.com,           site: UMBExternal,           verified: 2026-07-18}
-  - {name: The Mutual Group,  kind: workday, host: themutualgroup.wd108.myworkdayjobs.com, site: TMG,                verified: 2026-07-18}
-  - {name: TransUnion,        kind: workday, host: transunion.wd5.myworkdayjobs.com,    site: TransUnion,            verified: 2026-07-18}
-  - {name: Vertex Pharmaceuticals, kind: workday, host: vrtx.wd5.myworkdayjobs.com,     site: Vertex_Careers,        verified: 2026-07-18}
-  - {name: Simpson Thacher,   kind: workday, host: stblaw.wd1.myworkdayjobs.com,        site: careers,               verified: 2026-07-18}
-  - {name: Busey Bank,        kind: workday, host: busey.wd503.myworkdayjobs.com,       site: busey,                 verified: 2026-07-18}
-  - {name: NVIDIA,            kind: workday, host: nvidia.wd5.myworkdayjobs.com,        site: NVIDIAExternalCareerSite}
-
-  # ---------- 银行 / 金融基础设施（Workday，主流租户，失效看日志） ----------
-  - {name: State Street,      kind: workday, host: statestreet.wd1.myworkdayjobs.com,   site: Global}
-  - {name: BlackRock,         kind: workday, host: blackrock.wd1.myworkdayjobs.com,     site: BlackRock_Professional}
-  - {name: PNC,               kind: workday, host: pnc.wd5.myworkdayjobs.com,           site: External}
-  - {name: Truist,            kind: workday, host: truist.wd1.myworkdayjobs.com,        site: Careers}
-  - {name: KeyBank,           kind: workday, host: keybank.wd5.myworkdayjobs.com,       site: External_Career_Site}
-  - {name: Synchrony,         kind: workday, host: synchrony.wd5.myworkdayjobs.com,     site: Synchrony_Careers}
-  - {name: Travelers,         kind: workday, host: travelers.wd5.myworkdayjobs.com,     site: External}
-  - {name: Guidehouse,        kind: workday, host: guidehouse.wd1.myworkdayjobs.com,    site: External}
-  - {name: DTCC,              kind: workday, host: dtcc.wd1.myworkdayjobs.com,          site: Careers}
-  - {name: S&P Global,        kind: workday, host: spgi.wd5.myworkdayjobs.com,          site: SPGI_Careers}
-  - {name: Northern Trust,    kind: workday, host: ntrs.wd1.myworkdayjobs.com,          site: ntrscareers}
-  - {name: Voya Financial,    kind: workday, host: voya.wd1.myworkdayjobs.com,          site: VoyaJobs}
-
-  # ---------- AI / 科技 / 金融科技（Greenhouse，公开 boards API） ----------
-  - {name: Anthropic,         kind: greenhouse, token: anthropic}
-  - {name: Coinbase,          kind: greenhouse, token: coinbase,  verified: 2026-07-18}
-  - {name: AlphaSense,        kind: greenhouse, token: alphasense, verified: 2026-07-18}
-  - {name: Veeam,             kind: greenhouse, token: veeamsoftware, verified: 2026-07-18}
-  - {name: Natera,            kind: greenhouse, token: natera,    verified: 2026-07-18}
-  - {name: Chainguard,        kind: greenhouse, token: chainguard, verified: 2026-07-18}
-  - {name: Commvault,         kind: greenhouse, token: commvault, verified: 2026-07-18}
-  - {name: Stripe,            kind: greenhouse, token: stripe}
-  - {name: Databricks,        kind: greenhouse, token: databricks}
-  - {name: Scale AI,          kind: greenhouse, token: scaleai}
-  - {name: Affirm,            kind: greenhouse, token: affirm}
-  - {name: Robinhood,         kind: greenhouse, token: robinhood}
-  - {name: Airbnb,            kind: greenhouse, token: airbnb}
-  - {name: Pinterest,         kind: greenhouse, token: pinterest}
-  - {name: Datadog,           kind: greenhouse, token: datadog}
-  - {name: Cloudflare,        kind: greenhouse, token: cloudflare}
-  - {name: GitLab,            kind: greenhouse, token: gitlab}
-  - {name: Brex,              kind: greenhouse, token: brex}
-  - {name: Chime,             kind: greenhouse, token: chime}
-  - {name: SoFi,              kind: greenhouse, token: sofi}
-  - {name: Circle,            kind: greenhouse, token: circle}
-  - {name: Gemini,            kind: greenhouse, token: gemini}
-  - {name: Two Sigma,         kind: greenhouse, token: twosigma}
-  - {name: Point72,           kind: greenhouse, token: point72}
-
-  # ---------- Lever ----------
-  - {name: CFGI,              kind: lever, token: cfgi,          verified: 2026-07-18}
-  - {name: Dun & Bradstreet,  kind: lever, token: dnb,           verified: 2026-07-18}
-  - {name: Palantir,          kind: lever, token: palantir}
-  - {name: Plaid,             kind: lever, token: plaid}
-  - {name: Kraken,            kind: lever, token: kraken}
-  - {name: Anduril,           kind: lever, token: anduril}
-
-  # ---------- Ashby ----------
-  - {name: OpenAI,            kind: ashby, token: openai,        verified: 2026-07-18}
-  - {name: Credo.AI,          kind: ashby, token: credo.ai,      verified: 2026-07-18}
-  - {name: Prompt,            kind: ashby, token: prompt,        verified: 2026-07-18}
-  - {name: Cohere,            kind: ashby, token: cohere}
-  - {name: Ramp,              kind: ashby, token: ramp}
-  - {name: Notion,            kind: ashby, token: notion}
-  - {name: Perplexity,        kind: ashby, token: perplexity-ai}
-  - {name: Deel,              kind: ashby, token: deel}
-
-  # ---------- SmartRecruiters ----------
-  - {name: ServiceNow,        kind: smartrecruiters, token: ServiceNow}
-  - {name: Visa,              kind: smartrecruiters, token: Visa}
-  - {name: Experian,          kind: smartrecruiters, token: Experian}
-
-  # ============================================================
-  # 2026-07-18 扩池：GRC/审计软件商、AI startup、remote-first、
-  # 欧洲公司（有美国实体/remote-US）、更多金融机构。
-  # 候选人领域知识对 GRC 软件商来说就是产品本身——重点池。
-  # 接口失效会在日志提示，删掉或修 token 即可。
-  # ============================================================
-
-  # ---------- GRC / 审计 / 合规软件商（domain knowledge = product） ----------
-  - {name: AuditBoard,        kind: greenhouse, token: auditboard}
-  - {name: Workiva,           kind: greenhouse, token: workiva}
-  - {name: OneTrust,          kind: greenhouse, token: onetrust}
-  - {name: Diligent,          kind: greenhouse, token: diligent}
-  - {name: LogicGate,         kind: greenhouse, token: logicgate}
-  - {name: Drata,             kind: greenhouse, token: drata}
-  - {name: Vanta,             kind: ashby,      token: vanta}
-  - {name: Secureframe,       kind: greenhouse, token: secureframe}
-  - {name: Hyperproof,        kind: greenhouse, token: hyperproof}
-  - {name: Anecdotes,         kind: greenhouse, token: anecdotes}
-  - {name: Smartsheet,        kind: greenhouse, token: smartsheet}
-
-  # ---------- AI 治理 / ML 监控 startup（AI governance 的原生市场） ----------
-  - {name: Holistic AI,       kind: greenhouse, token: holisticai}
-  - {name: Arthur AI,         kind: greenhouse, token: arthur}
-  - {name: Fiddler AI,        kind: greenhouse, token: fiddlerlabs}
-  - {name: Arize AI,          kind: greenhouse, token: arizeai}
-  - {name: Weights & Biases,  kind: lever,      token: wandb}
-  - {name: Patronus AI,       kind: ashby,      token: PatronusAI}
-  - {name: Galileo,           kind: ashby,      token: galileo}
-  - {name: Trustible,         kind: ashby,      token: trustible}
-
-  # ---------- AI 实验室 / scale-up ----------
-  - {name: xAI,               kind: greenhouse, token: xai}
-  - {name: Mistral AI,        kind: lever,      token: mistral}
-  - {name: Glean,             kind: greenhouse, token: gleanwork}
-  - {name: Sierra AI,         kind: ashby,      token: Sierra}
-  - {name: Harvey,            kind: ashby,      token: harvey}
-  - {name: Writer,            kind: ashby,      token: writer}
-  - {name: Runway,            kind: greenhouse, token: runwayml}
-  - {name: Together AI,       kind: greenhouse, token: togetherai}
-  - {name: Waymo,             kind: greenhouse, token: waymo}
-
-  # ---------- Remote-first / 大型科技（治理与合规职能成熟） ----------
-  - {name: Zapier,            kind: greenhouse, token: zapier}
-  - {name: Remote.com,        kind: greenhouse, token: remotecom}
-  - {name: HashiCorp,         kind: greenhouse, token: hashicorp}
-  - {name: Grafana Labs,      kind: greenhouse, token: grafanalabs}
-  - {name: Elastic,           kind: greenhouse, token: elastic}
-  - {name: Twilio,            kind: greenhouse, token: twilio}
-  - {name: Okta,              kind: greenhouse, token: okta}
-  - {name: MongoDB,           kind: greenhouse, token: mongodb}
-  - {name: Reddit,            kind: greenhouse, token: reddit}
-  - {name: Figma,             kind: greenhouse, token: figma}
-  - {name: Discord,           kind: greenhouse, token: discord}
-  - {name: Samsara,           kind: greenhouse, token: samsara}
-  - {name: Atlassian,         kind: lever,      token: atlassian}
-  - {name: Spotify,           kind: lever,      token: spotify}
-
-  # ---------- 欧洲公司（美国实体 / remote-US 岗为目标） ----------
-  - {name: Revolut,           kind: greenhouse, token: revolut}
-  - {name: Wise,              kind: greenhouse, token: transferwise}
-  - {name: Adyen,             kind: greenhouse, token: adyen}
-  - {name: Klarna,            kind: lever,      token: klarna}
-  - {name: N26,               kind: greenhouse, token: n26}
-  - {name: Monzo,             kind: greenhouse, token: monzo}
-  - {name: Checkout.com,      kind: greenhouse, token: checkout}
-  - {name: Booking.com,       kind: workday, host: booking.wd3.myworkdayjobs.com, site: Booking}
-
-  # ---------- 更多美国金融 / 金融科技 ----------
-  - {name: Block (Square),    kind: smartrecruiters, token: Block}
-  - {name: Marqeta,           kind: greenhouse, token: marqeta}
-  - {name: Wealthfront,       kind: greenhouse, token: wealthfront}
-  - {name: Betterment,        kind: greenhouse, token: betterment}
-  - {name: Carta,             kind: greenhouse, token: carta}
-  - {name: Mercury,           kind: greenhouse, token: mercury}
-  - {name: Upgrade,           kind: greenhouse, token: upgrade}
-  - {name: Mastercard,        kind: workday, host: mastercard.wd1.myworkdayjobs.com, site: CorporateCareers}
-  - {name: PayPal,            kind: workday, host: paypal.wd1.myworkdayjobs.com,     site: jobs}
-  - {name: Discover,          kind: workday, host: discover.wd5.myworkdayjobs.com,   site: Discover}
-  - {name: Fifth Third Bank,  kind: workday, host: fitb.wd5.myworkdayjobs.com,       site: 53careers}
-  - {name: M&T Bank,          kind: workday, host: mtb.wd5.myworkdayjobs.com,        site: MTB}
-  - {name: Regions Bank,      kind: workday, host: regions.wd5.myworkdayjobs.com,    site: Regions_Careers}
-  - {name: Ally Financial,    kind: workday, host: ally.wd5.myworkdayjobs.com,       site: Ally}
-  - {name: Santander US,      kind: workday, host: santander.wd3.myworkdayjobs.com,  site: SantanderCareers}
-  - {name: First Citizens,    kind: workday, host: firstcitizens.wd1.myworkdayjobs.com, site: FCB}
-  - {name: Raymond James,     kind: workday, host: raymondjames.wd1.myworkdayjobs.com, site: External}
-  - {name: LPL Financial,     kind: workday, host: lpl.wd1.myworkdayjobs.com,        site: External}
-  - {name: Broadridge,        kind: workday, host: broadridge.wd5.myworkdayjobs.com, site: Careers}
-  - {name: FIS,               kind: workday, host: fisglobal.wd5.myworkdayjobs.com,  site: SearchJobs}
-  - {name: Fiserv,            kind: workday, host: fiserv.wd5.myworkdayjobs.com,     site: EXT}
-  - {name: Nasdaq,            kind: workday, host: nasdaq.wd1.myworkdayjobs.com,     site: Global_External_Site}
-  - {name: CME Group,         kind: workday, host: cmegroup.wd5.myworkdayjobs.com,   site: External}
-  - {name: Moody's,           kind: workday, host: moodys.wd1.myworkdayjobs.com,     site: External}
-  - {name: FINRA,             kind: workday, host: finra.wd1.myworkdayjobs.com,      site: careers}
-  - {name: Freddie Mac,       kind: workday, host: fmac.wd1.myworkdayjobs.com,       site: External}
-  - {name: MetLife,           kind: workday, host: metlife.wd5.myworkdayjobs.com,    site: MetLife}
-  - {name: Prudential,        kind: workday, host: pru.wd5.myworkdayjobs.com,        site: Careers}
-  - {name: The Hartford,      kind: workday, host: thehartford.wd5.myworkdayjobs.com, site: Careers_External}
-  - {name: MassMutual,        kind: workday, host: massmutual.wd5.myworkdayjobs.com, site: MassMutual_External}
-  - {name: Lincoln Financial, kind: workday, host: lfg.wd5.myworkdayjobs.com,        site: LFG}
-  - {name: Equitable,         kind: workday, host: equitable.wd5.myworkdayjobs.com,  site: Equitable_Careers}
-  - {name: T. Rowe Price,     kind: workday, host: troweprice.wd5.myworkdayjobs.com, site: TRowePrice}
-  - {name: Franklin Templeton, kind: workday, host: franklintempleton.wd5.myworkdayjobs.com, site: External}
-  - {name: Blackstone,        kind: workday, host: blackstone.wd1.myworkdayjobs.com, site: Blackstone_Careers}
-  - {name: KKR,               kind: workday, host: kkr.wd1.myworkdayjobs.com,        site: KKR_External}
-  - {name: FTI Consulting,    kind: workday, host: fticonsulting.wd1.myworkdayjobs.com, site: FTI_Global}
-  - {name: Crowe,             kind: workday, host: crowe.wd12.myworkdayjobs.com,     site: External}
-  - {name: Grant Thornton,    kind: workday, host: gt.wd1.myworkdayjobs.com,         site: External}
-
-  # ============================================================
-  # 2026-07-18 二次扩池（→400+）。token/host 为公司常用命名，
-  # 失效的会在每日日志 "[ats_boards] N boards failed" 里点名，删改即可。
-  # ============================================================
-
-  # ---------- 大科技 / 平台 ----------
-  - {name: Uber,              kind: greenhouse, token: uber}
-  - {name: DoorDash,          kind: greenhouse, token: doordashusa}
-  - {name: Instacart,         kind: greenhouse, token: instacart}
-  - {name: Lyft,              kind: greenhouse, token: lyft}
-  - {name: Airtable,          kind: greenhouse, token: airtable}
-  - {name: Squarespace,       kind: greenhouse, token: squarespace}
-  - {name: Dropbox,           kind: greenhouse, token: dropbox}
-  - {name: Box,               kind: greenhouse, token: boxinc}
-  - {name: Klaviyo,           kind: greenhouse, token: klaviyo}
-  - {name: Braze,             kind: greenhouse, token: braze}
-  - {name: Amplitude,         kind: greenhouse, token: amplitude}
-  - {name: Mixpanel,          kind: greenhouse, token: mixpanel}
-  - {name: Duolingo,          kind: greenhouse, token: duolingo}
-  - {name: Grammarly,         kind: greenhouse, token: grammarly}
-  - {name: Gusto,             kind: greenhouse, token: gusto}
-  - {name: Checkr,            kind: greenhouse, token: checkr}
-  - {name: Asana,             kind: greenhouse, token: asana}
-  - {name: Rippling,          kind: greenhouse, token: rippling}
-  - {name: Navan,             kind: greenhouse, token: navan}
-  - {name: Zoom,              kind: workday, host: zoom.wd5.myworkdayjobs.com, site: Zoom}
-  - {name: Intuit,            kind: workday, host: intuit.wd1.myworkdayjobs.com, site: Intuit}
-  - {name: Salesforce,        kind: workday, host: salesforce.wd12.myworkdayjobs.com, site: External_Career_Site}
-  - {name: Adobe,             kind: workday, host: adobe.wd5.myworkdayjobs.com, site: external_experienced}
-  - {name: Workday Inc,       kind: workday, host: workday.wd5.myworkdayjobs.com, site: Workday}
-  - {name: Snowflake,         kind: workday, host: snowflake.wd5.myworkdayjobs.com, site: Snowflake_Careers}
-  - {name: CrowdStrike,       kind: workday, host: crowdstrike.wd5.myworkdayjobs.com, site: crowdstrikecareers}
-
-  # ---------- 网络安全（审计/合规职能多且 remote 友好） ----------
-  - {name: Snyk,              kind: greenhouse, token: snyk}
-  - {name: Wiz,               kind: greenhouse, token: wiz}
-  - {name: Abnormal Security, kind: greenhouse, token: abnormalsecurity}
-  - {name: Huntress,          kind: greenhouse, token: huntress}
-  - {name: Red Canary,        kind: greenhouse, token: redcanary}
-  - {name: 1Password,         kind: greenhouse, token: 1password}
-  - {name: Dashlane,          kind: greenhouse, token: dashlane}
-  - {name: Rapid7,            kind: greenhouse, token: rapid7}
-  - {name: Tenable,           kind: greenhouse, token: tenable}
-  - {name: Netskope,          kind: greenhouse, token: netskope}
-  - {name: Tanium,            kind: greenhouse, token: tanium}
-  - {name: KnowBe4,           kind: greenhouse, token: knowbe4}
-  - {name: Expel,             kind: greenhouse, token: expel}
-  - {name: SentinelOne,       kind: greenhouse, token: sentinellabs}
-  - {name: Palo Alto Networks, kind: workday, host: paloaltonetworks.wd1.myworkdayjobs.com, site: PaloAltoNetworks}
-  - {name: Zscaler,           kind: workday, host: zscaler.wd1.myworkdayjobs.com, site: External}
-  - {name: Proofpoint,        kind: workday, host: proofpoint.wd5.myworkdayjobs.com, site: ProofpointCareers}
-  - {name: Arctic Wolf,       kind: workday, host: arcticwolf.wd1.myworkdayjobs.com, site: External}
-
-  # ---------- 数据 / AI 基建 ----------
-  - {name: Confluent,         kind: greenhouse, token: confluent}
-  - {name: dbt Labs,          kind: greenhouse, token: dbtlabsinc}
-  - {name: Fivetran,          kind: greenhouse, token: fivetran}
-  - {name: Astronomer,        kind: greenhouse, token: astronomer}
-  - {name: Starburst,         kind: greenhouse, token: starburstdata}
-  - {name: ClickHouse,        kind: greenhouse, token: clickhouse}
-  - {name: Neo4j,             kind: greenhouse, token: neo4j}
-  - {name: Pinecone,          kind: greenhouse, token: pinecone}
-  - {name: LangChain,         kind: greenhouse, token: langchain}
-  - {name: Anyscale,          kind: greenhouse, token: anyscale}
-  - {name: Baseten,           kind: greenhouse, token: baseten}
-  - {name: Groq,              kind: greenhouse, token: groq}
-  - {name: Cerebras,          kind: greenhouse, token: cerebras}
-  - {name: SambaNova,         kind: greenhouse, token: sambanovasystems}
-  - {name: CoreWeave,         kind: greenhouse, token: coreweave}
-  - {name: Crusoe,            kind: greenhouse, token: crusoeenergy}
-  - {name: Domino Data Lab,   kind: greenhouse, token: dominodatalab}
-  - {name: DataRobot,         kind: greenhouse, token: datarobot}
-  - {name: H2O.ai,            kind: greenhouse, token: h2oai}
-  - {name: Dataiku,           kind: greenhouse, token: dataiku}
-  - {name: Modal,             kind: ashby, token: modal}
-  - {name: Chroma,            kind: ashby, token: chroma}
-  - {name: LlamaIndex,        kind: ashby, token: llamaindex}
-  - {name: Lambda Labs,       kind: greenhouse, token: lambda}
-
-  # ---------- 金融科技 / 财富管理 / 借贷 ----------
-  - {name: Toast,             kind: greenhouse, token: toast}
-  - {name: Bill.com,          kind: greenhouse, token: bill}
-  - {name: NerdWallet,        kind: greenhouse, token: nerdwallet}
-  - {name: Credit Karma,      kind: greenhouse, token: creditkarma}
-  - {name: LendingClub,       kind: greenhouse, token: lendingclub}
-  - {name: Upstart,           kind: greenhouse, token: upstart}
-  - {name: Avant,             kind: greenhouse, token: avant}
-  - {name: Varo Bank,         kind: greenhouse, token: varomoney}
-  - {name: Dave,              kind: greenhouse, token: dave}
-  - {name: MoneyLion,         kind: greenhouse, token: moneylion}
-  - {name: Acorns,            kind: greenhouse, token: acorns}
-  - {name: Stash,             kind: greenhouse, token: stashinvest}
-  - {name: Public.com,        kind: greenhouse, token: public}
-  - {name: Addepar,           kind: greenhouse, token: addepar}
-  - {name: Ridgeline,         kind: greenhouse, token: ridgelineapps}
-  - {name: Altruist,          kind: greenhouse, token: altruist}
-  - {name: iCapital,          kind: greenhouse, token: icapitalnetwork}
-  - {name: Yieldstreet,       kind: greenhouse, token: yieldstreet}
-  - {name: Forge Global,      kind: greenhouse, token: forgeglobal}
-  - {name: Juniper Square,    kind: greenhouse, token: junipersquare}
-  - {name: Pitchbook,         kind: greenhouse, token: pitchbook}
-  - {name: Morningstar,       kind: workday, host: morningstar.wd5.myworkdayjobs.com, site: Morningstar}
-  - {name: FactSet,           kind: workday, host: factset.wd1.myworkdayjobs.com, site: FactSetCareers}
-  - {name: WEX,               kind: workday, host: wexinc.wd5.myworkdayjobs.com, site: WEXInc}
-
-  # ---------- 支付 / 银行基建 / KYC-AML（合规岗密集） ----------
-  - {name: Bolt,              kind: greenhouse, token: bolt}
-  - {name: Modern Treasury,   kind: greenhouse, token: moderntreasury}
-  - {name: Unit,              kind: greenhouse, token: unit}
-  - {name: Lithic,            kind: greenhouse, token: lithic}
-  - {name: Moov,              kind: greenhouse, token: moov}
-  - {name: Payoneer,          kind: greenhouse, token: payoneer}
-  - {name: Flywire,           kind: greenhouse, token: flywire}
-  - {name: Airwallex,         kind: greenhouse, token: airwallex}
-  - {name: Nium,              kind: greenhouse, token: nium}
-  - {name: Alloy,             kind: greenhouse, token: alloy}
-  - {name: Persona,           kind: greenhouse, token: persona}
-  - {name: Socure,            kind: greenhouse, token: socure}
-  - {name: Sardine,           kind: ashby, token: sardine}
-  - {name: Unit21,            kind: greenhouse, token: unit21}
-  - {name: Middesk,           kind: greenhouse, token: middesk}
-  - {name: Hummingbird,       kind: ashby, token: hummingbird}
-  - {name: ComplyAdvantage,   kind: greenhouse, token: complyadvantage}
-  - {name: Feedzai,           kind: greenhouse, token: feedzai}
-  - {name: Quantexa,          kind: greenhouse, token: quantexa}
-  - {name: Behavox,           kind: greenhouse, token: behavox}
-
-  # ---------- 加密 / 数字资产（监管合规需求爆发） ----------
-  - {name: Chainalysis,       kind: greenhouse, token: chainalysis}
-  - {name: TRM Labs,          kind: greenhouse, token: trmlabs}
-  - {name: Elliptic,          kind: greenhouse, token: elliptic}
-  - {name: Fireblocks,        kind: greenhouse, token: fireblocks}
-  - {name: Anchorage Digital, kind: greenhouse, token: anchorage}
-  - {name: Paxos,             kind: greenhouse, token: joinpaxos}
-  - {name: BitGo,             kind: greenhouse, token: bitgo}
-  - {name: Ripple,            kind: greenhouse, token: ripple}
-  - {name: Consensys,         kind: greenhouse, token: consensys}
-  - {name: Uniswap Labs,      kind: greenhouse, token: uniswaplabs}
-  - {name: Alchemy,           kind: greenhouse, token: alchemy}
-  - {name: Blockchain.com,    kind: greenhouse, token: blockchain}
-  - {name: Galaxy Digital,    kind: greenhouse, token: galaxydigitalservices}
-  - {name: Grayscale,         kind: greenhouse, token: grayscale}
-
-  # ---------- 保险科技 ----------
-  - {name: Lemonade,          kind: greenhouse, token: lemonade}
-  - {name: Root Insurance,    kind: greenhouse, token: root}
-  - {name: Hippo,             kind: greenhouse, token: hippo}
-  - {name: Next Insurance,    kind: greenhouse, token: nextinsurance}
-  - {name: Coalition,         kind: greenhouse, token: coalitioninc}
-  - {name: Kin Insurance,     kind: greenhouse, token: kin}
-  - {name: Clearcover,        kind: greenhouse, token: clearcover}
-  - {name: Pie Insurance,     kind: greenhouse, token: pieinsurance}
-  - {name: Newfront,          kind: greenhouse, token: newfront}
-  - {name: Vouch,             kind: greenhouse, token: vouch}
-  - {name: Embroker,          kind: greenhouse, token: embroker}
-  - {name: Openly,            kind: greenhouse, token: openly}
-  - {name: Ethos Life,        kind: greenhouse, token: ethoslife}
-
-  # ---------- 医疗科技（数据治理/合规岗多） ----------
-  - {name: Komodo Health,     kind: greenhouse, token: komodohealth}
-  - {name: Datavant,          kind: greenhouse, token: datavant}
-  - {name: Tempus,            kind: greenhouse, token: tempus}
-  - {name: Flatiron Health,   kind: greenhouse, token: flatironhealth}
-  - {name: Cityblock Health,  kind: greenhouse, token: cityblockhealth}
-  - {name: Oscar Health,      kind: greenhouse, token: oscar}
-  - {name: Clover Health,     kind: greenhouse, token: cloverhealth}
-  - {name: Headway,           kind: greenhouse, token: headway}
-  - {name: Spring Health,     kind: greenhouse, token: springhealth}
-  - {name: Lyra Health,       kind: greenhouse, token: lyrahealth}
-  - {name: Included Health,   kind: greenhouse, token: includedhealth}
-  - {name: Omada Health,      kind: greenhouse, token: omadahealth}
-  - {name: Ro,                kind: greenhouse, token: ro}
-  - {name: Zocdoc,            kind: greenhouse, token: zocdoc}
-  - {name: Grow Therapy,      kind: greenhouse, token: growtherapy}
-  - {name: Alma,              kind: greenhouse, token: alma}
-
-  # ---------- 交易公司 / 对冲基金（模型风险与内控岗） ----------
-  - {name: Citadel,           kind: greenhouse, token: citadelenterpriseamericas}
-  - {name: Millennium,        kind: greenhouse, token: mlp}
-  - {name: Balyasny,          kind: greenhouse, token: balyasnyassetmanagementlp}
-  - {name: Hudson River Trading, kind: greenhouse, token: hudsonrivertrading}
-  - {name: Jump Trading,      kind: greenhouse, token: jumptrading}
-  - {name: DRW,               kind: greenhouse, token: drw}
-  - {name: IMC Trading,       kind: greenhouse, token: imc}
-  - {name: Akuna Capital,     kind: greenhouse, token: akunacapital}
-  - {name: Tower Research,    kind: greenhouse, token: towerresearchcapital}
-  - {name: Optiver,           kind: greenhouse, token: optiverus}
-  - {name: Flow Traders,      kind: greenhouse, token: flowtraders}
-  - {name: Virtu Financial,   kind: workday, host: virtu.wd5.myworkdayjobs.com, site: External}
-
-  # ---------- 更多银行 / 信贷 / 资管（Workday） ----------
-  - {name: Citizens Bank,     kind: workday, host: citizensbank.wd5.myworkdayjobs.com, site: External}
-  - {name: Comerica,          kind: workday, host: comerica.wd1.myworkdayjobs.com, site: External}
-  - {name: Zions Bancorp,     kind: workday, host: zions.wd5.myworkdayjobs.com, site: External}
-  - {name: Huntington Bank,   kind: workday, host: huntington.wd5.myworkdayjobs.com, site: HNBcareers}
-  - {name: Webster Bank,      kind: workday, host: websterbank.wd1.myworkdayjobs.com, site: External}
-  - {name: Valley Bank,       kind: workday, host: valleynationalbank.wd1.myworkdayjobs.com, site: External}
-  - {name: East West Bank,    kind: workday, host: eastwestbank.wd1.myworkdayjobs.com, site: External}
-  - {name: Western Alliance,  kind: workday, host: westernalliance.wd5.myworkdayjobs.com, site: External}
-  - {name: Jefferies,         kind: workday, host: jefferies.wd5.myworkdayjobs.com, site: External}
-  - {name: Stifel,            kind: workday, host: stifel.wd5.myworkdayjobs.com, site: External}
-  - {name: Edward Jones,      kind: workday, host: edwardjones.wd5.myworkdayjobs.com, site: External}
-  - {name: Brown Brothers Harriman, kind: workday, host: bbh.wd1.myworkdayjobs.com, site: External}
-  - {name: AllianceBernstein, kind: workday, host: alliancebernstein.wd1.myworkdayjobs.com, site: External}
-  - {name: Janus Henderson,   kind: workday, host: janushenderson.wd3.myworkdayjobs.com, site: External}
-  - {name: Neuberger Berman,  kind: workday, host: nb.wd1.myworkdayjobs.com, site: External}
-  - {name: Apollo Global,     kind: workday, host: apollo.wd1.myworkdayjobs.com, site: External}
-  - {name: Carlyle,           kind: workday, host: carlyle.wd5.myworkdayjobs.com, site: External}
-  - {name: Ares Management,   kind: workday, host: ares.wd1.myworkdayjobs.com, site: External}
-  - {name: PIMCO,             kind: workday, host: pimco.wd1.myworkdayjobs.com, site: External}
-  - {name: Fitch Group,       kind: workday, host: fitchgroup.wd1.myworkdayjobs.com, site: External}
-  - {name: ICE / NYSE,        kind: workday, host: theice.wd1.myworkdayjobs.com, site: External}
-  - {name: Cboe,              kind: workday, host: cboe.wd1.myworkdayjobs.com, site: External}
-  - {name: LSEG,              kind: workday, host: lseg.wd3.myworkdayjobs.com, site: External}
-
-  # ---------- 保险经纪 / 咨询 / 专业服务 ----------
-  - {name: Marsh McLennan,    kind: workday, host: mmc.wd1.myworkdayjobs.com, site: MMC}
-  - {name: Aon,               kind: workday, host: aon.wd1.myworkdayjobs.com, site: External}
-  - {name: WTW,               kind: workday, host: wtw.wd1.myworkdayjobs.com, site: External}
-  - {name: Gallagher,         kind: workday, host: ajg.wd1.myworkdayjobs.com, site: External}
-  - {name: Kroll,             kind: workday, host: kroll.wd1.myworkdayjobs.com, site: External}
-  - {name: Alvarez & Marsal,  kind: workday, host: alvarezandmarsal.wd1.myworkdayjobs.com, site: External}
-  - {name: AlixPartners,      kind: workday, host: alixpartners.wd1.myworkdayjobs.com, site: External}
-  - {name: Ankura,            kind: workday, host: ankura.wd1.myworkdayjobs.com, site: External}
-  - {name: EisnerAmper,       kind: workday, host: eisneramper.wd1.myworkdayjobs.com, site: External}
-  - {name: CohnReznick,       kind: workday, host: cohnreznick.wd1.myworkdayjobs.com, site: External}
-  - {name: Forvis Mazars,     kind: workday, host: forvis.wd1.myworkdayjobs.com, site: External}
-  - {name: Protiviti,         kind: workday, host: protiviti.wd1.myworkdayjobs.com, site: External}
-  - {name: Charles River Associates, kind: workday, host: crai.wd1.myworkdayjobs.com, site: External}
-
-  # ---------- 法律科技 / 合同 / 电子取证（治理相邻） ----------
-  - {name: Ironclad,          kind: greenhouse, token: ironcladapp}
-  - {name: Everlaw,           kind: greenhouse, token: everlaw}
-  - {name: Ontra,             kind: greenhouse, token: ontra}
-  - {name: Relativity,        kind: greenhouse, token: relativity}
-
-  # ---------- 其他知名 remote 友好 / 平台 ----------
-  - {name: Roblox,            kind: greenhouse, token: roblox}
-  - {name: Coursera,          kind: greenhouse, token: coursera}
-  - {name: Udemy,             kind: greenhouse, token: udemy}
-  - {name: Etsy,              kind: greenhouse, token: etsy}
-  - {name: Peloton,           kind: greenhouse, token: peloton}
-  - {name: Wayfair,           kind: greenhouse, token: wayfair}
-  - {name: Chewy,             kind: greenhouse, token: chewy}
-  - {name: Faire,             kind: greenhouse, token: faire}
-  - {name: Whatnot,           kind: greenhouse, token: whatnot}
-  - {name: StockX,            kind: greenhouse, token: stockx}
-  - {name: Turo,              kind: greenhouse, token: turo}
-  - {name: Strava,            kind: greenhouse, token: strava}
-  - {name: Calm,              kind: greenhouse, token: calm}
-  - {name: Headspace,         kind: greenhouse, token: headspace}
-
-  # ============================================================
-  #  ⬇⬇ 2026-07-23 新增：更广的 AI-治理猎场（尚未在本环境验证——
-  #  首次每日运行的日志里会把失效接口标成 "[ats:公司名] FAILED"，
-  #  据此把抓不到的行删掉/改 token 即可。宁可先撒网，靠 60 分门槛保准确。）
-  # ============================================================
-
-  # ---------- A) AI 实验室 / AI 产品公司（这些自己就有 Responsible-AI / AI-policy / trust&safety 团队）----------
-  - {name: Hugging Face,      kind: greenhouse, token: huggingface}
-  - {name: Runway,            kind: greenhouse, token: runwayml}
-  - {name: Together AI,       kind: greenhouse, token: togetherai}
-  - {name: Writer,            kind: greenhouse, token: writer}
-  - {name: Glean,             kind: greenhouse, token: glean}
-  - {name: Abridge,           kind: greenhouse, token: abridge}
-  - {name: Grammarly,         kind: greenhouse, token: grammarly}
-  - {name: Harvey,            kind: ashby, token: harvey}
-  - {name: Sierra,            kind: ashby, token: sierra}
-  - {name: Anysphere (Cursor),kind: ashby, token: anysphere}
-  - {name: Hebbia,            kind: ashby, token: hebbia}
-  - {name: Decagon,           kind: ashby, token: decagon}
-
-  # ---------- B) AI 治理 / 责任 AI / GRC / 信任软件厂商（AI 治理岗密度最高）----------
-  - {name: Vanta,             kind: greenhouse, token: vanta}
-  - {name: Drata,             kind: greenhouse, token: drata}
-  - {name: OneTrust,          kind: greenhouse, token: onetrust}
-  - {name: Collibra,          kind: greenhouse, token: collibra}
-  - {name: Fiddler AI,        kind: greenhouse, token: fiddlerai}
-  - {name: Arthur,            kind: greenhouse, token: arthur}
-  - {name: Securiti,          kind: greenhouse, token: securiti}
-  - {name: Holistic AI,       kind: ashby, token: holisticai}
-
-  # ---------- C) 受监管金融 / 保险 / 数据机构（Workday，最贴你银行审计→AI 治理的画像）----------
-  - {name: Prudential Financial, kind: workday, host: prudential.wd5.myworkdayjobs.com,  site: PrudentialCareers}
-  - {name: MetLife,           kind: workday, host: metlife.wd5.myworkdayjobs.com,        site: External}
-  - {name: Nasdaq,            kind: workday, host: nasdaq.wd1.myworkdayjobs.com,         site: Global_External_Site}
-  - {name: Marsh McLennan,    kind: workday, host: mmc.wd5.myworkdayjobs.com,            site: MMC}
-  - {name: Nationwide,        kind: workday, host: nationwide.wd1.myworkdayjobs.com,     site: Nationwide_External}
-  - {name: USAA,              kind: workday, host: usaa.wd1.myworkdayjobs.com,           site: External}
-  - {name: Charles Schwab,    kind: workday, host: schwab.wd1.myworkdayjobs.com,         site: External}
-  - {name: Equifax,           kind: workday, host: equifax.wd5.myworkdayjobs.com,        site: Equifax_External}
-  - {name: Moody's,           kind: workday, host: moodys.wd5.myworkdayjobs.com,         site: Careers}
-  - {name: Crowe,             kind: workday, host: crowe.wd1.myworkdayjobs.com,          site: External}
-  - {name: Grant Thornton,    kind: workday, host: grantthornton.wd1.myworkdayjobs.com,  site: GT_External}
-  - {name: Kroll,             kind: workday, host: kroll.wd1.myworkdayjobs.com,          site: Kroll_External}
+- name: NVIDIA
+  kind: workday
+  host: nvidia.wd5.myworkdayjobs.com
+  site: NVIDIAExternalCareerSite
+  verified: '2026-07-27'
+- name: PNC
+  kind: workday
+  host: pnc.wd5.myworkdayjobs.com
+  site: External
+  verified: '2026-07-27'
+- name: Booz Allen Hamilton
+  kind: workday
+  host: bah.wd1.myworkdayjobs.com
+  site: BAH_Jobs
+  verified: '2026-07-27'
+- name: Guidehouse
+  kind: workday
+  host: guidehouse.wd1.myworkdayjobs.com
+  site: External
+  verified: '2026-07-27'
+- name: State Street
+  kind: workday
+  host: statestreet.wd1.myworkdayjobs.com
+  site: Global
+  verified: '2026-07-27'
+- name: Marsh McLennan
+  kind: workday
+  host: mmc.wd1.myworkdayjobs.com
+  site: MMC
+  verified: '2026-07-27'
+- name: RSM US
+  kind: workday
+  host: rsm.wd1.myworkdayjobs.com
+  site: RSMCareers
+  verified: '2026-07-27'
+- name: Adobe
+  kind: workday
+  host: adobe.wd5.myworkdayjobs.com
+  site: external_experienced
+  verified: '2026-07-27'
+- name: Regions Bank
+  kind: workday
+  host: regions.wd5.myworkdayjobs.com
+  site: Regions_Careers
+  verified: '2026-07-27'
+- name: Workday Inc
+  kind: workday
+  host: workday.wd5.myworkdayjobs.com
+  site: Workday
+  verified: '2026-07-27'
+- name: Santander US
+  kind: workday
+  host: santander.wd3.myworkdayjobs.com
+  site: SantanderCareers
+  verified: '2026-07-27'
+- name: CVS Health
+  kind: workday
+  host: cvshealth.wd1.myworkdayjobs.com
+  site: CVS_Health_Careers
+  verified: '2026-07-27'
+- name: S&P Global
+  kind: workday
+  host: spgi.wd5.myworkdayjobs.com
+  site: SPGI_Careers
+  verified: '2026-07-27'
+- name: Truist
+  kind: workday
+  host: truist.wd1.myworkdayjobs.com
+  site: Careers
+  verified: '2026-07-27'
+- name: M&T Bank
+  kind: workday
+  host: mtb.wd5.myworkdayjobs.com
+  site: MTB
+  verified: '2026-07-27'
+- name: Travelers
+  kind: workday
+  host: travelers.wd5.myworkdayjobs.com
+  site: External
+  verified: '2026-07-27'
+- name: Proofpoint
+  kind: workday
+  host: proofpoint.wd5.myworkdayjobs.com
+  site: ProofpointCareers
+  verified: '2026-07-27'
+- name: TransUnion
+  kind: workday
+  host: transunion.wd5.myworkdayjobs.com
+  site: TransUnion
+  verified: '2026-07-27'
+- name: GEICO
+  kind: workday
+  host: geico.wd1.myworkdayjobs.com
+  site: External
+  verified: '2026-07-27'
+- name: Broadridge
+  kind: workday
+  host: broadridge.wd5.myworkdayjobs.com
+  site: Careers
+  verified: '2026-07-27'
+- name: Blackstone
+  kind: workday
+  host: blackstone.wd1.myworkdayjobs.com
+  site: Blackstone_Careers
+  verified: '2026-07-27'
+- name: PwC
+  kind: workday
+  host: pwc.wd3.myworkdayjobs.com
+  site: US_Experienced_Careers
+  verified: '2026-07-27'
+- name: Fiserv
+  kind: workday
+  host: fiserv.wd5.myworkdayjobs.com
+  site: EXT
+  verified: '2026-07-27'
+- name: Mastercard
+  kind: workday
+  host: mastercard.wd1.myworkdayjobs.com
+  site: CorporateCareers
+  verified: '2026-07-27'
+- name: FIS
+  kind: workday
+  host: fis.wd5.myworkdayjobs.com
+  site: SearchJobs
+  verified: '2026-07-27'
+- name: Morningstar
+  kind: workday
+  host: morningstar.wd5.myworkdayjobs.com
+  site: Morningstar
+  verified: '2026-07-27'
+- name: Salesforce
+  kind: workday
+  host: salesforce.wd12.myworkdayjobs.com
+  site: External_Career_Site
+  verified: '2026-07-27'
+- name: Elevance Health
+  kind: workday
+  host: elevancehealth.wd1.myworkdayjobs.com
+  site: ANT
+  verified: '2026-07-27'
+- name: CrowdStrike
+  kind: workday
+  host: crowdstrike.wd5.myworkdayjobs.com
+  site: crowdstrikecareers
+  verified: '2026-07-27'
+- name: Nasdaq
+  kind: workday
+  host: nasdaq.wd1.myworkdayjobs.com
+  site: Global_External_Site
+  verified: '2026-07-27'
+- name: AIG
+  kind: workday
+  host: aig.wd1.myworkdayjobs.com
+  site: aig
+  verified: '2026-07-27'
+- name: Prudential
+  kind: workday
+  host: pru.wd5.myworkdayjobs.com
+  site: Careers
+  verified: '2026-07-27'
+- name: KeyBank
+  kind: workday
+  host: keybank.wd5.myworkdayjobs.com
+  site: External_Career_Site
+  verified: '2026-07-27'
+- name: PayPal
+  kind: workday
+  host: paypal.wd1.myworkdayjobs.com
+  site: jobs
+  verified: '2026-07-27'
+- name: Invesco
+  kind: workday
+  host: invesco.wd1.myworkdayjobs.com
+  site: IVZ
+  verified: '2026-07-27'
+- name: Allstate
+  kind: workday
+  host: allstate.wd5.myworkdayjobs.com
+  site: allstate_careers
+  verified: '2026-07-27'
+- name: The Hartford
+  kind: workday
+  host: thehartford.wd5.myworkdayjobs.com
+  site: Careers_External
+  verified: '2026-07-27'
+- name: T. Rowe Price
+  kind: workday
+  host: troweprice.wd5.myworkdayjobs.com
+  site: TRowePrice
+  verified: '2026-07-27'
+- name: Arctic Wolf
+  kind: workday
+  host: arcticwolf.wd1.myworkdayjobs.com
+  site: External
+  verified: '2026-07-27'
+- name: Assurant
+  kind: workday
+  host: assurant.wd1.myworkdayjobs.com
+  site: Assurant_Careers
+  verified: '2026-07-27'
+- name: BMO
+  kind: workday
+  host: bmo.wd3.myworkdayjobs.com
+  site: External
+  verified: '2026-07-27'
+- name: Busey Bank
+  kind: workday
+  host: busey.wd503.myworkdayjobs.com
+  site: busey
+  verified: '2026-07-27'
+- name: BlackRock
+  kind: workday
+  host: blackrock.wd1.myworkdayjobs.com
+  site: BlackRock_Professional
+  verified: '2026-07-27'
+- name: UMB Bank
+  kind: workday
+  host: umb.wd1.myworkdayjobs.com
+  site: UMBExternal
+  verified: '2026-07-27'
+- name: FICO
+  kind: workday
+  host: fico.wd1.myworkdayjobs.com
+  site: External
+  verified: '2026-07-27'
+- name: Fannie Mae
+  kind: workday
+  host: fanniemae.wd1.myworkdayjobs.com
+  site: FannieMaeCareers
+  verified: '2026-07-27'
+- name: Simpson Thacher
+  kind: workday
+  host: stblaw.wd1.myworkdayjobs.com
+  site: careers
+  verified: '2026-07-27'
+- name: The Mutual Group
+  kind: workday
+  host: themutualgroup.wd108.myworkdayjobs.com
+  site: TMG
+  verified: '2026-07-27'
+- name: Zoom
+  kind: workday
+  host: zoom.wd5.myworkdayjobs.com
+  site: Zoom
+  verified: '2026-07-27'
+- name: WEX
+  kind: workday
+  host: wexinc.wd5.myworkdayjobs.com
+  site: WEXInc
+  verified: '2026-07-27'
+- name: Vertex Pharmaceuticals
+  kind: workday
+  host: vrtx.wd5.myworkdayjobs.com
+  site: Vertex_Careers
+  verified: 2026-07-18
+- name: Databricks
+  kind: greenhouse
+  token: databricks
+  verified: '2026-07-27'
+- name: Stripe
+  kind: greenhouse
+  token: stripe
+  verified: '2026-07-27'
+- name: DoorDash
+  kind: greenhouse
+  token: doordashusa
+  verified: '2026-07-27'
+- name: Datadog
+  kind: greenhouse
+  token: datadog
+  verified: '2026-07-27'
+- name: Anthropic
+  kind: greenhouse
+  token: anthropic
+  verified: '2026-07-27'
+- name: Waymo
+  kind: greenhouse
+  token: waymo
+  verified: '2026-07-27'
+- name: MongoDB
+  kind: greenhouse
+  token: mongodb
+  verified: '2026-07-27'
+- name: Okta
+  kind: greenhouse
+  token: okta
+  verified: '2026-07-27'
+- name: Relativity
+  kind: greenhouse
+  token: relativity
+  verified: '2026-07-27'
+- name: Samsara
+  kind: greenhouse
+  token: samsara
+  verified: '2026-07-27'
+- name: Toast
+  kind: greenhouse
+  token: toast
+  verified: '2026-07-27'
+- name: Zscaler
+  kind: greenhouse
+  token: zscaler
+  verified: '2026-07-27'
+- name: CoreWeave
+  kind: greenhouse
+  token: coreweave
+  verified: '2026-07-27'
+- name: Brex
+  kind: greenhouse
+  token: brex
+  verified: '2026-07-27'
+- name: Cloudflare
+  kind: greenhouse
+  token: cloudflare
+  verified: '2026-07-27'
+- name: Oscar Health
+  kind: greenhouse
+  token: oscar
+  verified: '2026-07-27'
+- name: Veeam
+  kind: greenhouse
+  token: veeamsoftware
+  verified: '2026-07-27'
+- name: Remote.com
+  kind: greenhouse
+  token: remotecom
+  verified: '2026-07-27'
+- name: Braze
+  kind: greenhouse
+  token: braze
+  verified: '2026-07-27'
+- name: Point72
+  kind: greenhouse
+  token: point72
+  verified: '2026-07-27'
+- name: SentinelOne
+  kind: greenhouse
+  token: sentinellabs
+  verified: '2026-07-27'
+- name: Natera
+  kind: greenhouse
+  token: natera
+  verified: '2026-07-27'
+- name: xAI
+  kind: greenhouse
+  token: xai
+  verified: '2026-07-27'
+- name: Adyen
+  kind: greenhouse
+  token: adyen
+  verified: '2026-07-27'
+- name: Roblox
+  kind: greenhouse
+  token: roblox
+  verified: '2026-07-27'
+- name: AlphaSense
+  kind: greenhouse
+  token: alphasense
+  verified: '2026-07-27'
+- name: iCapital
+  kind: greenhouse
+  token: icapitalnetwork
+  verified: '2026-07-27'
+- name: Scale AI
+  kind: greenhouse
+  token: scaleai
+  verified: '2026-07-27'
+- name: Pinterest
+  kind: greenhouse
+  token: pinterest
+  verified: '2026-07-27'
+- name: Elastic
+  kind: greenhouse
+  token: elastic
+  verified: '2026-07-27'
+- name: Reddit
+  kind: greenhouse
+  token: reddit
+  verified: '2026-07-27'
+- name: Fivetran
+  kind: greenhouse
+  token: fivetran
+  verified: '2026-07-27'
+- name: Airbnb
+  kind: greenhouse
+  token: airbnb
+  verified: '2026-07-27'
+- name: Optiver
+  kind: greenhouse
+  token: optiverus
+  verified: '2026-07-27'
+- name: GitLab
+  kind: greenhouse
+  token: gitlab
+  verified: '2026-07-27'
+- name: Twilio
+  kind: greenhouse
+  token: twilio
+  verified: '2026-07-27'
+- name: Figma
+  kind: greenhouse
+  token: figma
+  verified: '2026-07-27'
+- name: Affirm
+  kind: greenhouse
+  token: affirm
+  verified: '2026-07-27'
+- name: ClickHouse
+  kind: greenhouse
+  token: clickhouse
+  verified: '2026-07-27'
+- name: Sezzle
+  kind: greenhouse
+  token: sezzle
+  verified: '2026-07-27'
+- name: Lyft
+  kind: greenhouse
+  token: lyft
+  verified: '2026-07-27'
+- name: Coinbase
+  kind: greenhouse
+  token: coinbase
+  verified: '2026-07-27'
+- name: Klaviyo
+  kind: greenhouse
+  token: klaviyo
+  verified: '2026-07-27'
+- name: Flexport
+  kind: greenhouse
+  token: flexport
+  verified: '2026-07-27'
+- name: IMC Trading
+  kind: greenhouse
+  token: imc
+  verified: '2026-07-27'
+- name: Asana
+  kind: greenhouse
+  token: asana
+  verified: '2026-07-27'
+- name: Netskope
+  kind: greenhouse
+  token: netskope
+  verified: '2026-07-27'
+- name: Ripple
+  kind: greenhouse
+  token: ripple
+  verified: '2026-07-27'
+- name: Payoneer
+  kind: greenhouse
+  token: payoneer
+  verified: '2026-07-27'
+- name: Grafana Labs
+  kind: greenhouse
+  token: grafanalabs
+  verified: '2026-07-27'
+- name: Intercom
+  kind: greenhouse
+  token: intercom
+  verified: '2026-07-27'
+- name: Cato Networks
+  kind: greenhouse
+  token: catonetworks
+  verified: '2026-07-27'
+- name: Instacart
+  kind: greenhouse
+  token: instacart
+  verified: '2026-07-27'
+- name: Robinhood
+  kind: greenhouse
+  token: robinhood
+  verified: '2026-07-27'
+- name: Box
+  kind: greenhouse
+  token: boxinc
+  verified: '2026-07-27'
+- name: Postman
+  kind: greenhouse
+  token: postman
+  verified: '2026-07-27'
+- name: Glean
+  kind: greenhouse
+  token: gleanwork
+  verified: '2026-07-27'
+- name: Oura
+  kind: greenhouse
+  token: oura
+  verified: '2026-07-27'
+- name: Upstart
+  kind: greenhouse
+  token: upstart
+  verified: '2026-07-27'
+- name: Smartsheet
+  kind: greenhouse
+  token: smartsheet
+  verified: '2026-07-27'
+- name: Cresta
+  kind: greenhouse
+  token: cresta
+  verified: '2026-07-27'
+- name: Jump Trading
+  kind: greenhouse
+  token: jumptrading
+  verified: '2026-07-27'
+- name: ZoomInfo
+  kind: greenhouse
+  token: zoominfo
+  verified: '2026-07-27'
+- name: Justworks
+  kind: greenhouse
+  token: justworks
+  verified: '2026-07-27'
+- name: OneTrust
+  kind: greenhouse
+  token: onetrust
+  verified: '2026-07-27'
+- name: KnowBe4
+  kind: greenhouse
+  token: knowbe4
+  verified: '2026-07-27'
+- name: Bloomreach
+  kind: greenhouse
+  token: bloomreach
+  verified: '2026-07-27'
+- name: Commvault
+  kind: greenhouse
+  token: commvault
+  verified: '2026-07-27'
+- name: Vercel
+  kind: greenhouse
+  token: vercel
+  verified: '2026-07-27'
+- name: Gusto
+  kind: greenhouse
+  token: gusto
+  verified: '2026-07-27'
+- name: Tower Research
+  kind: greenhouse
+  token: towerresearchcapital
+  verified: '2026-07-27'
+- name: Monzo
+  kind: greenhouse
+  token: monzo
+  verified: '2026-07-27'
+- name: Abnormal Security
+  kind: greenhouse
+  token: abnormalsecurity
+  verified: '2026-07-27'
+- name: Sigma Computing
+  kind: greenhouse
+  token: sigmacomputing
+  verified: '2026-07-27'
+- name: Chainguard
+  kind: greenhouse
+  token: chainguard
+  verified: '2026-07-27'
+- name: N26
+  kind: greenhouse
+  token: n26
+  verified: '2026-07-27'
+- name: Cohere Health
+  kind: greenhouse
+  token: coherehealth
+  verified: '2026-07-27'
+- name: Hightouch
+  kind: greenhouse
+  token: hightouch
+  verified: '2026-07-27'
+- name: Chime
+  kind: greenhouse
+  token: chime
+  verified: '2026-07-27'
+- name: Faire
+  kind: greenhouse
+  token: faire
+  verified: '2026-07-27'
+- name: Human Interest
+  kind: greenhouse
+  token: humaninterest
+  verified: '2026-07-27'
+- name: Galaxy Digital
+  kind: greenhouse
+  token: galaxydigitalservices
+  verified: '2026-07-27'
+- name: Cribl
+  kind: greenhouse
+  token: cribl
+  verified: '2026-07-27'
+- name: Carta
+  kind: greenhouse
+  token: carta
+  verified: '2026-07-27'
+- name: Fireblocks
+  kind: greenhouse
+  token: fireblocks
+  verified: '2026-07-27'
+- name: SoFi
+  kind: greenhouse
+  token: sofi
+  verified: '2026-07-27'
+- name: Peloton
+  kind: greenhouse
+  token: peloton
+  verified: '2026-07-27'
+- name: Keeper Security
+  kind: greenhouse
+  token: keepersecurity
+  verified: '2026-07-27'
+- name: Vonage
+  kind: greenhouse
+  token: vonage
+  verified: '2026-07-27'
+- name: Parloa
+  kind: greenhouse
+  token: parloa
+  verified: '2026-07-27'
+- name: Duolingo
+  kind: greenhouse
+  token: duolingo
+  verified: '2026-07-27'
+- name: Together AI
+  kind: greenhouse
+  token: togetherai
+  verified: '2026-07-27'
+- name: Ethos Life
+  kind: greenhouse
+  token: ethoslife
+  verified: '2026-07-27'
+- name: Clover Health
+  kind: greenhouse
+  token: cloverhealth
+  verified: '2026-07-27'
+- name: Mercury
+  kind: greenhouse
+  token: mercury
+  verified: '2026-07-27'
+- name: Sweetgreen
+  kind: greenhouse
+  token: sweetgreen
+  verified: '2026-07-27'
+- name: Garner Health
+  kind: greenhouse
+  token: garnerhealth
+  verified: '2026-07-27'
+- name: Zocdoc
+  kind: greenhouse
+  token: zocdoc
+  verified: '2026-07-27'
+- name: Checkr
+  kind: greenhouse
+  token: checkr
+  verified: '2026-07-27'
+- name: New Relic
+  kind: greenhouse
+  token: newrelic
+  verified: '2026-07-27'
+- name: Discord
+  kind: greenhouse
+  token: discord
+  verified: '2026-07-27'
+- name: Altruist
+  kind: greenhouse
+  token: altruist
+  verified: '2026-07-27'
+- name: Ping Identity
+  kind: greenhouse
+  token: pingidentity
+  verified: '2026-07-27'
+- name: Bill.com
+  kind: greenhouse
+  token: billcom
+  verified: '2026-07-27'
+- name: Algolia
+  kind: greenhouse
+  token: algolia
+  verified: '2026-07-27'
+- name: Attentive
+  kind: greenhouse
+  token: attentive
+  verified: '2026-07-27'
+- name: BeyondTrust
+  kind: greenhouse
+  token: beyondtrust
+  verified: '2026-07-27'
+- name: Amplitude
+  kind: greenhouse
+  token: amplitude
+  verified: '2026-07-27'
+- name: Fireworks AI
+  kind: greenhouse
+  token: fireworksai
+  verified: '2026-07-27'
+- name: Neo4j
+  kind: greenhouse
+  token: neo4j
+  verified: '2026-07-27'
+- name: Gemini
+  kind: greenhouse
+  token: gemini
+  verified: '2026-07-27'
+- name: Mixpanel
+  kind: greenhouse
+  token: mixpanel
+  verified: '2026-07-27'
+- name: Marqeta
+  kind: greenhouse
+  token: marqeta
+  verified: '2026-07-27'
+- name: Tailscale
+  kind: greenhouse
+  token: tailscale
+  verified: '2026-07-27'
+- name: Pendo
+  kind: greenhouse
+  token: pendo
+  verified: '2026-07-27'
+- name: Recorded Future
+  kind: greenhouse
+  token: recordedfuture
+  verified: '2026-07-27'
+- name: Truveta
+  kind: greenhouse
+  token: truveta
+  verified: '2026-07-27'
+- name: Betterment
+  kind: greenhouse
+  token: betterment
+  verified: '2026-07-27'
+- name: Tanium
+  kind: greenhouse
+  token: tanium
+  verified: '2026-07-27'
+- name: Collibra
+  kind: greenhouse
+  token: collibra
+  verified: '2026-07-27'
+- name: SingleStore
+  kind: greenhouse
+  token: singlestore
+  verified: '2026-07-27'
+- name: Forter
+  kind: greenhouse
+  token: forter
+  verified: '2026-07-27'
+- name: BitGo
+  kind: greenhouse
+  token: bitgo
+  verified: '2026-07-27'
+- name: Flow Traders
+  kind: greenhouse
+  token: flowtraders
+  verified: '2026-07-27'
+- name: Airtable
+  kind: greenhouse
+  token: airtable
+  verified: '2026-07-27'
+- name: Huntress
+  kind: greenhouse
+  token: huntress
+  verified: '2026-07-27'
+- name: Blockchain.com
+  kind: greenhouse
+  token: blockchain
+  verified: '2026-07-27'
+- name: Otter.ai
+  kind: greenhouse
+  token: otterai
+  verified: '2026-07-27'
+- name: Komodo Health
+  kind: greenhouse
+  token: komodohealth
+  verified: '2026-07-27'
+- name: Akuna Capital
+  kind: greenhouse
+  token: akunacapital
+  verified: '2026-07-27'
+- name: Flatiron Health
+  kind: greenhouse
+  token: flatironhealth
+  verified: '2026-07-27'
+- name: Everlaw
+  kind: greenhouse
+  token: everlaw
+  verified: '2026-07-27'
+- name: Behavox
+  kind: greenhouse
+  token: behavox
+  verified: '2026-07-27'
+- name: StockX
+  kind: greenhouse
+  token: stockx
+  verified: '2026-07-27'
+- name: Cockroach Labs
+  kind: greenhouse
+  token: cockroachlabs
+  verified: '2026-07-27'
+- name: Maven Clinic
+  kind: greenhouse
+  token: mavenclinic
+  verified: '2026-07-27'
+- name: LaunchDarkly
+  kind: greenhouse
+  token: launchdarkly
+  verified: '2026-07-27'
+- name: Arize AI
+  kind: greenhouse
+  token: arizeai
+  verified: '2026-07-27'
+- name: Dropbox
+  kind: greenhouse
+  token: dropbox
+  verified: '2026-07-27'
+- name: Feedzai
+  kind: greenhouse
+  token: feedzai
+  verified: '2026-07-27'
+- name: ComplyAdvantage
+  kind: greenhouse
+  token: complyadvantage
+  verified: '2026-07-27'
+- name: project44
+  kind: greenhouse
+  token: project44
+  verified: '2026-07-27'
+- name: Obsidian Security
+  kind: greenhouse
+  token: obsidiansecurity
+  verified: '2026-07-27'
+- name: SambaNova
+  kind: greenhouse
+  token: sambanovasystems
+  verified: '2026-07-27'
+- name: Omada Health
+  kind: greenhouse
+  token: omadahealth
+  verified: '2026-07-27'
+- name: Bandwidth
+  kind: greenhouse
+  token: bandwidth
+  verified: '2026-07-27'
+- name: Jumio
+  kind: greenhouse
+  token: jumio
+  verified: '2026-07-27'
+- name: Freenome
+  kind: greenhouse
+  token: freenome
+  verified: '2026-07-27'
+- name: Contentful
+  kind: greenhouse
+  token: contentful
+  verified: '2026-07-27'
+- name: Salesloft
+  kind: greenhouse
+  token: salesloft
+  verified: '2026-07-27'
+- name: Forge Global
+  kind: greenhouse
+  token: forgeglobal
+  verified: '2026-07-27'
+- name: Coalition
+  kind: greenhouse
+  token: coalition
+  verified: '2026-07-27'
+- name: Torq
+  kind: greenhouse
+  token: torq
+  verified: '2026-07-27'
+- name: Tines
+  kind: greenhouse
+  token: tines
+  verified: '2026-07-27'
+- name: Ondo Finance
+  kind: greenhouse
+  token: ondofinance
+  verified: '2026-07-27'
+- name: Vestwell
+  kind: greenhouse
+  token: vestwell
+  verified: '2026-07-27'
+- name: Axonius
+  kind: greenhouse
+  token: axonius
+  verified: '2026-07-27'
+- name: Webflow
+  kind: greenhouse
+  token: webflow
+  verified: '2026-07-27'
+- name: Culture Amp
+  kind: greenhouse
+  token: cultureamp
+  verified: '2026-07-27'
+- name: Iterable
+  kind: greenhouse
+  token: iterable
+  verified: '2026-07-27'
+- name: Customer.io
+  kind: greenhouse
+  token: customerio
+  verified: '2026-07-27'
+- name: Dataiku
+  kind: greenhouse
+  token: dataiku
+  verified: '2026-07-27'
+- name: Dashlane
+  kind: greenhouse
+  token: dashlane
+  verified: '2026-07-27'
+- name: Alloy
+  kind: greenhouse
+  token: alloy
+  verified: '2026-07-27'
+- name: Pie Insurance
+  kind: greenhouse
+  token: pieinsurance
+  verified: '2026-07-27'
+- name: Riskified
+  kind: greenhouse
+  token: riskified
+  verified: '2026-07-27'
+- name: Upgrade
+  kind: greenhouse
+  token: upgrade
+  verified: '2026-07-27'
+- name: Sumo Logic
+  kind: greenhouse
+  token: sumologic
+  verified: '2026-07-27'
+- name: Honeycomb
+  kind: greenhouse
+  token: honeycomb
+  verified: '2026-07-27'
+- name: Figure
+  kind: greenhouse
+  token: figure
+  verified: '2026-07-27'
+- name: HeyGen
+  kind: greenhouse
+  token: heygen
+  verified: '2026-07-27'
+- name: PagerDuty
+  kind: greenhouse
+  token: pagerduty
+  verified: '2026-07-27'
+- name: Typeface
+  kind: greenhouse
+  token: typeface
+  verified: '2026-07-27'
+- name: Incode
+  kind: greenhouse
+  token: incode
+  verified: '2026-07-27'
+- name: Sendbird
+  kind: greenhouse
+  token: sendbird
+  verified: '2026-07-27'
+- name: Melio
+  kind: greenhouse
+  token: melio
+  verified: '2026-07-27'
+- name: Observe.AI
+  kind: greenhouse
+  token: observeai
+  verified: '2026-07-27'
+- name: Censys
+  kind: greenhouse
+  token: censys
+  verified: '2026-07-27'
+- name: Squarespace
+  kind: greenhouse
+  token: squarespace
+  verified: '2026-07-27'
+- name: Domino Data Lab
+  kind: greenhouse
+  token: dominodatalab
+  verified: '2026-07-27'
+- name: Endor Labs
+  kind: greenhouse
+  token: endorlabs
+  verified: '2026-07-27'
+- name: BigID
+  kind: greenhouse
+  token: bigid
+  verified: '2026-07-27'
+- name: PolyAI
+  kind: greenhouse
+  token: polyai
+  verified: '2026-07-27'
+- name: Calendly
+  kind: greenhouse
+  token: calendly
+  verified: '2026-07-27'
+- name: Coursera
+  kind: greenhouse
+  token: coursera
+  verified: '2026-07-27'
+- name: Pagaya
+  kind: greenhouse
+  token: pagaya
+  verified: '2026-07-27'
+- name: Bugcrowd
+  kind: greenhouse
+  token: bugcrowd
+  verified: '2026-07-27'
+- name: Storyblok
+  kind: greenhouse
+  token: storyblok
+  verified: '2026-07-27'
+- name: Modern Health
+  kind: greenhouse
+  token: modernhealth
+  verified: '2026-07-27'
+- name: LogicGate
+  kind: greenhouse
+  token: logicgate
+  verified: '2026-07-27'
+- name: Starburst
+  kind: greenhouse
+  token: starburst
+  verified: '2026-07-27'
+- name: Sidecar Health
+  kind: greenhouse
+  token: sidecarhealth
+  verified: '2026-07-27'
+- name: Yotpo
+  kind: greenhouse
+  token: yotpo
+  verified: '2026-07-27'
+- name: Suki
+  kind: greenhouse
+  token: suki
+  verified: '2026-07-27'
+- name: Prove
+  kind: greenhouse
+  token: prove
+  verified: '2026-07-27'
+- name: Adaptive Biotechnologies
+  kind: greenhouse
+  token: adaptivebiotechnologies
+  verified: '2026-07-27'
+- name: Expel
+  kind: greenhouse
+  token: expel
+  verified: '2026-07-27'
+- name: Stash
+  kind: greenhouse
+  token: stashinvest
+  verified: '2026-07-27'
+- name: AssemblyAI
+  kind: greenhouse
+  token: assemblyai
+  verified: '2026-07-27'
+- name: Galileo
+  kind: greenhouse
+  token: galileo
+  verified: '2026-07-27'
+- name: Nova Credit
+  kind: greenhouse
+  token: novacredit
+  verified: '2026-07-27'
+- name: Descript
+  kind: greenhouse
+  token: descript
+  verified: '2026-07-27'
+- name: Bitwarden
+  kind: greenhouse
+  token: bitwarden
+  verified: '2026-07-27'
+- name: Bishop Fox
+  kind: greenhouse
+  token: bishopfox
+  verified: '2026-07-27'
+- name: Hyperproof
+  kind: greenhouse
+  token: hyperproof
+  verified: '2026-07-27'
+- name: Lithic
+  kind: greenhouse
+  token: lithic
+  verified: '2026-07-27'
+- name: Cybereason
+  kind: greenhouse
+  token: cybereason
+  verified: '2026-07-27'
+- name: Talkspace
+  kind: greenhouse
+  token: talkspace
+  verified: '2026-07-27'
+- name: Counterpart
+  kind: greenhouse
+  token: counterpart
+  verified: '2026-07-27'
+- name: PathAI
+  kind: greenhouse
+  token: pathai
+  verified: '2026-07-27'
+- name: Udemy
+  kind: greenhouse
+  token: udemy
+  verified: '2026-07-27'
+- name: Highnote
+  kind: greenhouse
+  token: highnote
+  verified: '2026-07-27'
+- name: PlanetScale
+  kind: greenhouse
+  token: planetscale
+  verified: '2026-07-27'
+- name: CircleCI
+  kind: greenhouse
+  token: circleci
+  verified: '2026-07-27'
+- name: CAIS
+  kind: greenhouse
+  token: cais
+  verified: '2026-07-27'
+- name: Apiiro
+  kind: greenhouse
+  token: apiiro
+  verified: '2026-07-27'
+- name: Watershed
+  kind: greenhouse
+  token: watershed
+  verified: '2026-07-27'
+- name: Guild
+  kind: greenhouse
+  token: guild
+  verified: '2026-07-27'
+- name: Orca Security
+  kind: greenhouse
+  token: orcasecurity
+  verified: '2026-07-27'
+- name: Lattice
+  kind: greenhouse
+  token: lattice
+  verified: '2026-07-27'
+- name: Diligent
+  kind: greenhouse
+  token: diligent
+  verified: '2026-07-27'
+- name: Cerebral
+  kind: greenhouse
+  token: cerebral
+  verified: '2026-07-27'
+- name: Nayya
+  kind: greenhouse
+  token: nayya
+  verified: '2026-07-27'
+- name: Contentstack
+  kind: greenhouse
+  token: contentstack
+  verified: '2026-07-27'
+- name: SeekOut
+  kind: greenhouse
+  token: seekout
+  verified: '2026-07-27'
+- name: Stability AI
+  kind: greenhouse
+  token: stabilityai
+  verified: '2026-07-27'
+- name: Netlify
+  kind: greenhouse
+  token: netlify
+  verified: '2026-07-27'
+- name: Found
+  kind: greenhouse
+  token: found
+  verified: '2026-07-27'
+- name: Public.com
+  kind: greenhouse
+  token: public
+  verified: '2026-07-27'
+- name: Consensys
+  kind: greenhouse
+  token: consensys
+  verified: '2026-07-27'
+- name: Grayscale
+  kind: greenhouse
+  token: grayscale
+  verified: '2026-07-27'
+- name: AppOmni
+  kind: greenhouse
+  token: appomni
+  verified: '2026-07-27'
+- name: Remote
+  kind: greenhouse
+  token: remote
+  verified: '2026-07-27'
+- name: Ethos
+  kind: greenhouse
+  token: ethos
+  verified: '2026-07-27'
+- name: Cyware
+  kind: greenhouse
+  token: cyware
+  verified: '2026-07-27'
+- name: Curative
+  kind: greenhouse
+  token: curative
+  verified: '2026-07-27'
+- name: Calm
+  kind: greenhouse
+  token: calm
+  verified: '2026-07-27'
+- name: Imbue
+  kind: greenhouse
+  token: imbue
+  verified: '2026-07-27'
+- name: Zest AI
+  kind: greenhouse
+  token: zestai
+  verified: '2026-07-27'
+- name: Socket
+  kind: greenhouse
+  token: socket
+  verified: '2026-07-27'
+- name: Figment
+  kind: greenhouse
+  token: figment
+  verified: '2026-07-27'
+- name: RunZero
+  kind: greenhouse
+  token: runzero
+  verified: '2026-07-27'
+- name: Lyra Health
+  kind: lever
+  token: lyrahealth
+  verified: '2026-07-27'
+- name: Shield AI
+  kind: lever
+  token: shieldai
+  verified: '2026-07-27'
+- name: Palantir
+  kind: lever
+  token: palantir
+  verified: '2026-07-27'
+- name: Zoox
+  kind: lever
+  token: zoox
+  verified: '2026-07-27'
+- name: Dun & Bradstreet
+  kind: lever
+  token: dnb
+  verified: '2026-07-27'
+- name: Spotify
+  kind: lever
+  token: spotify
+  verified: '2026-07-27'
+- name: CFGI
+  kind: lever
+  token: cfgi
+  verified: '2026-07-27'
+- name: Greenlight
+  kind: lever
+  token: greenlight
+  verified: '2026-07-27'
+- name: Sword Health
+  kind: lever
+  token: swordhealth
+  verified: '2026-07-27'
+- name: Wealthfront
+  kind: lever
+  token: wealthfront
+  verified: '2026-07-27'
+- name: Sysdig
+  kind: lever
+  token: sysdig
+  verified: '2026-07-27'
+- name: OpenAI
+  kind: ashby
+  token: openai
+  verified: '2026-07-27'
+- name: Harvey
+  kind: ashby
+  token: harvey
+  verified: '2026-07-27'
+- name: Legora
+  kind: ashby
+  token: legora
+  verified: '2026-07-27'
+- name: Sierra AI
+  kind: ashby
+  token: Sierra
+  verified: '2026-07-27'
+- name: Sierra
+  kind: ashby
+  token: sierra
+  verified: '2026-07-27'
+- name: Cohere
+  kind: ashby
+  token: cohere
+  verified: '2026-07-27'
+- name: Notion
+  kind: ashby
+  token: notion
+  verified: '2026-07-27'
+- name: Cursor
+  kind: ashby
+  token: cursor
+  verified: '2026-07-27'
+- name: Ramp
+  kind: ashby
+  token: ramp
+  verified: '2026-07-27'
+- name: Decagon
+  kind: ashby
+  token: decagon
+  verified: '2026-07-27'
+- name: Cerebras
+  kind: ashby
+  token: cerebras
+  verified: '2026-07-27'
+- name: Vanta
+  kind: ashby
+  token: vanta
+  verified: '2026-07-27'
+- name: Replit
+  kind: ashby
+  token: replit
+  verified: '2026-07-27'
+- name: Cognition
+  kind: ashby
+  token: cognition
+  verified: '2026-07-27'
+- name: Mercor
+  kind: ashby
+  token: mercor
+  verified: '2026-07-27'
+- name: Rogo
+  kind: ashby
+  token: rogo
+  verified: '2026-07-27'
+- name: Suno
+  kind: ashby
+  token: suno
+  verified: '2026-07-27'
+- name: Baseten
+  kind: ashby
+  token: baseten
+  verified: '2026-07-27'
+- name: Lovable
+  kind: ashby
+  token: lovable
+  verified: '2026-07-27'
+- name: 1X
+  kind: ashby
+  token: 1x
+  verified: '2026-07-27'
+- name: Commure
+  kind: ashby
+  token: commure
+  verified: '2026-07-27'
+- name: Reflection AI
+  kind: ashby
+  token: reflectionai
+  verified: '2026-07-27'
+- name: Ashby
+  kind: ashby
+  token: ashby
+  verified: '2026-07-27'
+- name: Writer
+  kind: ashby
+  token: writer
+  verified: '2026-07-27'
+- name: Luma AI
+  kind: ashby
+  token: lumaai
+  verified: '2026-07-27'
+- name: Fireworks AI
+  kind: ashby
+  token: fireworksai
+  verified: '2026-07-27'
+- name: Fireworks
+  kind: ashby
+  token: fireworks
+  verified: '2026-07-27'
+- name: Lambda
+  kind: ashby
+  token: lambda
+  verified: '2026-07-27'
+- name: Abridge
+  kind: ashby
+  token: abridge
+  verified: '2026-07-27'
+- name: Sardine
+  kind: ashby
+  token: sardine
+  verified: '2026-07-27'
+- name: Watershed
+  kind: ashby
+  token: watershed
+  verified: '2026-07-27'
+- name: Prompt
+  kind: ashby
+  token: prompt
+  verified: '2026-07-27'
+- name: Metaview
+  kind: ashby
+  token: metaview
+  verified: '2026-07-27'
+- name: Modal
+  kind: ashby
+  token: modal
+  verified: '2026-07-27'
+- name: Linear
+  kind: ashby
+  token: linear
+  verified: '2026-07-27'
+- name: WorkOS
+  kind: ashby
+  token: workos
+  verified: '2026-07-27'
+- name: Physical Intelligence
+  kind: ashby
+  token: physicalintelligence
+  verified: '2026-07-27'
+- name: Persona
+  kind: ashby
+  token: persona
+  verified: '2026-07-27'
+- name: RunPod
+  kind: ashby
+  token: runpod
+  verified: '2026-07-27'
+- name: Dust
+  kind: ashby
+  token: dust
+  verified: '2026-07-27'
+- name: Middesk
+  kind: ashby
+  token: middesk
+  verified: '2026-07-27'
+- name: Ambience Healthcare
+  kind: ashby
+  token: ambiencehealthcare
+  verified: '2026-07-27'
+- name: Anyscale
+  kind: ashby
+  token: anyscale
+  verified: '2026-07-27'
+- name: Warp
+  kind: ashby
+  token: warp
+  verified: '2026-07-27'
+- name: Rad AI
+  kind: ashby
+  token: radai
+  verified: '2026-07-27'
+- name: Krea
+  kind: ashby
+  token: krea
+  verified: '2026-07-27'
+- name: LlamaIndex
+  kind: ashby
+  token: llamaindex
+  verified: '2026-07-27'
+- name: Poolside
+  kind: ashby
+  token: poolside
+  verified: '2026-07-27'
+- name: Mintlify
+  kind: ashby
+  token: mintlify
+  verified: '2026-07-27'
+- name: Photoroom
+  kind: ashby
+  token: photoroom
+  verified: '2026-07-27'
+- name: Pylon
+  kind: ashby
+  token: pylon
+  verified: '2026-07-27'
+- name: Plain
+  kind: ashby
+  token: plain
+  verified: '2026-07-27'
+- name: OpenEvidence
+  kind: ashby
+  token: openevidence
+  verified: '2026-07-27'
+- name: Pika
+  kind: ashby
+  token: pika
+  verified: '2026-07-27'
+- name: Casca
+  kind: ashby
+  token: casca
+  verified: '2026-07-27'
+- name: Relevance AI
+  kind: ashby
+  token: relevanceai
+  verified: '2026-07-27'
+- name: Gumloop
+  kind: ashby
+  token: gumloop
+  verified: '2026-07-27'
+- name: Tempo
+  kind: ashby
+  token: tempo
+  verified: '2026-07-27'
+- name: Sweep
+  kind: ashby
+  token: sweep
+  verified: '2026-07-27'
+- name: Ideogram
+  kind: ashby
+  token: ideogram
+  verified: '2026-07-27'
+- name: Hyperbound
+  kind: ashby
+  token: hyperbound
+  verified: '2026-07-27'
+- name: Turbopuffer
+  kind: ashby
+  token: turbopuffer
+  verified: '2026-07-27'
+- name: Speakeasy
+  kind: ashby
+  token: speakeasy
+  verified: '2026-07-27'
+- name: Unify
+  kind: ashby
+  token: unify
+  verified: '2026-07-27'
+- name: Credo.AI
+  kind: ashby
+  token: credo.ai
+  verified: '2026-07-27'
+- name: Runway
+  kind: ashby
+  token: runway
+  verified: '2026-07-27'
+- name: Knock
+  kind: ashby
+  token: knock
+  verified: '2026-07-27'
+- name: Zed
+  kind: ashby
+  token: zed
+  verified: '2026-07-27'
+- name: Inngest
+  kind: ashby
+  token: inngest
+  verified: '2026-07-27'
+- name: Trigger.dev
+  kind: ashby
+  token: triggerdev
+  verified: '2026-07-27'
+- name: ServiceNow
+  kind: smartrecruiters
+  token: ServiceNow
+  verified: '2026-07-27'
+- name: Experian
+  kind: smartrecruiters
+  token: Experian
+  verified: '2026-07-27'
+- name: Visa
+  kind: smartrecruiters
+  token: Visa
+  verified: '2026-07-27'
