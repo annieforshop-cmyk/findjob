@@ -81,6 +81,17 @@ class Job:
     dream_tier: int = 0
     agency: bool = False
 
+    def __post_init__(self) -> None:
+        # ATS APIs sometimes return an explicit JSON `null` for a field
+        # instead of omitting the key, so `dict.get(key, "")` upstream
+        # doesn't catch it — normalize here so every scorer/renderer can
+        # trust these are always strings.
+        self.title = self.title or ""
+        self.company = self.company or ""
+        self.url = self.url or ""
+        self.description = self.description or ""
+        self.location = self.location or ""
+
     @property
     def id(self) -> str:
         """Stable id for cross-day dedupe. Prefer URL, fall back to title+company."""
