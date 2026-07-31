@@ -210,3 +210,24 @@ exclude_keywords:
   - active clearance
 
 min_score: 60
+
+# ============================================================
+#  ⭐ AI × 审计 交叉岗（你最想去的）
+# ============================================================
+# 和 internal-audit 里那条一样的规则，放在这个方向也跑一遍——
+# 有些交叉岗（"AI Assurance Lead"、"AI Audit Director"）会先被 AI 治理这条线
+# 抓到，得让它在这边也顶到最前面，而不是混在普通 AI 治理岗里。
+combo_boost:
+  - label: "AI × 审计"
+    all_of:
+      - [ai, artificial intelligence, genai, generative ai, agentic ai,
+         machine learning, ai governance, responsible ai, ai risk,
+         model risk, algorithmic]
+      - [audit, internal audit, auditor, audit plan, control testing,
+         sox, sarbanes-oxley, icfr, coso, internal controls, assurance,
+         ai assurance, ai audit, audit committee]
+    # ⭐ 这个 feed 里反过来：AI 满地都是、audit 才是区分点，
+    #   所以要求 **审计必须出现在标题里**（下标 1 = 上面第 2 组）。
+    title_groups: [1]
+    points: 20
+    title_points: 15

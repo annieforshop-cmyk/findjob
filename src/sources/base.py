@@ -75,6 +75,10 @@ class Job:
     ai_recruiter_odds: float = -1.0 # realistic odds of recruiter response / interview
     ai_composite: float = -1.0      # weighted composite of all dimensions
 
+    # 交叉岗标记：命中 profile.yaml 里 combo_boost 定义的组合（比如同时是
+    # AI 岗又是审计岗）。这类岗最贴候选人的独特画像，在邮件里单独置顶。
+    combo: str = ""
+
     # legacy fields kept for backward compat with digest.py / stored state;
     # no longer populated (target-firm + agency flagging were removed)
     dream: bool = False
