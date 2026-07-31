@@ -1,0 +1,50 @@
+# 个人主页配置 —— 复制成 persona.yaml 再填（persona.yaml 已在 .gitignore 里，
+# 不会被提交到公开仓库，姓名/邮箱这些不会外泄到 git 历史）。
+#
+#   cp persona.example.yaml persona.yaml
+#   # 填好下面的内容
+#   python -m src.site --profile ai-governance
+#
+# 生成 site/index.html —— 一个纯静态页，可以直接开 GitHub Pages 托管（免费）。
+# 页面里带 schema.org 的 JSON-LD Person 标记，Google / Bing / AI 搜索引擎
+# （ChatGPT、Perplexity）以及 hireEZ 这类 AI sourcing 工具都能结构化地读到
+# 「这个人是谁、做什么方向、在哪、怎么联系」。
+
+name: Your Name
+# Headline 直接抄 reports/<日期>-inbound-<方向>.md 第 5 节生成的候选
+headline: "Director, AI Governance | Responsible AI | EU AI Act | NIST AI RMF | Model Risk"
+location: "New York, NY"
+email: you@example.com            # 想公开就填；不填页面就不显示联系方式
+
+links:
+  linkedin: https://www.linkedin.com/in/your-custom-url
+  # github: https://github.com/yourname
+  # 其他想让猎头看到的（个人博客、演讲、文章）
+
+# 现任 / 最近一份（jobTitle + worksFor 是 schema.org Person 的关键字段，
+# AI sourcing 工具主要靠这两个把你归类）
+job_title: "Director, AI Governance"
+company: ""                       # 不想写现雇主就留空
+
+# 一段自我介绍。前两句最重要——AI 搜索引擎摘要时基本只取开头。
+about: |
+  CPA、会计硕士，10+ 年金融业审计、企业风险与合规经验，现任大型投行 Director。
+  主导企业级 AI 治理框架、AI 风险评估与治理控制，在业务与新兴技术之间架桥，
+  推动负责任 AI 在受监管环境下真正落地。
+
+# 量化战绩 —— 每条一句，带数字。猎头点进来后视线停留最久的就是这块。
+highlights:
+  - 向 200+ 高级领导演讲企业 AI 治理实践与 Agentic AI 用例，推动负责任 AI 采纳
+  - 与 Model Risk Management 团队协作审阅全公司 AI 治理框架，对齐 AI intake、持续监控与合规检查
+  - 开展企业风险评估以制定基于风险的审计计划，验证高风险问题整改
+
+# 认证（schema.org 有专门的 hasCredential 字段，会被结构化读取）
+credentials:
+  - CPA
+  # - AIGP (IAPP)
+
+# 你在找什么 —— 明确的 CTA 能显著提高猎头的联系率
+seeking: "AI Governance / Responsible AI / AI Risk 方向的 Director–Head 级岗位（美国，NYC 或 Remote）"
+
+# 技能留空的话，会自动从最新的 inbound 报告里取 Top 30（推荐留空）
+skills: []
