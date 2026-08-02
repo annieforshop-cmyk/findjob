@@ -94,7 +94,75 @@ def build_profile(cfg: dict, resume_text: str) -> dict:
         "require_seniority": bool(cfg.get("require_title_seniority", False)),
         "min_years": cfg.get("min_years"),
         "min_skill_hits": int(cfg.get("min_skill_hits", 0) or 0),
+        # combo_boost = 交叉岗加分。每条规则给出若干组词，岗位必须**每组都命中
+        # 至少一个**才算这个组合。用来抓"同时是 A 又是 B"的岗位——比如
+        # AI × 审计：既要 AI/GenAI 又要 audit/SOX，正好卡在候选人的独特画像上。
+        "combos": _build_combos(cfg.get("combo_boost") or []),
     }
+
+
+def _build_combos(raw: list) -> list[dict]:
+    out = []
+    for rule in raw:
+        groups = [[_norm(t) for t in g if str(t).strip()]
+                  for g in (rule.get("all_of") or [])]
+        groups = [g for g in groups if g]
+        if len(groups) < 2:
+            continue                      # 少于两组就不叫"组合"了
+        out.append({
+            "label": rule.get("label") or "combo",
+            "groups": groups,
+            "points": float(rule.get("points", 15)),
+            "title_points": float(rule.get("title_points", 0)),
+            # 每组在正文里至少要命中几个**不同**的词才算数。现在几乎每份 JD
+            # 都会顺嘴提一句 AI，只要 1 个词就算命中的话，一半的审计岗都会
+            # 被误判成"AI 交叉岗"。
+            "min_body": int(rule.get("min_body_hits", 2)),
+            # 哪几组**必须**出现在标题里（组的下标，从 0 开始）。
+            # 关键在于：要求"稀有的那一边"进标题。在内部审计的 feed 里，
+            # audit 满地都是、AI 才是区分点，所以要求 AI 进标题；在 AI 治理的
+            # feed 里反过来。不指定就退回"至少任意一组进标题"。
+            "title_groups": [int(i) for i in (rule.get("title_groups") or [])],
+            "require_title": bool(rule.get("require_title", True)),
+        })
+    return out
+
+
+def apply_combos(job: Job, prof: dict, blob: str, title: str) -> float:
+    """命中的组合给加分，并在 job.combo 上打标记（邮件里据此置顶 + 标注）。
+
+    一组算"命中"有两条路：出现在标题里，或者在正文里出现 ≥min_body 个不同的词。
+    再要求至少一组落在标题上，才算真的是为这个交叉画像开的岗——
+    否则只是一个审计岗在 JD 里提了两句 AI。
+    """
+    bonus = 0.0
+    hits: list[str] = []
+    for c in prof.get("combos") or []:
+        in_title, ok, evidence = [], True, []
+        for g in c["groups"]:
+            t_hits = [t for t in g if _present(t, title)]
+            b_hits = [t for t in g if _present(t, blob)]
+            in_title.append(bool(t_hits))
+            if not (t_hits or len(b_hits) >= c["min_body"]):
+                ok = False
+                break
+            evidence += (t_hits or b_hits)[:2]
+        if not ok:
+            continue
+        need = c["title_groups"]
+        if need:
+            if not all(in_title[i] for i in need if i < len(in_title)):
+                continue
+        elif c["require_title"] and not any(in_title):
+            continue
+        bonus += c["points"]
+        if all(in_title):                    # 标题里就写明了两边——最强信号
+            bonus += c["title_points"]
+        hits.append(c["label"])
+        job.matched = list(dict.fromkeys(job.matched + evidence))
+    if hits:
+        job.combo = " / ".join(hits)
+    return bonus
 
 
 # title words that signal an appropriate senior/business level for these roles
@@ -322,6 +390,8 @@ def score_job(job: Job, prof: dict) -> Job:
     elif TITLE_TOO_JUNIOR.search(title_norm):
         band_penalty = JUNIOR_PENALTY
 
+    bonus += apply_combos(job, prof, blob, title)
+
     job.score = round(min(max(skill_score + title_score + bonus - band_penalty, 0), 100), 1)
 
     # gap keywords: skills the JD clearly asks for that aren't yours yet
@@ -370,6 +440,7 @@ def _score_focus(job: Job, prof: dict, blob: str, title: str, focus: list[str]) 
     job.matched = (focus_in_title + [t for t in focus_in_body if t not in focus_in_title]
                    + biz_hits)[:10]
     job.missing = [t for t in focus if t not in focus_in_body][:6]
+    score += apply_combos(job, prof, blob, title)
     job.score = round(min(max(score, 0), 100), 1)
     return job
 

@@ -124,6 +124,50 @@ python -m src.tailor --title "Director, AI Governance" --company "Acme" --desc "
 
 ---
 
+## 反方向：让猎头搜得到你（inbound）
+
+上面全都是 **outbound**——你去找岗位。但只做 outbound 会漏掉一半机会：
+真正好的岗位很多是猎头/HR 主动找上门的。所以仓库里还有一条反方向的链路，
+**复用同一份 JD 语料**，解决「别人搜的时候，我要排在前面」。
+
+```bash
+python -m src.inbound                        # 三个方向各出一份关键词处方
+python -m src.inbound --profile ai-governance
+```
+
+输出 `reports/<日期>-inbound-<方向>.md`：招聘方在用的**职位短语**、你的
+**缺口词**（高频出现在 JD、你档案里却没有）、Skills 50 个的填写顺序、
+卡满 220 字符的 Headline 候选、About 骨架。
+
+**为什么比网上的「LinkedIn 优化清单」准**：那些清单是通用的；这份词表来自
+**你的目标市场当下真实在招的岗位**，而且用了对照语料算区分度——
+`data` `business` `team` 这种到处都有的泛词自动剔除，留下的是
+`ai governance framework`（区分度 203×）、`nist ai rmf`（90×）这种猎头真的会
+打进搜索框的词。市场变了，重跑一次就跟着变。
+
+三步：**切语料**（用 `focus_terms` / `core_skills` 把近千份 JD 分成目标市场
+和对照背景）→ **杀套话**（检测逐字重复在大量 JD 里的整句：EEO 声明、公司简介、
+合规模板段落，整句剔除）→ **算价值**（普及度 × 区分度 × 短语加成）。
+
+配套还有个人主页生成器，给 LinkedIn 之外的搜索用（专业岗位约三分之一的
+成功招聘来自 LinkedIn 以外的渠道）：
+
+```bash
+cp persona.example.yaml persona.yaml   # 填好（不进 git，姓名邮箱不外泄）
+python -m src.site --profile ai-governance
+```
+
+生成一个零依赖的 `site/index.html`，带 **schema.org JSON-LD `Person`** 标记——
+Google/Bing、ChatGPT/Perplexity 这类 AI 搜索、以及 hireEZ/SeekOut 这类
+AI sourcing 工具都能结构化读到你是谁、做什么方向、怎么联系。技能列表自动从
+最新的 inbound 词表里取。开 GitHub Pages 即可免费上线。
+
+> 完整的 **20 条被动曝光策略**（含 2026 年 LinkedIn Recruiter / Hiring Assistant
+> 的排序机制、每周执行顺序、怎么用 Search appearances 验证效果）见
+> [`docs/inbound-visibility.md`](docs/inbound-visibility.md)。
+
+---
+
 ## 用法速查
 
 平时你**什么都不用做**——GitHub Actions 每天自动跑、自动发一封「每日新岗」邮件。
@@ -133,6 +177,7 @@ python -m src.tailor --title "Director, AI Governance" --company "Acme" --desc "
 - **改方向/技能/搜索词**：编辑 `profiles/<方向>/profile.yaml`，commit 即生效。
 - **改画像（职级/年限/地点）**：编辑 `config.yaml` 的 `candidate:`。
 - **投递前加工某岗**：`python -m src.tailor ...`（见上）。
+- **让猎头搜得到你**：`python -m src.inbound`（每周重跑一次，词表跟着市场变）。
 
 ---
 
@@ -153,6 +198,11 @@ src/score.py                   # 第一段：关键词打分 + core_skills/标�
 src/ai_score.py                # 第二段：LLM 多维评分 + 加权综合（挂掉会告警）
 src/notify_email.py            # SMTP 发送
 src/digest.py                  # 单方向邮件正文（legacy，python -m src.main 用）
+# ——— 反方向：让猎头搜得到你 ———
+src/inbound.py                 # ⭐ 从 JD 语料反推猎头搜索词 → 关键词处方
+src/site.py                    # 个人主页生成器（schema.org JSON-LD，给站外搜索用）
+persona.example.yaml           # 个人主页配置模板（复制成 persona.yaml，不进 git）
+docs/inbound-visibility.md     # 20 条被动曝光策略 + 2026 排序机制
 # ——— 投递 & 面试辅助（可选，非每日邮件的一部分）———
 AGENTS.md                      # AI agent 投递 SOP（安全边界 + 五状态模型）
 career/candidate_profile.yaml  # 申请表事实来源（TBD 项填一次，处处复用）

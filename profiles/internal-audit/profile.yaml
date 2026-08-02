@@ -122,7 +122,17 @@ skills:
   - financial services
   - banking
   - cpa
-
+  # ---- AI × 审计 交叉词（2026-07-31）--------------------------
+  # 你的 AI 治理经历在这个方向的 feed 里也算加分项——AI 审计岗会同时
+  # 找这两边的词。出处同 resume.md，没有编造。
+  - ai governance framework
+  - ai risk assessment
+  - ai audit
+  - ai-enabled audit
+  - responsible ai
+  - model governance
+  - ai intake
+  - ai controls
 must_have: []
 nice_to_have:
   - director
@@ -159,3 +169,30 @@ exclude_keywords:
   - ts/sci
 
 min_score: 30
+
+# ============================================================
+#  ⭐ AI × 审计 交叉岗（你最想去的）
+# ============================================================
+# 你的独特之处不是"会审计"也不是"懂 AI"，是**两个都在做**：CPA + 10 年审计，
+# 现在在投行主导 AI 治理框架。市面上同时要这两样的岗位极少，一旦出现，
+# 竞争者远比纯审计岗少 —— 所以这类岗要顶到最前面。
+#
+# 判定：JD 必须**每一组都命中至少一个词**（不是命中任意一个就算）。
+# 只顺嘴提一句 AI 的审计岗、或者只提一句 audit 的 AI 岗，都进不来。
+combo_boost:
+  - label: "AI × 审计"
+    all_of:
+      # 第 1 组：真的和 AI 有关
+      - [ai, artificial intelligence, genai, generative ai, agentic ai,
+         machine learning, ml model, large language model, llm,
+         ai governance, responsible ai, ai risk, model risk, algorithmic]
+      # 第 2 组：真的和审计/控制有关
+      - [audit, internal audit, auditor, audit plan, control testing,
+         sox, sarbanes-oxley, icfr, coso, internal controls, assurance,
+         controls testing, audit committee]
+    # ⭐ 在"内部审计"这个 feed 里，audit 满地都是、AI 才是区分点，
+    #   所以要求 **AI 必须出现在标题里**（下标 0 = 上面第 1 组）。
+    #   否则一个普通审计岗只要 JD 里顺嘴提两句 AI 就会被误判成交叉岗。
+    title_groups: [0]
+    points: 20          # 命中组合：+20
+    title_points: 15    # 两边都写进标题（"AI Audit Manager"）：再 +15

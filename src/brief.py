@@ -18,11 +18,14 @@ from pathlib import Path
 
 import yaml
 
-from . import ai_score, notify_email
+from . import ai_score, notify_email, store
 from .main import collect_profile, discover_profiles
 from .sources.base import Job
 
 ROOT = Path(__file__).resolve().parent.parent
+
+# 交叉岗专属板块，永远排在邮件最前面（见 profile.yaml 的 combo_boost）
+COMBO_SECTION = "🔥 AI × 审计 交叉岗"
 
 
 def esc(s: str) -> str:
@@ -72,9 +75,19 @@ def gather(dry_run: bool) -> dict:
         section = res["cfg"].get("section") or res["label"]  # 多个 profile 可共享一个板块
         if section not in section_order:
             section_order.append(section)
-        for j in res["top"]:
+        fresh = [j for j in res["top"] if j.rank_score >= floor]
+        if not fresh:
+            # 这个方向今天一个新岗都没有。AI 治理是个小市场，很多天确实
+            # 就是零——但整块从邮件里消失，看起来像"这个方向坏了"。
+            # 所以退回展示上一次跑出来的存量岗，明确标成"不是新岗"。
+            fresh = _still_open(name, floor, int(bcfg.get("fallback_per_section", 5)))
+            for j in fresh:
+                j.stale = True          # type: ignore[attr-defined]
+        for j in fresh:
             j.profile_label = res["label"]  # type: ignore[attr-defined]
-            j.section = section             # type: ignore[attr-defined]
+            # 交叉岗（AI × 审计）单独成块并置顶：这类岗同时要 AI 和审计两边，
+            # 正好卡在你的独特画像上，市面上极少，混在普通岗里会被淹掉。
+            j.section = COMBO_SECTION if j.combo else section  # type: ignore[attr-defined]
             old = merged.get(j.id)
             if old is None or j.rank_score > old.rank_score:
                 merged[j.id] = j
@@ -93,11 +106,75 @@ def gather(dry_run: bool) -> dict:
             by_role[key].dupe_count = getattr(by_role[key], "dupe_count", 1) + 1  # type: ignore[attr-defined]
     jobs = list(by_role.values())
     jobs = _cap_per_company(jobs, int(bcfg.get("per_company_cap", 3)))
-    top = jobs[: int(bcfg.get("top_jobs", 50))]
+    top = _select(jobs, bcfg)
 
     return {"date": today, "scanned": scanned, "top": top, "floor": floor,
             "cfg": base_cfg, "section_order": section_order,
             "ai_warning": "；".join(dict.fromkeys(ai_notes))}
+
+
+def _still_open(ns: str, floor: float, n: int) -> list[Job]:
+    """某个方向今天没有新岗时的兜底：上次跑出来的高分存量岗。
+
+    这些岗你之前的邮件里见过，所以会明确标 `stale`，渲染成「仍在招 · 不是新岗」，
+    不会让你误以为是今天新出的。
+    """
+    if n <= 0:
+        return []
+    out: list[Job] = []
+    for d in store.load_last_run(ns):
+        try:
+            j = Job(**{k: v for k, v in d.items()
+                       if k in Job.__dataclass_fields__})
+        except Exception:
+            continue
+        if j.rank_score >= floor:
+            out.append(j)
+    out.sort(key=lambda j: -j.rank_score)
+    return out[:n]
+
+
+def _select(jobs: list[Job], bcfg: dict) -> list[Job]:
+    """挑进邮件的岗位。**先给每个方向留保底名额，再用剩下的名额按分排。**
+
+    为什么不是简单取全局前 50：三个方向的分数分布不一样（内部审计岗多、
+    命中词多，分数普遍顶到 100；AI 治理是个小市场，好岗也就 90 出头）。
+    全局排序一截断，AI 治理整块就被挤没了——邮件看起来像"只有内部审计"。
+
+    保底按 **profile_label（方向）** 分，不是按 section（板块）：
+    ai-governance 和 ai-risk 共用"AI 治理 & 风险"这一个板块，按板块分配的话
+    ai-risk 照样能把 ai-governance 挤光，等于没修。
+    """
+    limit = int(bcfg.get("top_jobs", 50))
+    floor_per = int(bcfg.get("min_per_section", 8))
+
+    def key(j: Job):
+        # 交叉岗（AI × 审计）永远排在最前面——这类岗最贴你的画像，且极少见
+        return (0 if getattr(j, "combo", "") else 1, -j.rank_score)
+
+    jobs = sorted(jobs, key=key)
+    picked: list[Job] = []
+    used: set[str] = set()
+
+    if floor_per > 0:
+        by_dir: dict[str, list[Job]] = {}
+        for j in jobs:
+            by_dir.setdefault(getattr(j, "profile_label", "") or "", []).append(j)
+        for dir_jobs in by_dir.values():
+            for j in dir_jobs[:floor_per]:
+                picked.append(j)
+                used.add(j.id)
+
+    for j in jobs:                       # 剩下的名额全局按分补齐
+        if len(picked) >= limit:
+            break
+        if j.id not in used:
+            picked.append(j)
+            used.add(j.id)
+
+    # picked 的规模已经被上面两步限住了（保底名额 + 补齐到 limit）。
+    # 保底名额总数超过 limit 时以保底为准——保证每个方向都在，是这里的第一优先。
+    return sorted(picked, key=key)
 
 
 # ---------------- render helpers ----------------
@@ -141,6 +218,8 @@ def _sections_in_order(d: dict) -> list[str]:
         s = getattr(j, "section", "") or ""
         if s and s not in order:
             order.append(s)
+    if COMBO_SECTION in order:              # 交叉岗永远第一块
+        order = [COMBO_SECTION] + [s for s in order if s != COMBO_SECTION]
     return order
 
 
@@ -158,8 +237,11 @@ def _source_label(j: Job) -> str:
 def _job_lines(i: int, j: Job) -> list[str]:
     label = getattr(j, "profile_label", "")
     n = getattr(j, "dupe_count", 1)
-    lines = [f"{i}. [{j.rank_score:.0f}] {j.title} — {j.company}"
+    lines = [f"{i}. [{j.rank_score:.0f}] "
+             + (f"🔥[{j.combo}] " if getattr(j, "combo", "") else "")
+             + f"{j.title} — {j.company}"
              + (f"  〈{label}〉" if label else "")
+             + ("  (仍在招 · 不是今天新岗)" if getattr(j, "stale", False) else "")
              + (f"  (+{n - 1} 个其他地点)" if n > 1 else "")]
     lines.append(f"   {j.ai_location_note or j.location or 'Remote'}"
                  + (f" | {j.ai_salary}" if j.ai_salary else "")
@@ -253,9 +335,11 @@ def _job_html(j: Job) -> str:
         <div style="text-align:center;background:#0b6;color:#fff;border-radius:6px;
                     padding:3px 8px;font-weight:700;font-size:13px">{j.rank_score:.0f}</div></td>
       <td style="padding:12px;border-bottom:1px solid #eee">
-        <div><a href="{esc(j.url)}" style="font-size:15px;font-weight:600;color:#0a58ca;
+        <div>{(_chip(f"🔥 {j.combo}", "#ffece0", "#b03a00") if getattr(j, "combo", "") else "")}
+             <a href="{esc(j.url)}" style="font-size:15px;font-weight:600;color:#0a58ca;
              text-decoration:none">{esc(j.title)}</a>
              {(_chip(label, "#e8eef7", "#245") if label else "")}
+             {(_chip("仍在招 · 非新岗", "#f4f4f4", "#666") if getattr(j, "stale", False) else "")}
              {(_chip(f"+{getattr(j,'dupe_count',1)-1} 地点", "#eee", "#555") if getattr(j,'dupe_count',1) > 1 else "")}</div>
         <div style="color:#444;font-size:13px;margin-top:2px">{esc(j.company)} ·
              {esc(j.ai_location_note or j.location or 'Remote')}</div>

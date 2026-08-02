@@ -6,3 +6,9 @@ venv/
 *.egg-info/
 .DS_Store
 out/
+
+# 个人主页：这两个含姓名/邮箱等个人信息，默认不进这个公开仓库。
+# 要用 GitHub Pages 托管的话，把 site/ 放到一个单独的仓库里，
+# 或者确认过内容后 `git add -f site/`。
+persona.yaml
+site/
