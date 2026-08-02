@@ -160,7 +160,30 @@ skills:
   - banking
   - cpa
   - aigp
-
+  # ---- 英文补词（2026-07-31）----------------------------------
+  # 简历是中文写的，"AI 治理框架"这类事实在英文词形匹配下一直被
+  # src/inbound.py 报成"缺口"。下面每一条都能在 resume.md 里找到出处，
+  # 没有编造；补进来后 ① inbound 报告不再误报 ② 岗位打分更准。
+  # 「主导 AI 治理框架、评估企业级 AI 治理框架」
+  - ai governance framework
+  - enterprise ai
+  - ai governance program
+  # 「负责任 AI 政策」
+  - responsible ai policy
+  # 「对齐 AI onboarding/intake、持续监控、合规检查」
+  - ai intake
+  - ai onboarding
+  # 「审阅 AI 治理委员会汇报」
+  - ai governance committee
+  # 「支撑合规的 AI 开发、部署与监控」
+  - ai lifecycle
+  # 「主导 AI 机会评估，识别高价值自动化用例」
+  - ai opportunity assessment
+  - ai use case
+  - ai adoption
+  # 「AI 赋能的审计方法」
+  - ai audit
+  - ai-enabled audit
 must_have: []
 nice_to_have:
   - director

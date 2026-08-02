@@ -1,0 +1,58 @@
+name: weekly-inbound
+
+# 每周一早上重跑「关键词处方」并发到邮箱。
+#
+# 为什么要每周重跑：词表是从**当下真实在招的岗位**统计出来的，市场会变
+# （比如 EU AI Act 进入某个落地阶段，JD 里的高频词会整体迁移）。档案跟着
+# 词表调，就一直踩在猎头的搜索词上。
+#
+# 和 daily-job-search 的区别：那个是 outbound（今天有什么岗位可投），
+# 这个是 inbound（怎么让别人搜到你）。频率不同——岗位每天变，词表每周看一次够了。
+
+on:
+  schedule:
+    # 每周一 UTC 13:00 ≈ 美东周一上午 8/9 点
+    - cron: "0 13 * * 1"
+  workflow_dispatch: {}   # 也可在 Actions 页面手动点一下运行
+
+permissions:
+  contents: write         # 允许把 reports/ 回写提交
+
+concurrency:
+  group: weekly-inbound
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Rebuild keyword prescriptions and email them
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: python -m src.inbound --email
+
+      - name: Commit this week's reports
+        run: |
+          git config user.name "findjob-bot"
+          git config user.email "actions@github.com"
+          git add reports/ 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: weekly inbound keyword prescription [skip ci]"
+            git push
+          else
+            echo "no report change"
+          fi

@@ -508,25 +508,95 @@ def build_report(profile: str, label: str, cfg: dict, resume: str,
     return "\n".join(L)
 
 
-def run(profile: str) -> Path:
+def run(profile: str, top: int = 160) -> Path:
     cfg, resume, ns, label = load_context(profile)
-    md = build_report(ns, label, cfg, resume)
+    md = build_report(ns, label, cfg, resume, top=top)
     REPORTS.mkdir(exist_ok=True)
     out = REPORTS / f"{dt.date.today().isoformat()}-inbound-{ns}.md"
     out.write_text(md)
     return out
 
 
+def _md_to_html(md: str) -> str:
+    """够用的 Markdown→HTML：标题、表格、加粗、代码、列表。
+
+    不引第三方依赖——这份报告的结构是我们自己生成的，就这几种元素。
+    """
+    out: list[str] = []
+    in_table = False
+
+    def inline(t: str) -> str:
+        t = (t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+        t = re.sub(r"`([^`]+)`", r'<code style="background:#f2f4f7;padding:1px 5px;'
+                                r'border-radius:4px;font-size:92%">\1</code>', t)
+        t = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", t)
+        t = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', t)
+        return t
+
+    for line in md.splitlines():
+        st = line.strip()
+        is_row = st.startswith("|") and st.endswith("|")
+        if in_table and not is_row:
+            out.append("</table>")
+            in_table = False
+        if is_row:
+            cells = [c.strip() for c in st.strip("|").split("|")]
+            if all(set(c) <= set("-: ") for c in cells):
+                continue                       # 表格分隔线
+            if not in_table:
+                out.append('<table cellspacing="0" cellpadding="6" '
+                           'style="border-collapse:collapse;font-size:13px;margin:8px 0">')
+                in_table = True
+                tag, style = "th", "background:#f6f8fa;text-align:left"
+            else:
+                tag, style = "td", ""
+            out.append("<tr>" + "".join(
+                f'<{tag} style="border:1px solid #e3e6ea;{style}">{inline(c)}</{tag}>'
+                for c in cells) + "</tr>")
+            continue
+        if m := re.match(r"^(#{1,6})\s+(.*)", st):
+            n = len(m.group(1))
+            out.append(f'<h{n} style="margin:18px 0 6px">{inline(m.group(2))}</h{n}>')
+        elif st.startswith(">"):
+            out.append('<blockquote style="border-left:3px solid #d0d7de;margin:8px 0;'
+                       f'padding:2px 12px;color:#555">{inline(st.lstrip("> "))}</blockquote>')
+        elif re.match(r"^\d+\.\s", st) or st.startswith("- "):
+            out.append(f'<div style="margin:2px 0 2px 14px">{inline(st)}</div>')
+        elif not st:
+            out.append("<div style='height:6px'></div>")
+        else:
+            out.append(f"<p style='margin:6px 0'>{inline(st)}</p>")
+    if in_table:
+        out.append("</table>")
+    return ("<div style=\"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',"
+            "Roboto,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.6;"
+            "max-width:760px;color:#111\">" + "\n".join(out) + "</div>")
+
+
+def email_reports(paths: list[Path]) -> None:
+    from . import notify_email
+    md = "\n\n---\n\n".join(p.read_text() for p in paths)
+    subject = (f"[findjob · Inbound] {dt.date.today().isoformat()} · "
+               f"本周关键词处方（{len(paths)} 个方向）")
+    notify_email.send(subject, md, _md_to_html(md))
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="生成 LinkedIn / 被动曝光关键词处方")
     ap.add_argument("--profile", help="方向名（默认跑全部）")
     ap.add_argument("--top", type=int, default=160, help="词表长度")
+    ap.add_argument("--email", action="store_true", help="把报告发到 EMAIL_TO")
     args = ap.parse_args()
 
     targets = [args.profile] if args.profile else discover_profiles()
+    outs = []
     for p in targets:
-        out = run(p)
+        out = run(p, top=args.top)
+        outs.append(out)
         print(f"✅ {p} → {out}")
+    if args.email and outs:
+        email_reports(outs)
+        print(f"📧 已发送 {len(outs)} 份报告")
 
 
 if __name__ == "__main__":

@@ -122,7 +122,17 @@ skills:
   - financial services
   - banking
   - cpa
-
+  # ---- AI × 审计 交叉词（2026-07-31）--------------------------
+  # 你的 AI 治理经历在这个方向的 feed 里也算加分项——AI 审计岗会同时
+  # 找这两边的词。出处同 resume.md，没有编造。
+  - ai governance framework
+  - ai risk assessment
+  - ai audit
+  - ai-enabled audit
+  - responsible ai
+  - model governance
+  - ai intake
+  - ai controls
 must_have: []
 nice_to_have:
   - director
