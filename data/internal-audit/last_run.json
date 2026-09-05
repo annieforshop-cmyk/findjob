@@ -1,69 +1,19 @@
 [
   {
-    "source": "ats:M&T Bank",
-    "title": "AI Governance Lead",
-    "company": "M&T Bank",
-    "url": "https://mtb.wd5.myworkdayjobs.com/en-US/MTB/job/Buffalo-NY/AI-Governance-Lead_R89810-1",
-    "description": "Role Summary Own the design and execution of the enterprise AI governance program. Build the standards, policies, and procedures that govern how AI use cases and models move from idea to production. Structure the governance roadmap across intake, classification, value assessment, and control design. Stand up use case governance and model governance functions, define the target state for AI governance across the organization, and drive an implementation plan with clear monitoring, prioritized against engineering delivery timelines. Key Responsibilities Governance Framework Design Author and maintain AI governance standards, policies, and procedures covering the full lifecycle of AI use cases and models Design the governance roadmap organized into intake, classification, value assessment, and control design stages Define risk tiers and controls proportional to use case risk (e.g., low/medium/high risk classification tied to required controls) Use Case Governance Build the intake process for new AI use cases: how requests enter the pipeline, what information is captured, who reviews them Establish classification criteria (risk level, data sensitivity, regulatory exposure, business criticality) Design value assessment methodology to prioritize use cases against cost, risk, and business impact Define control requirements per classification tier (documentation, testing, sign-off, monitoring) Model Governance Establish model risk management practices: validation, documentation, versioning, approval gates Define requirements for model cards, testing evidence, bias/fairness checks, and performance monitoring Set standards for third-party and open-source model vetting Target State & Team Build Define the target state for AI governance: what \"good\" looks like, what the organization should expect from the function Design the governance team structure, roles, and operating model Set RACI across governance, engineering, legal, risk, and business stakeholders Implementation & Monitoring Build a phased implementation plan with milestones and owners Prioritize governance rollout in sequence with engineering platform and architecture delivery Establish monitoring and reporting: KPIs, compliance tracking, exception handling, escalation paths Run periodic reviews of the governance program's effectiveness and adjust as needed Required Qualifications Combined minimum of 10 years' higher education and/or operational/business analytics/systems development experience Demonstrated experience building a governance framework or program from the ground up in a large or complex organization Working knowledge of model risk management practices (e.g., SR 11-7 or equivalent) and how they extend to AI/ML systems Experience designing intake, classification, and risk assessment processes for technology or data initiatives Experience working cross-functionally with engineering, legal, compliance, and business teams Strong written communication skills; able to produce policy documents, standards, and executive-level reporting Bachelor's degree in a relevant field (risk, business, computer science, law, or similar); advanced degree a plus but not required in place of experience Preferred Qualifications Direct experience with AI-specific regulatory frameworks (EU AI Act, NIST AI RMF, ISO/IEC 42001) and applying them practically Prior experience standing up or scaling a governance team, including hiring and role design Familiarity with MLOps and model deployment pipelines, enough to design controls that don't bottleneck engineering Experience with generative AI governance specifically (prompt/data leakage risk, hallucination controls, third-party LLM vendor risk) Certifications such as CRISC, CISA, or AI governance-specific credentials Experience in a regulated industry (financial services, healthcare, insurance) Skills Required Policy and standards writing Risk classification and control design Stakeholder management across technical and non-technical audiences Program/project management (roadmap building, milestone tracking, prioritization) Working knowledge of ML lifecycle and model development practices Data literacy: able to read model documentation, validation reports, and technical risk assessments Facilitation and negotiation, particularly balancing governance rigor against engineering velocity #LI-JB3 M&T Bank is committed to fair, competitive, and market-informed pay for our employees. The pay range for this position is $123,600.00 - $206,000.00 Annual (USD). The successful candidate’s particular combination of knowledge, skills, and experience will inform their specific compensation. Location Buffalo, New York, United States of America",
-    "location": "Buffalo, NY",
-    "remote": false,
-    "tags": [
-      "/job/Buffalo-NY/AI-Governance-Lead_R89810-1"
-    ],
-    "posted": "2026-09-04",
-    "score": 76.6,
-    "matched": [
-      "control design",
-      "risk assessment",
-      "model risk",
-      "stakeholder management",
-      "ai governance",
-      "financial services"
-    ],
-    "missing": [],
-    "embed_sim": -1.0,
-    "ai_score": -1.0,
-    "ai_skills": -1.0,
-    "ai_seniority": -1.0,
-    "ai_years_fit": -1.0,
-    "ai_reason": "",
-    "ai_recommendation": "",
-    "ai_location_ok": true,
-    "ai_location_note": "",
-    "ai_salary": "",
-    "ai_ghost_risk": "",
-    "ai_company_note": "",
-    "ai_work_mode": "",
-    "ai_special": "",
-    "ai_industry": -1.0,
-    "ai_leadership": -1.0,
-    "ai_gov": -1.0,
-    "ai_growth": -1.0,
-    "ai_comp": -1.0,
-    "ai_career": -1.0,
-    "ai_stability": "",
-    "ai_recruiter_odds": -1.0,
-    "ai_composite": -1.0,
-    "dream": false,
-    "dream_tier": 0,
-    "agency": false,
-    "id": "18cbdb2f455c4cd6"
-  },
-  {
-    "source": "ats:Chime",
-    "title": "Lead Analyst, Financial Crimes",
-    "company": "Chime",
-    "url": "https://boards.greenhouse.io/chime/jobs/8779819002?gh_jid=8779819002",
-    "description": "About the role Chime's Financial Crimes team protects millions of members from money laundering, fraud, and the organized networks that target consumer financial platforms. We work in a bank-partner model: we run detection and investigation, and we escalate unusual activity to our bank partners, who hold the filing obligation. That means our written work product is read by outside parties, and the quality bar is correspondingly high. This is a senior individual contributor role. You will set the standard for how financial crime work is done here rather than working a queue — defining what good looks like, raising the ceiling for the analysts you lead, and owning the hardest problems on the team end to end. The base salary offered for this role and level of experience will begin at $139,000.00 and up to $193,000.00. Full-time employees are also eligible for a bonus, competitive equity package, and benefits. The actual base salary offered may be higher, depending on your location, skills, qualifications, and experience. In this role, you can expect to: Operate with minimal direction on problems that arrive ambiguous, and you define the approach rather than waiting for one. Set the quality standard others calibrate to with defensible judgement calls. Move work across team boundaries without formal authority, and you are trusted to represent Financial Crimes to partners outside the function. Raise the ceiling of the people around you — through calibration, coaching, documentation, and the examples you set in your own casework. Improve the system, not just the case. Every hard investigation should leave behind something reusable: a control, a procedure, a detection change, or a documented typology. What you will own: Vendor Management. You will lead, and support, a team of analysts. Vendor team quality. You sample operations work, run calibration with partners, keep apprised of quality assurance trends, and hold quality and productivity expectations where they belong. Risk trend analysis. You understand AML and Fraud risks well enough to follow the pattern of unusual activity across accounts, devices, funding sources, counterparties, and behavioral patterns, and you can show the shape of a network in a way a non-investigator understands. Typology development. You document new and evolving schemes, make them teachable to the wider team, identify if opportunities in coverage are needed, and own the creation of coverage with partners as appropriate. Operational rollout of new coverage. When a new typology or scenario goes live, you design how it will be worked — routing, procedure, evidence standard, and quality checks — before the first alert lands. Procedures and documentation. You own the SOPs for your area and keep them in a state where a third party could read them cold and understand what we do and why. Audit and exam readiness. You prepare the operational side for internal audit, independent testing, and bank partner reviews, and you own remediation of findings assigned to operations through to closure. To thrive in this role, you have: 7+ years in financial crime, fraud, or risk investigations at a bank, fintech, payments company, or comparable regulated environment. Working command of BSA, the USA PATRIOT Act, OFAC requirements, and unusual/suspicious activity reporting standards — enough to explain not just the rule but why it exists. Deep experience across the transaction monitoring alert lifecycle at real volume, including the operational tradeoffs that come with it. Real typology depth across both money laundering and fraud — mule and money movement networks, first-party fraud, synthetic and stolen identity, scams and social engineering, elder financial exploitation, etc. Hands-on involvement in scenario tuning or threshold work alongside data or risk partners, with an understanding of what changing a threshold actually costs. Experience overseeing vendor or outsourced investigation teams. Judgment under volume. You can distinguish the case that deserves forty hours from the one that deserves forty minutes.&nbsp;&nbsp; Comfort with sustained ambiguity. You will spend real time on hypotheses that do not pan out, and you need the judgment to know when to stop. Advanced SQL, and fluency with graph or link analysis tooling for mapping relationships at scale. CAMS, CFE, or equivalent certification preferred. #LI-Onsite #LI-BE1 A little about us At Chime, we believe that everyone can achieve financial progress. We created Chime—a financial technology company, not a bank*—on the premise that core banking services should be helpful, easy, and free. Through our user-friendly tools and intuitive platforms, we empower our members to take control of their finances and work towards their goals. Whether it's starting a savings account, purchasing a first car or home, launching a business, or pursuing higher education, we're proud to have helped millions unlock their financial potential. We're a team of problem solve",
-    "location": "San Francisco, CA, USA",
+    "source": "ats:Anthropic",
+    "title": "Sanctions Compliance Lead",
+    "company": "Anthropic",
+    "url": "https://job-boards.greenhouse.io/anthropic/jobs/5414608008",
+    "description": "About Anthropic Anthropic’s mission is to create reliable, interpretable, and steerable AI systems. We want AI to be safe and beneficial for our users and for society as a whole. Our team is a quickly growing group of committed researchers, engineers, policy experts, and business leaders working together to build beneficial AI systems. About the role Anthropic's Integrity &amp; Compliance (I&amp;C) function is building the systems that let us scale responsibly as our products reach more people, more enterprises, and more regulated industries. Our global compliance program is bespoke, reflecting our unique mission and position as one of the leading AI labs operating on the frontier. Our Regulatory Programs pillar is a key pillar of our overall Integrity &amp; Compliance function and covers a range of compliance domain areas including economic sanctions, US export controls, and regulatory compliance programs stemming from global content and AI regulation. As Sanctions Compliance Lead, you will take day-to-day leadership of Anthropic's sanctions compliance program and support oversight of our export controls program, supporting the Regulatory Programs lead as a senior leader within the function. This is a leadership seat in a domain where the rules governing AI models and compute are still being written, and where sanctions exposure runs through globally accessible APIs, downstream and embedded-partner channels, and rapid geographic expansion. You will own the sanctions program end to end: setting strategy and risk appetite with leadership, continuously assessing risk and driving remediation and program enhancements, governing our screening and enforcement controls, directing regulator-facing matters, and reporting on program health to I&amp;C leadership and the Audit Committee. You will partner closely with our in-house Trade Compliance Counsel on interpretation of applicable law, represent the function with senior stakeholders, and lead and develop trade compliance professionals as the team grows. This is a builder's role at a company that takes integrity seriously and moves fast. You will exercise independent judgment on issues without clear precedent and build durable programs that let Anthropic move quickly while honoring its obligations to regulators, customers, and the public. Key responsibilities Lead Anthropic's sanctions compliance program, including strategy, risk appetite, policy frameworks, and the program roadmap, and keep them current as regulations and the business evolve Represent the sanctions and export controls function with senior leadership and cross-functional partners, and step in for the Regulatory Programs lead across the function as needed Continuously assess sanctions risk across products, channels, and markets, and own the remediation of identified issues and the delivery of program enhancements, in partnership with Legal, Internal Audit, Finance, and first-line teams Direct regulator-facing matters, including voluntary self-disclosures, blocking and reject reports, licensing questions, and responses to regulator or third-party inquiries, in partnership with Trade Compliance Counsel and National Security Legal Govern Anthropic's restricted-party screening and enforcement controls, including list configuration, thresholds, escalation criteria, vendor management, and exception review, in partnership with Regulatory Operations and Safeguards Serve as the senior escalation point for complex sanctions matters surfaced by Safeguards, Threat Intelligence, Go-to-Market, and Finance, and set the standards by which first-line teams disposition and escalate cases Advise business and product teams on sanctions and trade controls implications of commercial and geographic expansion, new products and channels, partnerships, and acquisitions, and translate findings into clear control requirements Support oversight of the export controls program, partnering with the Sanctions &amp; Export Controls Compliance Officer and Trade Compliance Counsel on program priorities, controls, and reporting Prepare and deliver program reporting on health, key risks, and emerging issues for I&amp;C and Legal leadership, the Audit Committee, and other governance forums Monitor sanctions regulatory developments and enforcement actions, assess impact on Anthropic, and drive required program changes Lead, mentor, and develop compliance team members, and help shape the structure of the function as it grows Of course, this is just a sample of the kinds of work this role will require! You should assume that your role will encompass other tasks, too, and that your job duties and responsibilities may change from time to time at Anthropic's discretion, or otherwise applicable with local law Minimum qualifications Substantive, hands-on experience leading an economic sanctions compliance program (OFAC, EU, UK, and other applicable regimes) in a commercial environment, including program design, policy ownership, and risk governa",
+    "location": "San Francisco, CA | New York City, NY | Washington, DC",
     "remote": false,
     "tags": [],
     "posted": "2026-09-04",
-    "score": 32.8,
+    "score": 58.8,
     "matched": [
       "internal audit",
-      "remediation",
-      "banking"
+      "regulatory compliance",
+      "remediation"
     ],
     "missing": [],
     "embed_sim": -1.0,
@@ -92,6 +42,6 @@
     "dream": false,
     "dream_tier": 0,
     "agency": false,
-    "id": "d22273d23f5a3b15"
+    "id": "d88141caac992e90"
   }
 ]
